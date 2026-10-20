@@ -583,6 +583,10 @@
     let battleState = 'FIGHTING'; // SELECTING | COUNTDOWN | FIGHTING | ENDED
     let simSpeed = 1;
     let autoLoop = true;
+    let camTracking = true;
+    let activeDrawerSlot = 1;
+    let activeEditTarget = 1;
+    let autoRestartTimeout = null;
 
     // Track active DOM text popups to prevent DOM lag on massive armies
     let activeDmgPopups = 0;
@@ -593,18 +597,40 @@
       2: { scale: 0.125, spdMult: 1.0 }
     };
 
+    function applyCreatureOverridesToArmy(side) {
+      const ov = slotOverrides[side];
+      entities.forEach(f => {
+        if (f.side === side) {
+          const cfg = CREATURES[f.key];
+          f.mesh.userData.bodyGroup.scale.set(ov.scale, ov.scale, ov.scale);
+          const ringScale = ov.scale / 0.125;
+          f.mesh.userData.ring.scale.set(ringScale, ringScale, 1);
+          f.spd = cfg.spd * ov.spdMult;
+          f.cooldown = 2.65 / f.spd;
+        }
+      });
+    }
+
     function createFighterState(key, side, idx, totalCols) {
       const cfg = CREATURES[key];
       const ov = slotOverrides[side];
       const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale);
+      const ringScale = ov.scale / 0.125;
+      mesh.userData.ring.scale.set(ringScale, ringScale, 1);
       
+      // Dynamic color differentiation for mirror matches
+      if (side === 2 && selectedP1 === selectedP2) {
+        mesh.userData.mat.color.setHex(0xf43f5e);
+        mesh.userData.ring.material.color.setHex(0xf43f5e);
+      }
+
       const spacing = 1.4;
       // Grid formation spawning
       const row = Math.floor(idx / totalCols);
       const col = idx % totalCols;
       
       const homeX = (side === 1 ? -6.5 : 6.5) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.5;
-      const homeZ = (col - totalCols / 2) * spacing + (Math.random() - 0.5) * 0.5;
+      const homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.5;
       const homeY = getTerrainHeight(homeX, homeZ);
       
       mesh.position.set(homeX, homeY, homeZ);
@@ -613,12 +639,13 @@
 
       return {
         id: Math.random().toString(36).substr(2, 9),
-        key, side, name: cfg.name, faction: cfg.faction, color: cfg.color,
+        key, side, name: cfg.name, faction: cfg.faction,
+        color: (side === 2 && selectedP1 === selectedP2) ? 0xf43f5e : cfg.color,
         maxHp: cfg.hp, hp: cfg.hp, atk: cfg.atk, def: cfg.def, spd: cfg.spd * ov.spdMult, crit: cfg.crit,
         moves: cfg.moves, powerMove: cfg.powerMove,
         energy: 0, lastMoveName: "ENGAGING",
         cooldown: 2.65 / (cfg.spd * ov.spdMult),
-        timer: (1.9 / (cfg.spd * ov.spdMult)) * Math.random(),
+        timer: (1.9 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.65),
         mesh, homeX, homeZ,
         seed: Math.random() * Math.PI * 2,
         hitFlash: 0, activeAction: null,
@@ -641,15 +668,21 @@
         entities.push(createFighterState(selectedP2, 2, i, cols));
       }
       updateArmyHUD();
+      highlightSelectedCards();
     }
 
     function getClosestEnemy(f) {
       let closest = null;
-      let minDist = Infinity;
+      let minScore = Infinity;
       for (const e of entities) {
         if (e.side !== f.side && !e.dead) {
-          const d = Math.pow(f.mesh.position.x - e.mesh.position.x, 2) + Math.pow(f.mesh.position.z - e.mesh.position.z, 2);
-          if (d < minDist) { minDist = d; closest = e; }
+          const dx = f.mesh.position.x - e.mesh.position.x;
+          const dz = f.mesh.position.z - e.mesh.position.z;
+          const distSq = dx * dx + dz * dz;
+          if (distSq < minScore) {
+            minScore = distSq;
+            closest = e;
+          }
         }
       }
       return closest;
@@ -664,45 +697,70 @@
       attacker.activeAction = {
         move, isPower, defenderId: defender.id,
         startPos: attacker.mesh.position.clone(),
-        progress: 0, duration: isPower ? 2.45 : 1.65, impactTriggered: false
+        progress: 0, duration: isPower ? 1.85 : 1.25, impactTriggered: false
       };
     }
 
     function resolveMoveImpact(attacker, defender, move, isPower) {
+      const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
+      const highGroundMult = elevDiff > 0.25 ? 1.15 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
       const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
       const mitigation = 100 / (100 + defender.def * 3.2);
+      const variance = 0.9 + Math.random() * 0.2;
       
-      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * (isCrit ? 1.5 : 1.0) * guardMult));
+      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult));
       defender.hp = Math.max(0, defender.hp - dmg);
       defender.hitFlash = isPower ? 0.35 : 0.20;
 
+      // Apply directional knockback away from attacker
+      const pushDx = defender.mesh.position.x - attacker.mesh.position.x;
+      const pushDz = defender.mesh.position.z - attacker.mesh.position.z;
+      const pushDist = Math.hypot(pushDx, pushDz) || 1;
+      const knockMag = isPower ? 0.85 : 0.35;
+      defender.homeX += (pushDx / pushDist) * knockMag;
+      defender.homeZ += (pushDz / pushDist) * knockMag;
+
       const anim = move.anim;
       if (anim === 'horn_toss' || anim === 'power_suplex') {
-        defender.victimState.liftY = isPower ? 0.75 : 0.45; defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
+        defender.victimState.liftY = isPower ? 0.75 : 0.45;
+        defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
       } else if (anim === 'power_cavitation' || anim === 'club_punch') {
         defender.victimState.knockX = isPower ? 0.95 : 0.45;
       } else {
-        defender.victimState.knockX = isPower ? 0.6 : 0.3; defender.victimState.tiltZ = 0.3;
+        defender.victimState.knockX = isPower ? 0.6 : 0.3;
+        defender.victimState.tiltZ = 0.3;
       }
 
-      if (activeDmgPopups < MAX_POPUPS && (armySize < 10 || isPower || isCrit)) {
+      if (activeDmgPopups < MAX_POPUPS && (armySize <= 15 || isPower || isCrit)) {
         spawnFloatingDamage(defender.mesh.position, dmg, isCrit, defender.side, isPower ? move.name : "");
       }
 
-      if (defender.hp <= 0) {
+      if (defender.hp <= 0 && !defender.dead) {
         defender.dead = true;
-        spawnHitSparks(defender.mesh.position, defender.color, 15);
+        spawnHitSparks(defender.mesh.position, defender.color, 12);
+        updateArmyHUD();
       }
     }
 
+    const particles = [];
     function spawnHitSparks(pos, colorHex, count = 10) {
-      if (armySize > 20 && Math.random() > 0.3) return; // Throttle sparks on huge battles
-      // Basic implementation for brevity in massive files
-      for(let i=0; i<Math.min(count, 8); i++){
-        const p = document.createElement('div');
-        p.className = 'absolute w-1 h-1 rounded-full bg-white opacity-80';
-        // Simplified dom-based spark for web format
+      if (armySize > 25 && Math.random() > 0.35) return;
+      const sparkGeo = getGeometry('OctahedronGeometry', 0.05, 0);
+      const limit = Math.min(count, armySize > 15 ? 5 : 10);
+      for (let i = 0; i < limit; i++) {
+        const mat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 1 });
+        const spark = new THREE.Mesh(sparkGeo, mat);
+        spark.position.copy(pos);
+        spark.position.y += 0.22;
+        const speed = 1.2 + Math.random() * 2.5;
+        const angle = Math.random() * Math.PI * 2;
+        particles.push({
+          mesh: spark,
+          vel: new THREE.Vector3(Math.cos(angle) * speed, 1.0 + Math.random() * 2.0, Math.sin(angle) * speed),
+          life: 1.0
+        });
+        scene.add(spark);
       }
     }
 
@@ -734,36 +792,83 @@
     }
 
     function updateArmyHUD() {
-      let p1Hp = 0, p1Max = 0, p1Alive = 0, p1Nrg = 0;
+      let p1Hp = 0, p1Max = 0, p1Alive = 0, p1Nrg = 0, p1ReadyOd = 0;
       let p2Hp = 0, p2Max = 0, p2Alive = 0, p2Nrg = 0;
+      let p1LastMove = "READY", p2LastMove = "READY";
 
       for (const e of entities) {
-        if (e.side === 1) { p1Max += e.maxHp; p1Hp += e.hp; if (!e.dead) { p1Alive++; p1Nrg += e.energy; } }
-        else { p2Max += e.maxHp; p2Hp += e.hp; if (!e.dead) { p2Alive++; p2Nrg += e.energy; } }
+        if (e.side === 1) {
+          p1Max += e.maxHp; p1Hp += e.hp;
+          if (!e.dead) {
+            p1Alive++; p1Nrg += e.energy;
+            if (e.energy >= 3) p1ReadyOd++;
+            p1LastMove = e.guardTimer > 0 ? "🛡️ MASS GUARD" : e.lastMoveName;
+          }
+        } else {
+          p2Max += e.maxHp; p2Hp += e.hp;
+          if (!e.dead) {
+            p2Alive++; p2Nrg += e.energy;
+            p2LastMove = e.lastMoveName;
+          }
+        }
       }
 
-      document.getElementById('p1-name').textContent = `${CREATURES[selectedP1].name} Swarm`;
-      document.getElementById('p1-hp-text').textContent = `${p1Hp}/${p1Max} (${p1Alive} ALIVE)`;
-      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (p1Hp / p1Max) * 100)}%`;
+      const c1 = CREATURES[selectedP1];
+      const c2 = CREATURES[selectedP2];
+
+      document.getElementById('p1-name').textContent = `${c1.name} Swarm`;
+      document.getElementById('p1-faction').textContent = c1.faction;
+      document.getElementById('p1-hp-text').textContent = `${p1Hp}/${p1Max} (${p1Alive})`;
+      document.getElementById('p1-hp-bar').style.width = p1Max > 0 ? `${Math.max(0, (p1Hp / p1Max) * 100)}%` : '0%';
       document.getElementById('p1-pwr-bar').style.width = p1Alive > 0 ? `${(p1Nrg / (p1Alive * 3)) * 100}%` : '0%';
+      document.getElementById('p1-move-text').textContent = p1ReadyOd > 0 ? `★ ${p1ReadyOd} OVERDRIVE READY` : p1LastMove;
 
-      document.getElementById('p2-name').textContent = `${CREATURES[selectedP2].name} Swarm`;
-      document.getElementById('p2-hp-text').textContent = `${p2Hp}/${p2Max} (${p2Alive} ALIVE)`;
-      document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (p2Hp / p2Max) * 100)}%`;
+      const btnOd = document.getElementById('btn-cmd-overdrive');
+      if (btnOd) {
+        if (p1ReadyOd > 0 && battleState === 'FIGHTING') {
+          btnOd.className = "px-2.5 py-1 rounded-full bg-fuchsia-600 hover:bg-fuchsia-500 border border-fuchsia-300 text-white text-[10px] font-extrabold transition active:scale-95 cursor-pointer animate-pulse shadow-md shadow-fuchsia-500/40";
+        } else {
+          btnOd.className = "px-2.5 py-1 rounded-full bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-bold transition active:scale-95 cursor-pointer opacity-60";
+        }
+      }
+
+      document.getElementById('p2-name').textContent = `${c2.name} Swarm`;
+      document.getElementById('p2-faction').textContent = c2.faction;
+      document.getElementById('p2-hp-text').textContent = `${p2Hp}/${p2Max} (${p2Alive})`;
+      document.getElementById('p2-hp-bar').style.width = p2Max > 0 ? `${Math.max(0, (p2Hp / p2Max) * 100)}%` : '0%';
       document.getElementById('p2-pwr-bar').style.width = p2Alive > 0 ? `${(p2Nrg / (p2Alive * 3)) * 100}%` : '0%';
+      document.getElementById('p2-move-text').textContent = p2LastMove;
 
-      if (battleState === 'FIGHTING') {
+      if (battleState === 'FIGHTING' && entities.length > 0) {
         if (p1Alive === 0 || p2Alive === 0) {
           battleState = 'ENDED';
-          const winnerStr = p1Alive > 0 ? "ALLY FORCE" : "HOSTILE FORCE";
-          appendLog(`🏆 ${winnerStr} WINS!`, p1Alive > 0 ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
+          const p1Won = p1Alive > 0;
+          const winnerName = p1Won ? `${c1.name} Swarm` : `${c2.name} Swarm`;
+          const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
+          appendLog(`🏆 ${winnerStr} (${winnerName}) WINS!`, p1Won ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
           document.getElementById('winner-text').textContent = `${winnerStr} VICTORIOUS`;
-          if (autoLoop) setTimeout(() => startBattle(), 2500);
+
+          if (gameMode === 'arcade') {
+            const pmModal = document.getElementById('post-match-modal');
+            document.getElementById('pm-winner-title').textContent = `${winnerName.toUpperCase()} WINS`;
+            document.getElementById('pm-subtitle').textContent = `${p1Won ? p1Alive : p2Alive} bio-wireframe units survived the engagement.`;
+            pmModal.classList.remove('hidden');
+          } else if (autoLoop) {
+            if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
+            autoRestartTimeout = setTimeout(() => {
+              if (autoLoop && battleState === 'ENDED') startBattle();
+            }, 2500);
+          }
         }
       }
     }
 
     function startBattle() {
+      if (autoRestartTimeout) {
+        clearTimeout(autoRestartTimeout);
+        autoRestartTimeout = null;
+      }
+      document.getElementById('post-match-modal').classList.add('hidden');
       if (enemySelectionRule === 'random') {
         const keys = Object.keys(CREATURES);
         selectedP2 = keys[Math.floor(Math.random() * keys.length)];
@@ -771,7 +876,424 @@
       spawnArmies();
       battleState = 'FIGHTING';
       document.getElementById('winner-text').textContent = "ARMY ENGAGEMENT";
-      appendLog(`⚔️ ${armySize}v${armySize} SWARM BATTLE COMMENCING`, "text-emerald-400 font-semibold");
+      appendLog(`⚔️ ${armySize}v${armySize}: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}`, "text-emerald-400 font-semibold");
+    }
+
+    let csRenderer = null, csScene = null, csCamera = null, csPreviewGroup = null, csPreviewMesh = null;
+    let csActiveSlot = 1, csIsDragging = false, csPrevX = 0, csTurntableYaw = 0.5;
+
+    function initCharSelect3D() {
+      const host = document.getElementById('cs-orbit-container');
+      if (!host || csRenderer) return;
+      csScene = new THREE.Scene();
+      csCamera = new THREE.PerspectiveCamera(38, Math.max(1, host.clientWidth) / Math.max(1, host.clientHeight), 0.1, 50);
+      csCamera.position.set(0, 1.35, 3.6);
+      csCamera.lookAt(0, 0.45, 0);
+
+      csRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      csRenderer.setSize(host.clientWidth, host.clientHeight);
+      csRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      host.appendChild(csRenderer.domElement);
+
+      csPreviewGroup = new THREE.Group();
+      csScene.add(csPreviewGroup);
+
+      const gridRing = new THREE.Mesh(
+        getGeometry('RingGeometry', 0.95, 1.12, 32),
+        new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, side: THREE.DoubleSide, transparent: true, opacity: 0.65 })
+      );
+      gridRing.rotation.x = Math.PI / 2;
+      csPreviewGroup.add(gridRing);
+
+      host.addEventListener('mousedown', (e) => { csIsDragging = true; csPrevX = e.clientX; });
+      window.addEventListener('mouseup', () => { csIsDragging = false; });
+      window.addEventListener('mousemove', (e) => {
+        if (!csIsDragging) return;
+        csTurntableYaw += (e.clientX - csPrevX) * 0.012;
+        csPrevX = e.clientX;
+      });
+    }
+
+    function loadCharSelectPreviewModel(key) {
+      const cfg = CREATURES[key];
+      if (!csPreviewGroup || !cfg) return;
+      if (csPreviewMesh) csPreviewGroup.remove(csPreviewMesh);
+      csPreviewMesh = buildCreatureMesh(key, cfg.color, 0.98, 0.42);
+      csPreviewGroup.add(csPreviewMesh);
+
+      document.getElementById('cs-preview-name').textContent = cfg.name;
+      document.getElementById('cs-preview-faction').textContent = cfg.faction;
+      document.getElementById('cs-preview-desc').textContent = cfg.desc;
+      document.getElementById('cs-stat-hp').textContent = cfg.hp;
+      document.getElementById('cs-stat-atk').textContent = cfg.atk;
+      document.getElementById('cs-stat-def').textContent = cfg.def;
+      document.getElementById('cs-stat-spd').textContent = cfg.spd;
+      document.getElementById('cs-stat-pwr').textContent = `★ ${cfg.powerMove.name}`;
+      document.getElementById('cs-preview-slot-label').textContent =
+        csActiveSlot === 1 ? "ALLY TURNTABLE" : "HOSTILE TURNTABLE";
+    }
+
+    function openRosterDrawer(slot) {
+      activeDrawerSlot = slot;
+      document.getElementById('sandbox-panel').classList.add('drawer-closed');
+      document.getElementById('sandbox-panel').classList.remove('drawer-open');
+
+      const drawer = document.getElementById('roster-drawer');
+      const titleEl = document.getElementById('drawer-title');
+      if (slot === 1) {
+        titleEl.textContent = "SELECT ALLY FORCE (SLOT 01)";
+        titleEl.className = "text-cyan-400 font-extrabold tracking-wider uppercase";
+      } else {
+        titleEl.textContent = "SELECT HOSTILE FORCE (SLOT 02)";
+        titleEl.className = "text-rose-400 font-extrabold tracking-wider uppercase";
+      }
+      drawer.classList.remove('drawer-closed');
+      drawer.classList.add('drawer-open');
+      highlightSelectedCards();
+    }
+
+    function closeRosterDrawer() {
+      const drawer = document.getElementById('roster-drawer');
+      drawer.classList.add('drawer-closed');
+      drawer.classList.remove('drawer-open');
+    }
+
+    function openCharSelectModal(slot = 1) {
+      csActiveSlot = slot;
+      closeRosterDrawer();
+      document.getElementById('sandbox-panel').classList.add('drawer-closed');
+      document.getElementById('sandbox-panel').classList.remove('drawer-open');
+      document.getElementById('post-match-modal').classList.add('hidden');
+
+      const modal = document.getElementById('char-select-modal');
+      modal.classList.remove('hidden');
+      initCharSelect3D();
+      loadCharSelectPreviewModel(csActiveSlot === 1 ? selectedP1 : selectedP2);
+      highlightSelectedCards();
+    }
+
+    function closeCharSelectModal() {
+      document.getElementById('char-select-modal').classList.add('hidden');
+    }
+
+    function highlightSelectedCards() {
+      // Bottom Quick Roster Drawer cards
+      document.querySelectorAll('.roster-card').forEach(card => {
+        const key = card.dataset.key;
+        const isSel = (activeDrawerSlot === 1 && key === selectedP1) || (activeDrawerSlot === 2 && key === selectedP2);
+        card.className = `roster-card p-2 rounded-lg border text-left transition cursor-pointer ${
+          isSel
+            ? (activeDrawerSlot === 1 ? 'bg-cyan-950/70 border-cyan-400 shadow-md' : 'bg-rose-950/70 border-rose-400 shadow-md')
+            : 'bg-slate-900/70 border-slate-800 hover:border-slate-600'
+        }`;
+      });
+
+      // Fullscreen 3D Commander Select Modal tabs & cards
+      const tab1 = document.getElementById('cs-tab-p1');
+      const tab2 = document.getElementById('cs-tab-p2');
+      if (tab1 && tab2) {
+        if (csActiveSlot === 1) {
+          tab1.className = "px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400 text-xs font-extrabold cursor-pointer transition";
+          tab2.className = "px-3 py-1 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 text-xs font-extrabold cursor-pointer transition";
+        } else {
+          tab2.className = "px-3 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-400 text-xs font-extrabold cursor-pointer transition";
+          tab1.className = "px-3 py-1 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 text-xs font-extrabold cursor-pointer transition";
+        }
+      }
+
+      document.getElementById('cs-matchup-p1').textContent = CREATURES[selectedP1].name;
+      document.getElementById('cs-matchup-p2').textContent =
+        enemySelectionRule === 'random' ? "🎲 Random" : CREATURES[selectedP2].name;
+
+      document.querySelectorAll('.cs-card').forEach(card => {
+        const key = card.dataset.key;
+        const isSel = (csActiveSlot === 1 && key === selectedP1) || (csActiveSlot === 2 && enemySelectionRule !== 'random' && key === selectedP2);
+        card.className = `cs-card p-2.5 rounded-xl border text-left transition cursor-pointer ${
+          isSel
+            ? (csActiveSlot === 1 ? 'bg-cyan-950/70 border-cyan-400 shadow-md' : 'bg-rose-950/70 border-rose-400 shadow-md')
+            : 'bg-slate-900/80 border-slate-800 hover:border-slate-600'
+        }`;
+      });
+    }
+
+    function syncLabControlsUI() {
+      const ov = slotOverrides[activeEditTarget];
+      document.getElementById('range-c-scale').value = ov.scale;
+      document.getElementById('lbl-c-scale').textContent = ov.scale.toFixed(3);
+      document.getElementById('range-c-spd').value = ov.spdMult;
+      document.getElementById('lbl-c-spd').textContent = `${ov.spdMult.toFixed(1)}X`;
+
+      const btn1 = document.getElementById('btn-target-p1');
+      const btn2 = document.getElementById('btn-target-p2');
+      if (activeEditTarget === 1) {
+        btn1.className = "px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[10px] font-bold cursor-pointer";
+        btn2.className = "px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer";
+      } else {
+        btn2.className = "px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-400 text-[10px] font-bold cursor-pointer";
+        btn1.className = "px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer";
+      }
+    }
+
+    function initAllUIAndListeners() {
+      const rosterGrid = document.getElementById('roster-grid');
+      const csRosterGrid = document.getElementById('cs-roster-grid');
+      rosterGrid.innerHTML = '';
+      csRosterGrid.innerHTML = '';
+
+      Object.keys(CREATURES).forEach(k => {
+        const c = CREATURES[k];
+        // 1. Slide-up Drawer Card
+        const card = document.createElement('button');
+        card.dataset.key = k;
+        card.className = "roster-card p-2 rounded-lg border text-left transition cursor-pointer bg-slate-900/70 border-slate-800 hover:border-slate-600";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-white">${c.name}</span>
+            <span class="text-[9px] px-1 rounded ${c.faction === 'CRUSTACEAN' ? 'bg-cyan-950 text-cyan-300' : 'bg-amber-950 text-amber-300'}">${c.faction[0]}</span>
+          </div>
+          <div class="text-[9px] text-slate-400 truncate mt-0.5">${c.desc}</div>
+          <div class="text-[8px] text-fuchsia-300/90 truncate mt-1">★ ${c.powerMove.name}</div>
+          <div class="flex gap-2 mt-1 text-[9px] font-mono text-slate-300">
+            <span>HP:${c.hp}</span><span>ATK:${c.atk}</span><span>SPD:${c.spd}</span>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          if (activeDrawerSlot === 1) {
+            selectedP1 = k;
+            appendLog(`🧬 ALLY FORCE switched to ${c.name} Swarm`, "text-cyan-300 font-bold");
+          } else {
+            selectedP2 = k;
+            enemySelectionRule = 'manual';
+            document.getElementById('cs-enemy-mode').value = 'manual';
+            appendLog(`🧬 HOSTILE FORCE switched to ${c.name} Swarm`, "text-rose-300 font-bold");
+          }
+          closeRosterDrawer();
+          startBattle();
+        });
+        rosterGrid.appendChild(card);
+
+        // 2. Fullscreen Commander Modal Card
+        const csCard = document.createElement('button');
+        csCard.dataset.key = k;
+        csCard.className = "cs-card p-2.5 rounded-xl border text-left transition cursor-pointer bg-slate-900/80 border-slate-800 hover:border-slate-600";
+        csCard.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-white">${c.name}</span>
+            <span class="text-[8px] px-1.5 py-0.5 rounded ${c.faction === 'CRUSTACEAN' ? 'bg-cyan-950 text-cyan-300' : 'bg-amber-950 text-amber-300'}">${c.faction}</span>
+          </div>
+          <div class="text-[9px] text-slate-400 truncate mt-1">${c.desc}</div>
+          <div class="flex items-center justify-between mt-2 text-[9px] font-mono text-slate-300">
+            <span>HP:${c.hp}</span><span>ATK:${c.atk}</span><span>SPD:${c.spd}</span>
+          </div>
+        `;
+        csCard.addEventListener('click', () => {
+          if (csActiveSlot === 1) {
+            selectedP1 = k;
+          } else {
+            selectedP2 = k;
+            enemySelectionRule = 'manual';
+            document.getElementById('cs-enemy-mode').value = 'manual';
+          }
+          loadCharSelectPreviewModel(k);
+          highlightSelectedCards();
+        });
+        csRosterGrid.appendChild(csCard);
+      });
+
+      // Top HUD Allied & Hostile Force Swap Buttons
+      document.getElementById('btn-p1-hud').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openRosterDrawer(1);
+      });
+      document.getElementById('btn-p2-hud').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openRosterDrawer(2);
+      });
+      document.getElementById('btn-random').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const keys = Object.keys(CREATURES);
+        selectedP2 = keys[Math.floor(Math.random() * keys.length)];
+        enemySelectionRule = 'manual';
+        document.getElementById('cs-enemy-mode').value = 'manual';
+        appendLog(`🎲 Randomized Hostile Force: ${CREATURES[selectedP2].name} Swarm`, "text-rose-300 font-bold");
+        startBattle();
+      });
+      document.getElementById('btn-close-drawer').addEventListener('click', closeRosterDrawer);
+
+      // Center Control Strip Buttons
+      document.getElementById('btn-open-char-select').addEventListener('click', () => openCharSelectModal(1));
+      document.getElementById('btn-hud-mode').addEventListener('click', (e) => {
+        gameMode = gameMode === 'sandbox' ? 'arcade' : 'sandbox';
+        e.target.textContent = `MODE: ${gameMode.toUpperCase()}`;
+        if (gameMode === 'arcade') openCharSelectModal(1);
+      });
+      document.getElementById('btn-auto').addEventListener('click', (e) => {
+        autoLoop = !autoLoop;
+        e.target.textContent = `AUTO: ${autoLoop ? 'ON' : 'OFF'}`;
+        e.target.className = autoLoop
+          ? 'px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold'
+          : 'px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition cursor-pointer font-semibold';
+        if (autoLoop && battleState === 'ENDED') startBattle();
+      });
+      document.getElementById('btn-speed').addEventListener('click', (e) => {
+        simSpeed = simSpeed === 1 ? 2 : simSpeed === 2 ? 4 : 1;
+        e.target.textContent = `${simSpeed}X`;
+      });
+      document.getElementById('btn-cam-mode').addEventListener('click', (e) => {
+        camTracking = !camTracking;
+        e.target.textContent = `CAM: ${camTracking ? 'TRACK' : 'FREE'}`;
+      });
+
+      // Commander Select Modal Listeners
+      document.getElementById('cs-tab-p1').addEventListener('click', () => {
+        csActiveSlot = 1;
+        loadCharSelectPreviewModel(selectedP1);
+        highlightSelectedCards();
+      });
+      document.getElementById('cs-tab-p2').addEventListener('click', () => {
+        csActiveSlot = 2;
+        loadCharSelectPreviewModel(selectedP2);
+        highlightSelectedCards();
+      });
+      document.getElementById('cs-enemy-mode').addEventListener('change', (e) => {
+        enemySelectionRule = e.target.value;
+        highlightSelectedCards();
+      });
+      document.getElementById('btn-lock-in-fight').addEventListener('click', () => {
+        closeCharSelectModal();
+        startBattle();
+      });
+      document.getElementById('btn-cs-switch-sandbox').addEventListener('click', () => {
+        gameMode = 'sandbox';
+        document.getElementById('btn-hud-mode').textContent = 'MODE: SANDBOX';
+        closeCharSelectModal();
+        startBattle();
+      });
+
+      // Post-Match Modal Buttons
+      document.getElementById('btn-pm-rematch').addEventListener('click', () => startBattle());
+      document.getElementById('btn-pm-select').addEventListener('click', () => openCharSelectModal(1));
+
+      // Sandbox World & Lab Tab Switching (Fixes non-working LAB button)
+      const tabWorld = document.getElementById('sandbox-tab-world');
+      const tabCreatures = document.getElementById('sandbox-tab-creatures');
+      const btnTabWorld = document.getElementById('tab-btn-world');
+      const btnTabCreatures = document.getElementById('tab-btn-creatures');
+
+      btnTabWorld.addEventListener('click', () => {
+        tabWorld.classList.remove('hidden');
+        tabCreatures.classList.add('hidden');
+        btnTabWorld.className = "py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer transition";
+        btnTabCreatures.className = "py-1 rounded text-slate-400 hover:text-white cursor-pointer transition";
+      });
+
+      btnTabCreatures.addEventListener('click', () => {
+        tabCreatures.classList.remove('hidden');
+        tabWorld.classList.add('hidden');
+        btnTabCreatures.className = "py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer transition";
+        btnTabWorld.className = "py-1 rounded text-slate-400 hover:text-white cursor-pointer transition";
+        syncLabControlsUI();
+      });
+
+      // Sandbox World Controls
+      document.getElementById('select-topology').addEventListener('change', (e) => {
+        worldTopology = e.target.value;
+        rebuildWorldTopology();
+      });
+      document.getElementById('range-obs-count').addEventListener('input', (e) => {
+        mapObstacleCount = parseInt(e.target.value, 10);
+        document.getElementById('lbl-obs-count').textContent = mapObstacleCount;
+        rebuildWorldTopology();
+      });
+      document.getElementById('range-terrain-elev').addEventListener('input', (e) => {
+        mapElevationScale = parseFloat(e.target.value);
+        document.getElementById('lbl-terrain-elev').textContent = `${mapElevationScale.toFixed(1)}X`;
+        rebuildWorldTopology();
+      });
+
+      // Sandbox LAB Controls (Target P1/P2, Scale, Speed, Heal, Max Charge)
+      document.getElementById('btn-target-p1').addEventListener('click', () => {
+        activeEditTarget = 1;
+        syncLabControlsUI();
+      });
+      document.getElementById('btn-target-p2').addEventListener('click', () => {
+        activeEditTarget = 2;
+        syncLabControlsUI();
+      });
+      document.getElementById('range-c-scale').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        slotOverrides[activeEditTarget].scale = val;
+        document.getElementById('lbl-c-scale').textContent = val.toFixed(3);
+        applyCreatureOverridesToArmy(activeEditTarget);
+      });
+      document.getElementById('range-c-spd').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        slotOverrides[activeEditTarget].spdMult = val;
+        document.getElementById('lbl-c-spd').textContent = `${val.toFixed(1)}X`;
+        applyCreatureOverridesToArmy(activeEditTarget);
+      });
+      document.getElementById('btn-sandbox-heal').addEventListener('click', () => {
+        let healed = 0;
+        entities.forEach(f => {
+          if (f.side === activeEditTarget && !f.dead) {
+            f.hp = f.maxHp;
+            healed++;
+          }
+        });
+        updateArmyHUD();
+        appendLog(`⚡ LAB: Restored full HP to ${healed} ${activeEditTarget === 1 ? 'Ally' : 'Hostile'} units!`, "text-cyan-300 font-bold");
+      });
+      document.getElementById('btn-sandbox-instant-power').addEventListener('click', () => {
+        let charged = 0;
+        entities.forEach(f => {
+          if (f.side === activeEditTarget && !f.dead) {
+            f.energy = 3;
+            charged++;
+          }
+        });
+        updateArmyHUD();
+        appendLog(`★ LAB: Overcharged ${charged} ${activeEditTarget === 1 ? 'Ally' : 'Hostile'} units to MAX Power!`, "text-fuchsia-300 font-bold");
+      });
+
+      // Spawn Hazard / Tactical Zone Button
+      document.getElementById('btn-spawn-hazard').addEventListener('click', () => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 6;
+        const zx = Math.cos(angle) * dist;
+        const zz = Math.sin(angle) * dist;
+        const zy = getTerrainHeight(zx, zz);
+        const zMesh = new THREE.Mesh(
+          getGeometry('RingGeometry', 1.6, 1.8, 24),
+          new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.75 })
+        );
+        zMesh.rotation.x = Math.PI / 2;
+        zMesh.position.set(zx, zy + 0.05, zz);
+        worldGroup.add(zMesh);
+        tacticalZones.push({ x: zx, z: zz, radius: 1.8, mesh: zMesh });
+        appendLog("✨ Deployed Bio-Regen Zone (+HP to occupying units)!", "text-emerald-300 font-bold");
+      });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeRosterDrawer();
+          closeCharSelectModal();
+          document.getElementById('sandbox-panel').classList.add('drawer-closed');
+          document.getElementById('sandbox-panel').classList.remove('drawer-open');
+        } else if (e.key === '1') {
+          document.getElementById('btn-cmd-strike').click();
+        } else if (e.key === '2') {
+          document.getElementById('btn-cmd-guard').click();
+        } else if (e.key === '3') {
+          document.getElementById('btn-cmd-overdrive').click();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
     }
 
     document.getElementById('range-army-size').addEventListener('input', (e) => {
@@ -827,6 +1349,8 @@
     });
 
     const clock = new THREE.Clock();
+    let framesTillHUD = 0;
+    let zoneHealTimer = 0;
 
     function animate() {
       requestAnimationFrame(animate);
@@ -834,15 +1358,46 @@
       const dt = rawDt * simSpeed;
       const elapsed = clock.getElapsedTime();
 
-      let framesTillHUD = 0;
+      // Update 3D Commander Turntable if modal is open
+      const csModal = document.getElementById('char-select-modal');
+      if (csModal && !csModal.classList.contains('hidden') && csRenderer) {
+        if (!csIsDragging) csTurntableYaw += rawDt * 0.65;
+        csPreviewGroup.rotation.y = csTurntableYaw;
+        csRenderer.render(csScene, csCamera);
+      }
 
       if (battleState === 'FIGHTING') {
-        for (const f of entities) {
-          if (f.dead) continue;
+        zoneHealTimer += dt;
+        const applyZoneTick = zoneHealTimer >= 1.0;
+        if (applyZoneTick) zoneHealTimer = 0;
 
-          // Tick cooldowns
-          if (f.guardTimer > 0) f.guardTimer -= dt;
-          if (f.guardCooldown > 0) f.guardCooldown -= dt;
+        for (const f of entities) {
+          if (f.dead) {
+            // Sinking animation for defeated units during battle
+            if (f.mesh.position.y > getTerrainHeight(f.mesh.position.x, f.mesh.position.z) - 0.6) {
+              f.mesh.position.y -= dt * 0.35;
+              f.mesh.userData.bodyGroup.rotation.z = THREE.MathUtils.lerp(f.mesh.userData.bodyGroup.rotation.z, Math.PI / 2.2, dt * 5);
+            }
+            continue;
+          }
+
+          // Tick cooldowns & recovery
+          if (f.guardTimer > 0) f.guardTimer = Math.max(0, f.guardTimer - dt);
+          if (f.guardCooldown > 0) f.guardCooldown = Math.max(0, f.guardCooldown - dt);
+          if (f.rushCooldown > 0) f.rushCooldown = Math.max(0, f.rushCooldown - dt);
+
+          f.victimState.liftY = THREE.MathUtils.lerp(f.victimState.liftY, 0, Math.min(1, dt * 5));
+          f.victimState.tiltZ = THREE.MathUtils.lerp(f.victimState.tiltZ, 0, Math.min(1, dt * 5));
+
+          // Bio-Regen Zone check
+          if (applyZoneTick && tacticalZones.length > 0) {
+            for (const z of tacticalZones) {
+              if (Math.hypot(f.mesh.position.x - z.x, f.mesh.position.z - z.z) <= z.radius && f.hp < f.maxHp) {
+                f.hp = Math.min(f.maxHp, f.hp + 6);
+                break;
+              }
+            }
+          }
 
           const target = getClosestEnemy(f);
           if (target && !f.activeAction) {
@@ -850,16 +1405,35 @@
             let dz = target.mesh.position.z - f.homeZ;
             const dist = Math.hypot(dx, dz);
 
-            if (dist > 0.8) {
-              // Boids Separation Logic - prevent armies from stacking perfectly
-              for (const ally of entities) {
-                if (ally !== f && ally.side === f.side && !ally.dead) {
-                  const adx = f.homeX - ally.homeX;
-                  const adz = f.homeZ - ally.homeZ;
+            if (dist > 0.78) {
+              dx /= dist;
+              dz /= dist;
+
+              // Boids Separation Logic - prevent armies from stacking on the same coordinate
+              for (const other of entities) {
+                if (other !== f && !other.dead) {
+                  const adx = f.homeX - other.homeX;
+                  const adz = f.homeZ - other.homeZ;
                   const adist = Math.hypot(adx, adz);
-                  if (adist > 0.001 && adist < 0.6) {
-                    dx += (adx / adist) * 0.8; dz += (adz / adist) * 0.8;
+                  const minSep = other.side === f.side ? 0.72 : 0.55;
+                  if (adist > 0.001 && adist < minSep) {
+                    const push = (minSep - adist) / minSep;
+                    dx += (adx / adist) * push * 1.65;
+                    dz += (adz / adist) * push * 1.65;
                   }
+                }
+              }
+
+              // Obstacle Avoidance
+              for (const obs of arenaObstacles) {
+                const odx = f.homeX - obs.x;
+                const odz = f.homeZ - obs.z;
+                const odist = Math.hypot(odx, odz);
+                const avoidRad = obs.radius + 0.85;
+                if (odist > 0.001 && odist < avoidRad) {
+                  const push = (avoidRad - odist) / avoidRad;
+                  dx += (odx / odist) * push * 2.2;
+                  dz += (odz / odist) * push * 2.2;
                 }
               }
 
@@ -869,9 +1443,17 @@
                 f.homeX += (dx / mag) * speed;
                 f.homeZ += (dz / mag) * speed;
               }
+
+              // Clamp within Arena Ring
+              const rFromCenter = Math.hypot(f.homeX, f.homeZ);
+              if (rFromCenter > arenaRingRadius - 0.8) {
+                const scaleBack = (arenaRingRadius - 0.8) / rFromCenter;
+                f.homeX *= scaleBack;
+                f.homeZ *= scaleBack;
+              }
             }
 
-            if (dist < 1.95) f.timer -= dt;
+            if (dist < 2.05) f.timer -= dt;
             if (f.timer <= 0) {
               f.timer = f.cooldown * (0.8 + Math.random() * 0.4);
               initiateMoveSequence(f, target);
@@ -890,8 +1472,8 @@
             const tgX = defTarget ? defTarget.mesh.position.x : f.homeX + 1;
             const tgZ = defTarget ? defTarget.mesh.position.z : f.homeZ;
 
-            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.5);
-            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.5);
+            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.65);
+            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.65);
 
             if (p >= 0.5 && !act.impactTriggered) {
               act.impactTriggered = true;
@@ -899,53 +1481,79 @@
             }
             if (p >= 1) f.activeAction = null;
           } else {
-            f.mesh.position.x = THREE.MathUtils.lerp(f.mesh.position.x, f.homeX, dt * 8);
-            f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, dt * 8);
+            f.mesh.position.x = THREE.MathUtils.lerp(f.mesh.position.x, f.homeX, Math.min(1, dt * 8));
+            f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, Math.min(1, dt * 8));
           }
 
-          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, getTerrainHeight(f.mesh.position.x, f.mesh.position.z), dt * 10);
+          const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
+          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + f.victimState.liftY, Math.min(1, dt * 10));
+          ud.bodyGroup.rotation.z = f.victimState.tiltZ;
 
           if (target && !f.activeAction) {
             const lookYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
-            f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, lookYaw, dt * 5);
+            f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, lookYaw, Math.min(1, dt * 6));
           }
 
           if (f.hitFlash > 0) {
             f.hitFlash -= dt; ud.mat.color.setHex(0xffffff);
+          } else if (f.guardTimer > 0) {
+            ud.mat.color.setHex(0x10b981);
           } else {
             ud.mat.color.setHex(f.color);
           }
 
-          // Simple leg wiggle
+          // Wing & Leg procedural animation
           const moveSpeed = Math.abs(f.mesh.position.x - f.homeX) + Math.abs(f.mesh.position.z - f.homeZ);
           ud.legs.forEach(l => {
-             l.mesh.rotation.z = Math.sin(elapsed * 8 + l.phase) * Math.min(0.15, moveSpeed * 5);
+            l.mesh.rotation.z = Math.sin(elapsed * 8 + l.phase) * Math.min(0.18, 0.05 + moveSpeed * 4);
+          });
+          ud.wings.forEach(w => {
+            w.mesh.rotation.x = w.side * (0.8 + Math.sin(elapsed * 55) * 0.7);
           });
         }
 
         framesTillHUD++;
-        if (framesTillHUD > 5) { updateArmyHUD(); framesTillHUD = 0; }
+        if (framesTillHUD >= 5) {
+          updateArmyHUD();
+          framesTillHUD = 0;
+        }
       } else {
-        // Death sinking animation
+        // Post-match sinking animation for defeated units
         for (const f of entities) {
           if (f.dead) {
             f.mesh.position.y -= dt * 0.2;
-            f.mesh.userData.mat.opacity *= 0.95;
           }
+        }
+      }
+
+      // Update 3D Hit Sparks
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt * 2.2;
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          p.mesh.material.dispose();
+          particles.splice(i, 1);
+        } else {
+          p.mesh.position.addScaledVector(p.vel, dt);
+          p.vel.y -= 9.8 * dt;
+          p.mesh.material.opacity = p.life;
         }
       }
 
       // Camera Army Tracking
       let sumX = 0, sumZ = 0, count = 0;
-      for (const e of entities) {
-        if (!e.dead) { sumX += e.mesh.position.x; sumZ += e.mesh.position.z; count++; }
+      if (camTracking) {
+        for (const e of entities) {
+          if (!e.dead) { sumX += e.mesh.position.x; sumZ += e.mesh.position.z; count++; }
+        }
       }
       const midX = count > 0 ? sumX / count : 0;
       const midZ = count > 0 ? sumZ / count : 0;
       
       const camTarget = new THREE.Vector3(midX, 0.5, midZ);
       const camYaw = elapsed * 0.05;
-      const camRadius = 24.0 + (armySize * 0.2); // Zoom out based on army size
+      const camRadius = 24.0 + (armySize * 0.2);
 
       camera.position.x = THREE.MathUtils.lerp(camera.position.x, camTarget.x + Math.sin(camYaw) * camRadius, rawDt * 2);
       camera.position.z = THREE.MathUtils.lerp(camera.position.z, camTarget.z + Math.cos(camYaw) * camRadius, rawDt * 2);
@@ -956,6 +1564,7 @@
     }
 
     window.onload = () => {
+      initAllUIAndListeners();
       rebuildWorldTopology();
       startBattle();
       animate();
