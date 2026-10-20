@@ -673,6 +673,10 @@
       const skullRoot = new THREE.Group();
       skullRoot.position.set(worldPos.x, worldPos.y + 0.24, worldPos.z);
 
+      // Inner head Group allows local laughing pitch/roll after skullRoot.lookAt(camera.position)
+      const head = new THREE.Group();
+      skullRoot.add(head);
+
       const skullMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 1.0 });
       const glowMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 0.9 });
 
@@ -689,7 +693,7 @@
       // Nasal cavity
       const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], glowMat, [0, -0.03, 0.21], [0.2, 0, 0]);
 
-      skullRoot.add(cranium, cheek, jaw, eyeL, eyeR, nose);
+      head.add(cranium, cheek, jaw, eyeL, eyeR, nose);
 
       // Start at 25% of previous initial scale
       skullRoot.scale.set(0.0125, 0.0125, 0.0125);
@@ -697,6 +701,7 @@
 
       deathSkulls.push({
         group: skullRoot,
+        head,
         jaw,
         skullMat,
         glowMat,
@@ -3021,13 +3026,15 @@
             }
 
             sk.group.position.y += dt * 0.28 + Math.sin(sk.elapsed * 22.0) * 0.003;
-            const faceYaw = Math.atan2(
-              camera.position.x - sk.group.position.x,
-              camera.position.z - sk.group.position.z
-            ) + Math.PI;
-            sk.group.rotation.y = faceYaw;
-            sk.group.rotation.x = -0.12 - laughWave * 0.16;
-            sk.group.rotation.z = Math.sin(sk.elapsed * 11.0) * 0.10;
+
+            // Orient the outer group's +Z axis (where eyes, nose, and jaw are built) directly at the user's camera in full 3D
+            sk.group.lookAt(camera.position);
+
+            // Apply laughing head tilt and bobbing in local space so it works from any camera angle
+            if (sk.head) {
+              sk.head.rotation.x = -0.12 - laughWave * 0.16;
+              sk.head.rotation.z = Math.sin(sk.elapsed * 11.0) * 0.10;
+            }
 
             // Smoothly fade out alongside the disintegrating creature model
             const alpha = p < 0.45 ? 1.0 : Math.max(0, 1 - (p - 0.45) / 0.55);
