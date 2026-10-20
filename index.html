@@ -769,7 +769,7 @@
       } else if (worldTopology === 'picnic') {
         // Woven picnic blanket folds + raised serving platter plateaus
         const blanketFolds = (Math.sin(x * 0.42 + mapSeed) * 0.22 + Math.cos(z * 0.42 - mapSeed) * 0.22);
-        constcenterPlatter = dist < 7.2 ? 0.42 : (Math.abs(dist - 7.4) < 0.55 ? 0.62 : 0);
+        const centerPlatter = dist < 7.2 ? 0.42 : (Math.abs(dist - 7.4) < 0.55 ? 0.62 : 0);
         return (blanketFolds + centerPlatter) * mapElevationScale;
       }
       const wave1 = Math.sin(x * 0.22 + mapSeed) * Math.cos(z * 0.22 + mapSeed) * 0.75;
@@ -1140,7 +1140,6 @@
       let flankSign = idx % 2 === 0 ? 1 : -1;
 
       if (ov.formation === 'phalanx') {
-        // Phalanx Wall: Tightly locked defensive shield line along Z-axis
         const lineCols = Math.max(2, Math.ceil(armySize * 0.65));
         const r = Math.floor(idx / lineCols);
         const c = idx % lineCols;
@@ -1148,7 +1147,6 @@
         homeX = (side === 1 ? -4.8 : 4.8) + r * 0.85 * dirSign + (Math.random() - 0.5) * 0.12;
         homeZ = (c - (Math.min(armySize, lineCols) - 1) / 2) * zSpacing;
       } else if (ov.formation === 'pincer') {
-        // Pincer Flank: Splits army into North and South flanking wings
         flankSign = idx < armySize / 2 ? -1 : 1;
         const wingIdx = idx < armySize / 2 ? idx : idx - Math.ceil(armySize / 2);
         const wingCols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, armySize / 2))));
@@ -1158,7 +1156,6 @@
         homeX = (side === 1 ? -6.2 : 6.2) + r * spacing * dirSign;
         homeZ = flankSign * (5.2 + c * spacing * 0.78) + (Math.random() - 0.5) * 0.25;
       } else {
-        // Standard Swarm Grid Formation
         const spacing = armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3);
         const row = Math.floor(idx / totalCols);
         const col = idx % totalCols;
