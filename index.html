@@ -246,12 +246,18 @@
         <button id="btn-speed" class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-white transition cursor-pointer font-semibold">
           1X
         </button>
-        <button id="btn-cam-mode" class="px-2 py-0.5 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-semibold">
+        <button id="btn-cam-mode" title="Cycle Camera Mode: Track / Free Orbit / Chase Cam" class="px-2 py-0.5 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-semibold">
           CAM: TRACK
+        </button>
+        <button id="btn-zoom-level" title="Cycle Zoom Preset (or use Scroll Wheel / Pinch)" class="px-2 py-0.5 rounded-full bg-slate-900 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold">
+          🔍 MEDIUM
+        </button>
+        <button id="btn-quick-rematch" title="Instant Rematch" class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-cyan-300 transition cursor-pointer font-semibold">
+          ↻
         </button>
       </div>
       <div class="text-[9px] text-slate-400 tracking-widest uppercase mt-1 hidden sm:flex items-center gap-2">
-        <span>Playable Tactical Command Deck Below</span>
+        <span>Drag to Orbit • Scroll/Pinch to Zoom • Playable Command Deck Below</span>
       </div>
     </div>
 
@@ -514,7 +520,7 @@
 
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 240);
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 500);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -534,7 +540,14 @@
     function getTerrainHeight(x, z) {
       if (mapElevationScale <= 0.01) return 0;
       const dist = Math.hypot(x, z);
-      if (worldTopology === 'grid') return Math.sin(dist * 0.6 - mapSeed) * 0.12 * mapElevationScale;
+      if (worldTopology === 'grid') {
+        return Math.sin(dist * 0.6 - mapSeed) * 0.12 * mapElevationScale;
+      } else if (worldTopology === 'canyon') {
+        const bridgeFactor = Math.exp(-(z * z) / 14.0);
+        const ridge = Math.sin(x * 0.25) * 0.85 * (1 - bridgeFactor);
+        const trench = Math.cos(Math.min(Math.PI, dist * 0.16)) * -0.55 * (1 - bridgeFactor);
+        return (ridge + trench) * mapElevationScale;
+      }
       const wave1 = Math.sin(x * 0.22 + mapSeed) * Math.cos(z * 0.22 + mapSeed) * 0.75;
       const wave2 = Math.sin(x * 0.5 - z * 0.35) * 0.25;
       return (wave1 + wave2) * mapElevationScale;
@@ -583,7 +596,57 @@
     let battleState = 'FIGHTING'; // SELECTING | COUNTDOWN | FIGHTING | ENDED
     let simSpeed = 1;
     let autoLoop = true;
-    let camTracking = true;
+
+    // 3-Mode Camera & 7-Level Zoom System (200% increased macro distance up to 144m)
+    const ZOOM_LEVELS = [
+      { id: 'closest',   label: 'CLOSEST',   radius: 4.5,   pitch: 0.28 },
+      { id: 'close',     label: 'CLOSE',     radius: 9.0,   pitch: 0.35 },
+      { id: 'near',      label: 'NEAR',      radius: 15.0,  pitch: 0.42 },
+      { id: 'medium',    label: 'MEDIUM',    radius: 24.0,  pitch: 0.48 },
+      { id: 'far',       label: 'FAR',       radius: 42.0,  pitch: 0.58 },
+      { id: 'birds_eye', label: 'BIRDS EYE', radius: 78.0,  pitch: 0.92 },
+      { id: 'god_view',  label: 'GOD VIEW',  radius: 144.0, pitch: 1.28 }
+    ];
+    const MIN_CAM_RADIUS = ZOOM_LEVELS[0].radius;
+    const MAX_CAM_RADIUS = ZOOM_LEVELS[ZOOM_LEVELS.length - 1].radius;
+
+    let camMode = 'track'; // 'track' | 'free' | 'chase'
+    let currentZoomIdx = 3; // Default: MEDIUM
+    let camRadius = ZOOM_LEVELS[currentZoomIdx].radius;
+    let camYaw = 0.4;
+    let camPitch = ZOOM_LEVELS[currentZoomIdx].pitch;
+    const camTarget = new THREE.Vector3(0, 0.5, 0);
+    const camLookTarget = new THREE.Vector3(0, 0.5, 0);
+
+    let isDraggingArena = false;
+    let prevPointer = { x: 0, y: 0 };
+    let initialPinchDist = null;
+    let initialPinchRadius = camRadius;
+
+    function syncZoomButtonUI() {
+      let nearestIdx = 0;
+      let minDiff = Infinity;
+      ZOOM_LEVELS.forEach((lvl, idx) => {
+        const diff = Math.abs(camRadius - lvl.radius);
+        if (diff < minDiff) {
+          minDiff = diff;
+          nearestIdx = idx;
+        }
+      });
+      currentZoomIdx = nearestIdx;
+      const btn = document.getElementById('btn-zoom-level');
+      if (btn) btn.textContent = `🔍 ${ZOOM_LEVELS[nearestIdx].label}`;
+    }
+
+    function setZoomLevelByIndex(idx) {
+      currentZoomIdx = (idx + ZOOM_LEVELS.length) % ZOOM_LEVELS.length;
+      const lvl = ZOOM_LEVELS[currentZoomIdx];
+      camRadius = lvl.radius;
+      camPitch = lvl.pitch;
+      const btn = document.getElementById('btn-zoom-level');
+      if (btn) btn.textContent = `🔍 ${lvl.label}`;
+    }
+
     let activeDrawerSlot = 1;
     let activeEditTarget = 1;
     let autoRestartTimeout = null;
@@ -912,6 +975,18 @@
         csTurntableYaw += (e.clientX - csPrevX) * 0.012;
         csPrevX = e.clientX;
       });
+      host.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          csIsDragging = true;
+          csPrevX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      window.addEventListener('touchend', () => { csIsDragging = false; });
+      window.addEventListener('touchmove', (e) => {
+        if (!csIsDragging || e.touches.length !== 1) return;
+        csTurntableYaw += (e.touches[0].clientX - csPrevX) * 0.012;
+        csPrevX = e.touches[0].clientX;
+      }, { passive: true });
     }
 
     function loadCharSelectPreviewModel(key) {
@@ -1140,9 +1215,105 @@
         e.target.textContent = `${simSpeed}X`;
       });
       document.getElementById('btn-cam-mode').addEventListener('click', (e) => {
-        camTracking = !camTracking;
-        e.target.textContent = `CAM: ${camTracking ? 'TRACK' : 'FREE'}`;
+        if (camMode === 'track') camMode = 'free';
+        else if (camMode === 'free') camMode = 'chase';
+        else camMode = 'track';
+
+        e.target.textContent = `CAM: ${camMode.toUpperCase()}`;
+        if (camMode === 'chase') {
+          setZoomLevelByIndex(1); // CLOSE view for Chase Cam
+          appendLog("🎥 Camera: CHASE CAM locked onto lead Allied unit!", "text-cyan-300 font-bold");
+        } else if (camMode === 'free') {
+          appendLog("🎥 Camera: FREE ORBIT (Drag anywhere to rotate, Scroll/Pinch to zoom)", "text-amber-300");
+        } else {
+          appendLog("🎥 Camera: TRACKING SWARM CENTER", "text-emerald-300");
+        }
       });
+
+      document.getElementById('btn-zoom-level').addEventListener('click', () => {
+        setZoomLevelByIndex(currentZoomIdx + 1);
+      });
+
+      document.getElementById('btn-quick-rematch').addEventListener('click', () => {
+        startBattle();
+      });
+
+      // Arena Pointer Orbit, Scroll-Wheel Zoom (PC) & Pinch-to-Zoom (Mobile)
+      const isUIElement = (el) => {
+        return el.closest('button') || el.closest('select') || el.closest('input') ||
+               el.closest('#roster-drawer') || el.closest('#sandbox-panel') ||
+               el.closest('#char-select-modal') || el.closest('#post-match-modal') ||
+               el.closest('#btn-p1-hud') || el.closest('#btn-p2-hud');
+      };
+
+      window.addEventListener('mousedown', (e) => {
+        if (isUIElement(e.target)) return;
+        isDraggingArena = true;
+        prevPointer = { x: e.clientX, y: e.clientY };
+        closeRosterDrawer();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingArena = false;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingArena) return;
+        const dx = e.clientX - prevPointer.x;
+        const dy = e.clientY - prevPointer.y;
+        camYaw -= dx * 0.007;
+        camPitch = Math.max(0.08, Math.min(1.48, camPitch + dy * 0.006));
+        prevPointer = { x: e.clientX, y: e.clientY };
+      });
+
+      window.addEventListener('wheel', (e) => {
+        if (e.target.closest('#roster-drawer') || e.target.closest('#sandbox-panel') || e.target.closest('#char-select-modal')) return;
+        e.preventDefault();
+        const zoomFactor = 1 + Math.sign(e.deltaY) * 0.12;
+        camRadius = Math.max(MIN_CAM_RADIUS, Math.min(MAX_CAM_RADIUS, camRadius * zoomFactor));
+        if (camRadius > 60) {
+          camPitch = THREE.MathUtils.lerp(camPitch, 1.22, 0.15);
+        }
+        syncZoomButtonUI();
+      }, { passive: false });
+
+      window.addEventListener('touchstart', (e) => {
+        if (isUIElement(e.target)) return;
+        if (e.touches.length === 1) {
+          isDraggingArena = true;
+          prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          closeRosterDrawer();
+        } else if (e.touches.length === 2) {
+          isDraggingArena = false;
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          initialPinchDist = Math.hypot(dx, dy);
+          initialPinchRadius = camRadius;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) initialPinchDist = null;
+        if (e.touches.length === 0) isDraggingArena = false;
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (isUIElement(e.target)) return;
+        if (e.touches.length === 2 && initialPinchDist) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.hypot(dx, dy);
+          const scale = initialPinchDist / Math.max(dist, 12);
+          camRadius = Math.max(MIN_CAM_RADIUS, Math.min(MAX_CAM_RADIUS, initialPinchRadius * scale));
+          syncZoomButtonUI();
+        } else if (isDraggingArena && e.touches.length === 1) {
+          const dx = e.touches[0].clientX - prevPointer.x;
+          const dy = e.touches[0].clientY - prevPointer.y;
+          camYaw -= dx * 0.007;
+          camPitch = Math.max(0.08, Math.min(1.48, camPitch + dy * 0.006));
+          prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      }, { passive: true });
 
       // Commander Select Modal Listeners
       document.getElementById('cs-tab-p1').addEventListener('click', () => {
@@ -1541,24 +1712,69 @@
         }
       }
 
-      // Camera Army Tracking
-      let sumX = 0, sumZ = 0, count = 0;
-      if (camTracking) {
-        for (const e of entities) {
-          if (!e.dead) { sumX += e.mesh.position.x; sumZ += e.mesh.position.z; count++; }
-        }
-      }
-      const midX = count > 0 ? sumX / count : 0;
-      const midZ = count > 0 ? sumZ / count : 0;
-      
-      const camTarget = new THREE.Vector3(midX, 0.5, midZ);
-      const camYaw = elapsed * 0.05;
-      const camRadius = 24.0 + (armySize * 0.2);
+      // 3-Mode Camera System: TRACK, FREE ORBIT, and CHASE CAM
+      if (camMode === 'chase') {
+        const leadUnit = entities.find(e => e.side === 1 && !e.dead) || entities.find(e => !e.dead);
+        if (leadUnit) {
+          const enemy = getClosestEnemy(leadUnit);
+          const pos = leadUnit.mesh.position;
+          const forwardYaw = leadUnit.mesh.rotation.y + camYaw * 0.5;
+          const backX = -Math.cos(forwardYaw);
+          const backZ = Math.sin(forwardYaw);
 
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, camTarget.x + Math.sin(camYaw) * camRadius, rawDt * 2);
-      camera.position.z = THREE.MathUtils.lerp(camera.position.z, camTarget.z + Math.cos(camYaw) * camRadius, rawDt * 2);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 10.0 + (armySize * 0.15), rawDt * 2);
-      camera.lookAt(camTarget);
+          const chaseDist = Math.max(2.2, camRadius * 0.38);
+          const chaseHeight = Math.max(1.1, Math.sin(camPitch) * chaseDist + 0.65);
+
+          const desiredCamPos = new THREE.Vector3(
+            pos.x + backX * chaseDist,
+            pos.y + chaseHeight,
+            pos.z + backZ * chaseDist
+          );
+          camera.position.lerp(desiredCamPos, Math.min(1, rawDt * 7.5));
+
+          const lookPos = enemy
+            ? new THREE.Vector3((pos.x + enemy.mesh.position.x) * 0.5, pos.y + 0.35, (pos.z + enemy.mesh.position.z) * 0.5)
+            : new THREE.Vector3(pos.x - backX * 3, pos.y + 0.35, pos.z - backZ * 3);
+          camLookTarget.lerp(lookPos, Math.min(1, rawDt * 8.0));
+          camera.lookAt(camLookTarget);
+        }
+      } else {
+        if (camMode === 'track') {
+          let sumX = 0, sumY = 0, sumZ = 0, count = 0;
+          for (const e of entities) {
+            if (!e.dead) {
+              sumX += e.mesh.position.x;
+              sumY += e.mesh.position.y;
+              sumZ += e.mesh.position.z;
+              count++;
+            }
+          }
+          const desiredTarget = count > 0
+            ? new THREE.Vector3(sumX / count, (sumY / count) + 0.4, sumZ / count)
+            : new THREE.Vector3(0, 0.5, 0);
+          camTarget.lerp(desiredTarget, Math.min(1, rawDt * 4.5));
+
+          // Subtle cinematic drift only when not actively dragging
+          if (!isDraggingArena) {
+            camYaw += rawDt * 0.045;
+          }
+        } else {
+          // FREE mode anchors pivot to arena center for full manual inspection
+          camTarget.lerp(new THREE.Vector3(0, 0.5, 0), Math.min(1, rawDt * 4.0));
+        }
+
+        const horizDist = Math.cos(camPitch) * camRadius;
+        const vertDist = Math.sin(camPitch) * camRadius;
+
+        const desiredX = camTarget.x + Math.sin(camYaw) * horizDist;
+        const desiredZ = camTarget.z + Math.cos(camYaw) * horizDist;
+        const desiredY = Math.max(getTerrainHeight(desiredX, desiredZ) + 0.5, camTarget.y + vertDist);
+
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, desiredX, Math.min(1, rawDt * 8.0));
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredY, Math.min(1, rawDt * 8.0));
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredZ, Math.min(1, rawDt * 8.0));
+        camera.lookAt(camTarget);
+      }
 
       renderer.render(scene, camera);
     }
