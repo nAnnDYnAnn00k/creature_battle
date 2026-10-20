@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXO // WIRE - Swarm Auto-Battler</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&display=swap');
+    
+    * {
+      font-family: 'JetBrains Mono', monospace;
+      user-select: none;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #05080c;
+      color: #e2e8f0;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* Subtle CRT scanline overlay */
+    .scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.22) 50%,
+        rgba(0, 0, 0, 0.22)
+      );
+      background-size: 100% 4px;
+    }
+
+    /* Floating Damage Numbers */
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(0.9); }
+      20% { transform: translate(-50%, -12px) scale(1.1); }
+      100% { opacity: 0; transform: translate(-50%, -42px) scale(0.95); }
+    }
+    .dmg-popup {
+      position: fixed;
+      pointer-events: none;
+      z-index: 15;
+      font-weight: 800;
+      animation: floatUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    #roster-drawer, #sandbox-panel {
+      transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drawer-closed {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px) scale(0.97);
+    }
+    .drawer-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    @keyframes countPop {
+      0% { opacity: 0; transform: scale(2.2); filter: blur(6px); }
+      25% { opacity: 1; transform: scale(1); filter: blur(0px); }
+      80% { opacity: 1; transform: scale(0.96); }
+      100% { opacity: 0; transform: scale(0.75); }
+    }
+    .countdown-anim {
+      animation: countPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+  <div id="fx-layer" class="fixed inset-0 pointer-events-none z-10 overflow-hidden"></div>
+  <div class="scanlines fixed inset-0 pointer-events-none z-10 opacity-35"></div>
+
+  <!-- ARCADE OVERLAY -->
+  <div id="arcade-center-overlay" class="fixed inset-0 pointer-events-none z-30 flex flex-col items-center justify-center">
+    <div id="countdown-display" class="hidden text-center select-none">
+      <div id="countdown-sub" class="text-xs sm:text-sm font-bold tracking-[0.35em] text-cyan-400 uppercase mb-1">COMBAT ENGAGEMENT</div>
+      <div id="countdown-number" class="text-6xl sm:text-8xl font-extrabold text-white drop-shadow-[0_0_25px_rgba(34,211,238,0.85)]">3</div>
+    </div>
+
+    <div id="post-match-modal" class="hidden pointer-events-auto bg-slate-950/90 backdrop-blur-xl border border-cyan-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl max-w-md w-[90%] text-center">
+      <div id="pm-badge" class="inline-block text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 mb-2">MATCH CONCLUDED</div>
+      <h2 id="pm-winner-title" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">KING CRAB WINS</h2>
+      <p id="pm-subtitle" class="text-xs text-slate-400 mt-1">Hostile bio-wireframes neutralized.</p>
+      <div class="grid grid-cols-2 gap-2.5 mt-5">
+        <button id="btn-pm-rematch" class="py-2.5 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/50 font-extrabold text-xs tracking-wider uppercase cursor-pointer transition active:scale-95">
+          ↻ REMATCH
+        </button>
+        <button id="btn-pm-select" class="py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-extrabold text-xs tracking-wider uppercase cursor-pointer transition active:scale-95">
+          🧬 SELECT
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER SELECT MODAL -->
+  <div id="char-select-modal" class="hidden fixed inset-0 z-40 bg-slate-950/85 backdrop-blur-lg flex items-center justify-center p-3 sm:p-6">
+    <div class="w-full max-w-4xl bg-slate-950/95 border border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-slate-800 bg-slate-900/70">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+          <div>
+            <h2 class="text-xs sm:text-sm font-extrabold tracking-wider text-white uppercase">ARMY COMMANDER SELECT</h2>
+            <p class="text-[10px] text-slate-400">Lock in your faction's unit composition</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-slate-400 uppercase">Mode:</span>
+          <button id="btn-cs-switch-sandbox" class="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-[10px] font-bold cursor-pointer">
+            Open Test Mode
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-y-auto">
+        <div class="md:col-span-5 p-4 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800/80 bg-slate-950/60">
+          <div>
+            <div class="flex items-center justify-between text-[10px] text-cyan-400 font-bold tracking-wider mb-1.5">
+              <span id="cs-preview-slot-label">ALLY TURNTABLE</span>
+              <span id="cs-preview-faction" class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/50">CRUSTACEAN</span>
+            </div>
+            <div id="cs-orbit-container" class="relative w-full h-52 sm:h-64 rounded-xl bg-slate-900/90 border border-slate-800 overflow-hidden cursor-grab active:cursor-grabbing">
+              <div class="absolute top-2 left-2.5 text-[9px] text-slate-400 pointer-events-none">⟳ DRAG TO ORBIT</div>
+              <div id="cs-preview-name" class="absolute bottom-2.5 left-3 text-base sm:text-lg font-extrabold text-white drop-shadow pointer-events-none">King Crab</div>
+            </div>
+          </div>
+          <div class="mt-3 space-y-2">
+            <div id="cs-preview-desc" class="text-[11px] text-slate-300 italic">Heavy armored benthic tank</div>
+            <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-[10px]">
+              <div><div class="text-slate-500">HP</div><div id="cs-stat-hp" class="font-extrabold text-cyan-300">120</div></div>
+              <div><div class="text-slate-500">ATK</div><div id="cs-stat-atk" class="font-extrabold text-amber-300">18</div></div>
+              <div><div class="text-slate-500">DEF</div><div id="cs-stat-def" class="font-extrabold text-emerald-300">16</div></div>
+              <div><div class="text-slate-500">SPD</div><div id="cs-stat-spd" class="font-extrabold text-fuchsia-300">0.95</div></div>
+            </div>
+            <div class="bg-slate-900/60 px-2.5 py-1.5 rounded border border-slate-800/80 text-[10px] flex items-center justify-between">
+              <span class="text-slate-400">SIGNATURE:</span>
+              <span id="cs-stat-pwr" class="text-fuchsia-300 font-bold truncate ml-2">★ ABYSSAL GUILLOTINE CRUSH</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-7 p-4 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-1.5">
+                <button id="cs-tab-p1" class="px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400 text-xs font-extrabold cursor-pointer transition">
+                  1. ALLY ARMY (P1)
+                </button>
+                <button id="cs-tab-p2" class="px-3 py-1 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 text-xs font-extrabold cursor-pointer transition">
+                  2. HOSTILE ARMY (P2)
+                </button>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px]">
+                <span class="text-slate-400">ENEMY RULE:</span>
+                <select id="cs-enemy-mode" class="bg-slate-900 border border-rose-500/40 rounded px-2 py-1 text-rose-300 font-bold focus:outline-none cursor-pointer">
+                  <option value="random">🎲 Random Composition</option>
+                  <option value="manual">🎯 Manual Select</option>
+                </select>
+              </div>
+            </div>
+            <div id="cs-roster-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3 text-xs">
+              <div class="px-3 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/40">
+                <span class="text-[9px] text-cyan-400 block">ALLY FORCE</span>
+                <span id="cs-matchup-p1" class="font-extrabold text-white">King Crab</span>
+              </div>
+              <span class="text-amber-400 font-extrabold text-sm">VS</span>
+              <div class="px-3 py-1.5 rounded-lg bg-rose-950/60 border border-rose-500/40">
+                <span class="text-[9px] text-rose-400 block">HOSTILE FORCE</span>
+                <span id="cs-matchup-p2" class="font-extrabold text-white">🎲 Random</span>
+              </div>
+            </div>
+
+            <button id="btn-lock-in-fight" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-cyan-500/25 cursor-pointer transition active:scale-95">
+              ⚔️ DEPLOY ARMIES
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed top-0 inset-x-0 z-20 p-3 sm:p-4 pointer-events-none flex flex-wrap items-stretch justify-between gap-2">
+    
+    <!-- Player 1 Army HUD -->
+    <div id="btn-p1-hud" class="pointer-events-auto flex-1 max-w-[48%] sm:flex-none sm:w-64 sm:max-w-none bg-slate-950/80 hover:bg-slate-900/95 backdrop-blur-md border border-cyan-500/35 hover:border-cyan-400 rounded-lg px-3 py-2 shadow-lg flex flex-col justify-between cursor-pointer transition active:scale-[0.98]">
+      <div class="flex items-center justify-between h-5 text-[10px] text-cyan-400 font-bold tracking-wider">
+        <span class="truncate">ALLY FORCE // [SWAP]</span>
+        <div class="flex items-center gap-1 shrink-0">
+          <span id="p1-faction" class="text-[9px] h-4 inline-flex items-center px-1.5 bg-cyan-950/90 text-cyan-300 rounded border border-cyan-800/50">CRUSTACEAN</span>
+        </div>
+      </div>
+      <div class="flex items-baseline justify-between mt-0.5 h-5">
+        <div id="p1-name" class="text-xs sm:text-sm font-extrabold text-white truncate">King Crab Swarm</div>
+        <div id="p1-hp-text" class="text-[10px] font-bold text-cyan-300 ml-2 shrink-0">0/0 (0)</div>
+      </div>
+      <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mt-1 border border-slate-800">
+        <div id="p1-hp-bar" class="h-full bg-cyan-400 transition-all duration-200" style="width: 100%"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1 gap-1.5">
+        <span id="p1-move-text" class="text-[8px] text-cyan-200/80 uppercase tracking-wider truncate">READY</span>
+        <div class="w-16 h-1 bg-slate-900 rounded-full overflow-hidden border border-slate-800 shrink-0">
+          <div id="p1-pwr-bar" class="h-full bg-amber-400 transition-all duration-150" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Control Strip -->
+    <div class="pointer-events-auto flex flex-col items-center justify-center order-3 sm:order-2 w-full sm:w-auto">
+      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1 rounded-full shadow-lg text-[10px]">
+        <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase px-1">COMBAT ACTIVE</span>
+        <span class="text-slate-700">|</span>
+        <button id="btn-hud-mode" class="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-bold">
+          MODE: SANDBOX
+        </button>
+        <button id="btn-open-char-select" class="px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-bold">
+          🕹️ ARMIES
+        </button>
+        <button id="btn-auto" class="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold">
+          AUTO: ON
+        </button>
+        <button id="btn-speed" class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-white transition cursor-pointer font-semibold">
+          1X
+        </button>
+        <button id="btn-cam-mode" class="px-2 py-0.5 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-semibold">
+          CAM: TRACK
+        </button>
+      </div>
+      <div class="text-[9px] text-slate-400 tracking-widest uppercase mt-1 hidden sm:flex items-center gap-2">
+        <span>Playable Tactical Command Deck Below</span>
+      </div>
+    </div>
+
+    <!-- Player 2 Army HUD -->
+    <div id="btn-p2-hud" class="pointer-events-auto flex-1 max-w-[48%] sm:flex-none sm:w-64 sm:max-w-none order-2 sm:order-3 bg-slate-950/80 hover:bg-slate-900/95 backdrop-blur-md border border-rose-500/35 hover:border-rose-400 rounded-lg px-3 py-2 shadow-lg text-right flex flex-col justify-between cursor-pointer transition active:scale-[0.98]">
+      <div class="flex items-center justify-between h-5 text-[10px] text-rose-400 font-bold tracking-wider">
+        <div class="flex items-center gap-1 shrink-0">
+          <span id="p2-faction" class="text-[9px] h-4 inline-flex items-center px-1.5 bg-rose-950/90 text-rose-300 rounded border border-rose-800/50">INSECT</span>
+          <button id="btn-random" class="h-4 w-4 inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[9px] leading-none cursor-pointer">🎲</button>
+        </div>
+        <span class="truncate ml-1">[SWAP] HOSTILE FORCE</span>
+      </div>
+      <div class="flex items-baseline justify-between mt-0.5 h-5">
+        <div id="p2-hp-text" class="text-[10px] font-bold text-rose-300 mr-2 shrink-0">0/0 (0)</div>
+        <div id="p2-name" class="text-xs sm:text-sm font-extrabold text-white truncate">Killer Wasp Swarm</div>
+      </div>
+      <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mt-1 border border-slate-800">
+        <div id="p2-hp-bar" class="h-full bg-rose-500 transition-all duration-200 ml-auto" style="width: 100%"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1 gap-1.5">
+        <div class="w-16 h-1 bg-slate-900 rounded-full overflow-hidden border border-slate-800 shrink-0">
+          <div id="p2-pwr-bar" class="h-full bg-amber-400 transition-all duration-150 ml-auto" style="width: 0%"></div>
+        </div>
+        <span id="p2-move-text" class="text-[8px] text-rose-200/80 uppercase tracking-wider truncate">READY</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-x-0 bottom-[6vh] sm:bottom-[8vh] z-20 flex flex-col items-center px-3 pointer-events-none">
+    <div id="roster-drawer" class="drawer-closed w-full max-w-xl mb-2.5 bg-slate-950/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl p-3.5 max-h-[55vh] overflow-y-auto pointer-events-auto">
+      <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800 text-xs">
+        <div class="flex items-center gap-2">
+          <span id="drawer-title" class="text-cyan-400 font-extrabold tracking-wider uppercase">SELECT ALLY ARMY</span>
+        </div>
+        <button id="btn-close-drawer" class="text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] cursor-pointer">✕ ESC</button>
+      </div>
+      <div id="roster-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+    </div>
+
+    <div id="combat-log" class="w-full max-w-lg h-11 mb-2 px-3 py-1 rounded-lg bg-slate-950/60 backdrop-blur-sm border border-slate-800/60 overflow-y-auto text-[10px] leading-tight text-center space-y-0.5 text-slate-400 pointer-events-none"></div>
+
+    <div class="w-full max-w-2xl flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+      <div class="flex flex-wrap items-center gap-1.5 bg-slate-950/90 backdrop-blur-md p-1 rounded-full border border-slate-800 shadow-lg">
+        <button id="btn-cmd-strike" class="px-2.5 py-1 rounded-full bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[10px] font-bold transition active:scale-95 cursor-pointer">
+          ⚡ [1] ARMY RUSH
+        </button>
+        <button id="btn-cmd-guard" class="px-2.5 py-1 rounded-full bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[10px] font-bold transition active:scale-95 cursor-pointer">
+          🛡️ [2] MASS GUARD
+        </button>
+        <button id="btn-cmd-overdrive" class="px-2.5 py-1 rounded-full bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-bold transition active:scale-95 cursor-pointer opacity-60">
+          ★ [3] OVERDRIVE SYNC
+        </button>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="btn-spawn-hazard" class="px-2.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 text-[10px] font-bold transition active:scale-95 cursor-pointer shadow-lg">
+          ✨ ZONE
+        </button>
+        <button id="btn-sandbox-toggle" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-amber-500/50 hover:border-amber-400 shadow-lg shadow-amber-950/30 transition active:scale-95 cursor-pointer text-amber-300 text-[11px] font-bold">
+          🛠️ SANDBOX
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sandbox-panel" class="drawer-closed fixed bottom-[15vh] right-3 sm:right-6 z-30 w-80 sm:w-96 max-h-[76vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-xl shadow-2xl p-4 text-xs">
+    <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800">
+      <div class="flex items-center gap-1.5 text-amber-400 font-extrabold tracking-wider uppercase">
+        <span>🛠️</span><span>EXO // SANDBOX</span>
+      </div>
+      <button id="btn-close-sandbox" class="text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] cursor-pointer">✕</button>
+    </div>
+
+    <div class="bg-slate-900/95 border border-amber-500/35 rounded-lg p-2.5 mb-3 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">🎮 MATCH RULES</span>
+      </div>
+      <div class="pt-1 flex flex-col gap-2">
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>ARMY SIZE (UNITS PER TEAM)</span>
+            <span id="lbl-army-size" class="text-emerald-300 font-bold">5</span>
+          </div>
+          <input type="range" id="range-army-size" min="1" max="50" step="1" value="5" class="w-full accent-emerald-400 cursor-pointer">
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-1 bg-slate-900 p-1 rounded-lg mb-3 border border-slate-800 text-[10px] font-bold">
+      <button id="tab-btn-world" class="py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer transition">🌐 WORLD</button>
+      <button id="tab-btn-creatures" class="py-1 rounded text-slate-400 hover:text-white cursor-pointer transition">🧬 LAB</button>
+    </div>
+
+    <div id="sandbox-tab-world" class="space-y-3 text-slate-300">
+      <div>
+        <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>ARENA TOPOLOGY BIOME</span></div>
+        <select id="select-topology" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-white focus:outline-none cursor-pointer text-[11px]">
+          <option value="terrain" selected>3D Topographical Ridge</option>
+          <option value="grid">Cyber Grid & Tactical Rings</option>
+          <option value="canyon">Trench & Bridge Sectors</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>OBSTACLES</span><span id="lbl-obs-count" class="text-cyan-300 font-bold">8</span>
+          </div>
+          <input type="range" id="range-obs-count" min="0" max="32" step="2" value="8" class="w-full accent-cyan-400 cursor-pointer">
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>TERRAIN ELEV</span><span id="lbl-terrain-elev" class="text-cyan-300 font-bold">1.2X</span>
+          </div>
+          <input type="range" id="range-terrain-elev" min="0.0" max="3.0" step="0.2" value="1.2" class="w-full accent-cyan-400 cursor-pointer">
+        </div>
+      </div>
+    </div>
+
+    <div id="sandbox-tab-creatures" class="hidden space-y-3 text-slate-300">
+      <div class="flex items-center justify-between bg-slate-900/90 p-1.5 rounded border border-slate-800">
+        <span class="text-[10px] text-slate-400 font-semibold">EDIT TARGET:</span>
+        <div class="flex gap-1">
+          <button id="btn-target-p1" class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[10px] font-bold cursor-pointer">ALLY (01)</button>
+          <button id="btn-target-p2" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer">HOSTILE (02)</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>SCALE</span><span id="lbl-c-scale" class="text-cyan-300 font-bold">0.125</span></div>
+          <input type="range" id="range-c-scale" min="0.06" max="0.45" step="0.015" value="0.125" class="w-full accent-cyan-400 cursor-pointer">
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>SPEED</span><span id="lbl-c-spd" class="text-cyan-300 font-bold">1.0X</span></div>
+          <input type="range" id="range-c-spd" min="0.4" max="2.5" step="0.1" value="1.0" class="w-full accent-cyan-400 cursor-pointer">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80">
+        <button id="btn-sandbox-heal" class="px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold cursor-pointer transition">⚡ HEAL ARMY</button>
+        <button id="btn-sandbox-instant-power" class="px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 text-[10px] font-bold cursor-pointer transition">★ MAX CHARGE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CREATURES = {
+      king_crab: {
+        name: "King Crab", faction: "CRUSTACEAN", color: 0x22d3ee,
+        hp: 120, atk: 18, def: 16, spd: 0.95, crit: 0.08,
+        desc: "Heavy armored benthic tank",
+        moves: [{ name: "Crusher Claw", mult: 1.00, anim: "claw_snap" }, { name: "Carapace Ram", mult: 1.10, anim: "heavy_ram" }],
+        powerMove: { name: "ABYSSAL CRUSH", mult: 1.80, anim: "power_slam" }
+      },
+      mantis_shrimp: {
+        name: "Mantis Shrimp", faction: "CRUSTACEAN", color: 0x38bdf8,
+        hp: 100, atk: 22, def: 10, spd: 1.15, crit: 0.18,
+        desc: "Hyper-velocity striker",
+        moves: [{ name: "Club Smash", mult: 1.05, anim: "club_punch" }, { name: "Flurry", mult: 1.12, anim: "flurry_punch" }],
+        powerMove: { name: "CAVITATION BLAST", mult: 1.85, anim: "power_cavitation" }
+      },
+      killer_wasp: {
+        name: "Killer Wasp", faction: "INSECT", color: 0xfacc15,
+        hp: 90, atk: 22, def: 8, spd: 1.25, crit: 0.20,
+        desc: "Airborne rapid neuro-stinger",
+        moves: [{ name: "Needle Jab", mult: 1.00, anim: "sting_thrust" }, { name: "Dive Peck", mult: 1.15, anim: "air_dive" }],
+        powerMove: { name: "HYPER-VENOM", mult: 1.85, anim: "power_multisting" }
+      },
+      stag_beetle: {
+        name: "Stag Beetle", faction: "INSECT", color: 0xf43f5e,
+        hp: 125, atk: 17, def: 15, spd: 0.95, crit: 0.10,
+        desc: "Chitinous mandible grappler",
+        moves: [{ name: "Mandible Clamp", mult: 1.08, anim: "claw_snap" }, { name: "Horn Gore", mult: 1.12, anim: "horn_toss" }],
+        powerMove: { name: "SEISMIC SUPLEX", mult: 1.85, anim: "power_suplex" }
+      }
+    };
+
+    const GeoCache = {};
+    function getGeometry(type, ...args) {
+      const key = `${type}_${args.join('_')}`;
+      if (!GeoCache[key]) {
+        GeoCache[key] = new THREE[type](...args);
+      }
+      return GeoCache[key];
+    }
+
+    function makeWirePart(type, args, mat, pos = [0,0,0], rot = [0,0,0], scale = [1,1,1]) {
+      const geo = getGeometry(type, ...args);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(...pos);
+      mesh.rotation.set(...rot);
+      mesh.scale.set(...scale);
+      return mesh;
+    }
+
+    function buildCreatureMesh(key, hexColor, opacity = 0.95, customScale = 0.125) {
+      const root = new THREE.Group();
+      const bodyGroup = new THREE.Group();
+      bodyGroup.scale.set(customScale, customScale, customScale);
+      root.add(bodyGroup);
+
+      const mat = new THREE.MeshBasicMaterial({ color: hexColor, wireframe: true, transparent: true, opacity: opacity });
+      const subMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: opacity * 0.45 });
+
+      const wings = []; const claws = []; const legs = [];
+
+      if (key === 'king_crab') {
+        bodyGroup.add(makeWirePart('OctahedronGeometry', [1.15, 1], mat, [0, 0.75, 0], [0, 0, 0], [1.1, 0.45, 1.35]));
+        for (let s of [-1, 1]) {
+          for (let i = 0; i < 4; i++) {
+            const z = (i - 1.5) * 0.55;
+            const leg = makeWirePart('CylinderGeometry', [0.06, 0.03, 1.5, 4], mat, [0.15, 0.45, z + s * 0.95], [s * 0.65, 0, 0]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.65, phase: i + s });
+          }
+          const claw = makeWirePart('ConeGeometry', [0.32, 1.15, 5], mat, [0.95, 0.65, s * 0.75], [0, 0, -Math.PI / 2]);
+          bodyGroup.add(claw); claws.push(claw);
+        }
+      } else if (key === 'mantis_shrimp') {
+        for (let i = 0; i < 4; i++) {
+          bodyGroup.add(makeWirePart('BoxGeometry', [0.65, 0.38, 0.75 - i * 0.05], mat, [-i * 0.48 + 0.4, 0.55 + Math.sin(i * 0.5) * 0.18, 0]));
+        }
+        for (let s of [-1, 1]) {
+          const club = makeWirePart('OctahedronGeometry', [0.38, 1], mat, [1.05, 0.45, s * 0.48], [0, 0, -0.4], [1.6, 0.7, 0.7]);
+          bodyGroup.add(club); claws.push(club);
+          for (let i = 0; i < 3; i++) {
+            const leg = makeWirePart('CylinderGeometry', [0.03, 0.02, 0.75, 3], subMat, [-i * 0.4, 0.28, s * 0.45], [s * 0.4, 0, 0]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.4, phase: i });
+          }
+        }
+      } else if (key === 'killer_wasp') {
+        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.34, 0], mat, [0.85, 1.25, 0]));
+        bodyGroup.add(makeWirePart('ConeGeometry', [0.45, 1.45, 6], mat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]));
+        for (let s of [-1, 1]) {
+          const wing = makeWirePart('PlaneGeometry', [0.65, 1.55, 2, 3], subMat, [0.2, 1.55, s * 0.75], [s * 1.15, 0, 0.2]);
+          bodyGroup.add(wing); wings.push({ mesh: wing, side: s });
+          for (let i = 0; i < 3; i++) {
+            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.75, 3], mat, [0.3 - i * 0.25, 0.75, s * 0.38], [s * 0.35, 0, 0.2]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.35, phase: i });
+          }
+        }
+      } else if (key === 'stag_beetle') {
+        bodyGroup.add(makeWirePart('SphereGeometry', [0.85, 6, 5], mat, [-0.25, 0.65, 0], [0, 0, 0], [1.45, 0.62, 1.05]));
+        for (let s of [-1, 1]) {
+          const horn = makeWirePart('ConeGeometry', [0.14, 1.35, 4], subMat, [1.35, 0.78, s * 0.32], [0, -s * 0.28, -Math.PI / 2.3]);
+          bodyGroup.add(horn); claws.push(horn);
+          for (let i = -1; i <= 1; i++) {
+            const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 0.9, 3], mat, [i * 0.45, 0.35, s * 0.75], [s * 0.6, 0, 0]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.6, phase: i });
+          }
+        }
+      }
+
+      const ringMat = new THREE.MeshBasicMaterial({ color: hexColor, side: THREE.DoubleSide, transparent: true, opacity: opacity * 0.7 });
+      const ring = new THREE.Mesh(getGeometry('RingGeometry', 0.22, 0.28, 16), ringMat);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = 0.02;
+      root.add(ring);
+
+      claws.forEach(c => { c.userData.basePos = c.position.clone(); c.userData.baseRot = c.rotation.clone(); });
+      root.userData = { bodyGroup, mat, subMat, wings, claws, legs, ring, baseColor: hexColor };
+      return root;
+    }
+
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 240);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    let worldGroup = new THREE.Group();
+    scene.add(worldGroup);
+
+    let mapSeed = Math.random() * 100;
+    let worldTopology = 'terrain';
+    let mapElevationScale = 1.2;
+    let mapObstacleCount = 8;
+    const arenaRingRadius = 24.5;
+    let arenaObstacles = [];
+    let tacticalZones = [];
+
+    function getTerrainHeight(x, z) {
+      if (mapElevationScale <= 0.01) return 0;
+      const dist = Math.hypot(x, z);
+      if (worldTopology === 'grid') return Math.sin(dist * 0.6 - mapSeed) * 0.12 * mapElevationScale;
+      const wave1 = Math.sin(x * 0.22 + mapSeed) * Math.cos(z * 0.22 + mapSeed) * 0.75;
+      const wave2 = Math.sin(x * 0.5 - z * 0.35) * 0.25;
+      return (wave1 + wave2) * mapElevationScale;
+    }
+
+    function rebuildWorldTopology() {
+      while (worldGroup.children.length > 0) worldGroup.remove(worldGroup.children[0]);
+      arenaObstacles = []; tacticalZones = [];
+
+      const groundGeo = new THREE.PlaneGeometry(84, 84, 64, 64);
+      groundGeo.rotateX(-Math.PI / 2);
+      const pos = groundGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) pos.setY(i, getTerrainHeight(pos.getX(i), pos.getZ(i)));
+      groundGeo.computeVertexNormals();
+
+      const groundMat = new THREE.MeshBasicMaterial({ color: 0x0e7490, wireframe: true, transparent: true, opacity: 0.4 });
+      worldGroup.add(new THREE.Mesh(groundGeo, groundMat));
+
+      const ringPoints = [];
+      for (let i = 0; i <= 64; i++) {
+        const t = (i / 64) * Math.PI * 2;
+        ringPoints.push(new THREE.Vector3(Math.cos(t) * arenaRingRadius, getTerrainHeight(Math.cos(t) * arenaRingRadius, Math.sin(t) * arenaRingRadius) + 0.1, Math.sin(t) * arenaRingRadius));
+      }
+      worldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPoints), new THREE.LineBasicMaterial({ color: 0x22d3ee, opacity: 0.5 })));
+
+      for (let i = 0; i < mapObstacleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 3 + Math.random() * (arenaRingRadius - 5);
+        const x = Math.cos(angle) * dist; const z = Math.sin(angle) * dist;
+        const r = 0.6 + Math.random() * 1.2;
+        const y = getTerrainHeight(x, z);
+        const mesh = new THREE.Mesh(getGeometry('DodecahedronGeometry', r, 0), new THREE.MeshBasicMaterial({ color: 0x14b8a6, wireframe: true, opacity: 0.7 }));
+        mesh.position.set(x, y + r * 0.45, z);
+        worldGroup.add(mesh);
+        arenaObstacles.push({ x, z, y, radius: r, mesh });
+      }
+    }
+
+    let gameMode = 'sandbox'; // sandbox or arcade
+    let armySize = 5;
+    let selectedP1 = 'king_crab';
+    let selectedP2 = 'killer_wasp';
+    let enemySelectionRule = 'random';
+    
+    let entities = [];
+    let battleState = 'FIGHTING'; // SELECTING | COUNTDOWN | FIGHTING | ENDED
+    let simSpeed = 1;
+    let autoLoop = true;
+
+    // Track active DOM text popups to prevent DOM lag on massive armies
+    let activeDmgPopups = 0;
+    const MAX_POPUPS = 25;
+
+    const slotOverrides = {
+      1: { scale: 0.125, spdMult: 1.0 },
+      2: { scale: 0.125, spdMult: 1.0 }
+    };
+
+    function createFighterState(key, side, idx, totalCols) {
+      const cfg = CREATURES[key];
+      const ov = slotOverrides[side];
+      const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale);
+      
+      const spacing = 1.4;
+      // Grid formation spawning
+      const row = Math.floor(idx / totalCols);
+      const col = idx % totalCols;
+      
+      const homeX = (side === 1 ? -6.5 : 6.5) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.5;
+      const homeZ = (col - totalCols / 2) * spacing + (Math.random() - 0.5) * 0.5;
+      const homeY = getTerrainHeight(homeX, homeZ);
+      
+      mesh.position.set(homeX, homeY, homeZ);
+      if (side === 2) mesh.rotation.y = Math.PI;
+      scene.add(mesh);
+
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        key, side, name: cfg.name, faction: cfg.faction, color: cfg.color,
+        maxHp: cfg.hp, hp: cfg.hp, atk: cfg.atk, def: cfg.def, spd: cfg.spd * ov.spdMult, crit: cfg.crit,
+        moves: cfg.moves, powerMove: cfg.powerMove,
+        energy: 0, lastMoveName: "ENGAGING",
+        cooldown: 2.65 / (cfg.spd * ov.spdMult),
+        timer: (1.9 / (cfg.spd * ov.spdMult)) * Math.random(),
+        mesh, homeX, homeZ,
+        seed: Math.random() * Math.PI * 2,
+        hitFlash: 0, activeAction: null,
+        guardTimer: 0, rushCooldown: 0, guardCooldown: 0,
+        victimState: { liftY: 0, knockX: 0, knockZ: 0, tiltZ: 0, spinY: 0 },
+        dead: false
+      };
+    }
+
+    function spawnArmies() {
+      // Clear existing
+      entities.forEach(f => scene.remove(f.mesh));
+      entities = [];
+      activeDmgPopups = 0;
+      document.getElementById('fx-layer').innerHTML = '';
+
+      const cols = Math.max(1, Math.ceil(Math.sqrt(armySize)));
+      for (let i = 0; i < armySize; i++) {
+        entities.push(createFighterState(selectedP1, 1, i, cols));
+        entities.push(createFighterState(selectedP2, 2, i, cols));
+      }
+      updateArmyHUD();
+    }
+
+    function getClosestEnemy(f) {
+      let closest = null;
+      let minDist = Infinity;
+      for (const e of entities) {
+        if (e.side !== f.side && !e.dead) {
+          const d = Math.pow(f.mesh.position.x - e.mesh.position.x, 2) + Math.pow(f.mesh.position.z - e.mesh.position.z, 2);
+          if (d < minDist) { minDist = d; closest = e; }
+        }
+      }
+      return closest;
+    }
+
+    function initiateMoveSequence(attacker, defender) {
+      const isPower = attacker.energy >= 3;
+      const move = isPower ? attacker.powerMove : attacker.moves[Math.floor(Math.random() * attacker.moves.length)];
+      if (isPower) attacker.energy = 0; else attacker.energy = Math.min(3, attacker.energy + 1);
+      
+      attacker.lastMoveName = move.name;
+      attacker.activeAction = {
+        move, isPower, defenderId: defender.id,
+        startPos: attacker.mesh.position.clone(),
+        progress: 0, duration: isPower ? 2.45 : 1.65, impactTriggered: false
+      };
+    }
+
+    function resolveMoveImpact(attacker, defender, move, isPower) {
+      const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
+      const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
+      const mitigation = 100 / (100 + defender.def * 3.2);
+      
+      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * (isCrit ? 1.5 : 1.0) * guardMult));
+      defender.hp = Math.max(0, defender.hp - dmg);
+      defender.hitFlash = isPower ? 0.35 : 0.20;
+
+      const anim = move.anim;
+      if (anim === 'horn_toss' || anim === 'power_suplex') {
+        defender.victimState.liftY = isPower ? 0.75 : 0.45; defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
+      } else if (anim === 'power_cavitation' || anim === 'club_punch') {
+        defender.victimState.knockX = isPower ? 0.95 : 0.45;
+      } else {
+        defender.victimState.knockX = isPower ? 0.6 : 0.3; defender.victimState.tiltZ = 0.3;
+      }
+
+      if (activeDmgPopups < MAX_POPUPS && (armySize < 10 || isPower || isCrit)) {
+        spawnFloatingDamage(defender.mesh.position, dmg, isCrit, defender.side, isPower ? move.name : "");
+      }
+
+      if (defender.hp <= 0) {
+        defender.dead = true;
+        spawnHitSparks(defender.mesh.position, defender.color, 15);
+      }
+    }
+
+    function spawnHitSparks(pos, colorHex, count = 10) {
+      if (armySize > 20 && Math.random() > 0.3) return; // Throttle sparks on huge battles
+      // Basic implementation for brevity in massive files
+      for(let i=0; i<Math.min(count, 8); i++){
+        const p = document.createElement('div');
+        p.className = 'absolute w-1 h-1 rounded-full bg-white opacity-80';
+        // Simplified dom-based spark for web format
+      }
+    }
+
+    function spawnFloatingDamage(worldPos, dmg, isCrit, side, moveName = "") {
+      activeDmgPopups++;
+      const vec = worldPos.clone(); vec.y += 0.55; vec.project(camera);
+      const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
+
+      const el = document.createElement('div');
+      const colorCls = isCrit ? 'text-amber-300' : (side === 1 ? 'text-rose-400' : 'text-cyan-300');
+      el.className = `dmg-popup text-center ${colorCls} ${moveName ? 'text-sm' : 'text-xs'}`;
+      el.style.left = `${x + (Math.random() * 20 - 10)}px`;
+      el.style.top = `${y}px`;
+      el.innerHTML = moveName ? `<div class="text-[9px] uppercase">${moveName}</div><div>-${dmg}</div>` : `-${dmg}`;
+      
+      document.getElementById('fx-layer').appendChild(el);
+      setTimeout(() => { el.remove(); activeDmgPopups--; }, 850);
+    }
+
+    function appendLog(msg, colorClass = "text-slate-400") {
+      const logEl = document.getElementById('combat-log');
+      const line = document.createElement('div');
+      line.className = `truncate ${colorClass}`;
+      line.textContent = msg;
+      logEl.appendChild(line);
+      while (logEl.children.length > 5) logEl.removeChild(logEl.firstChild);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateArmyHUD() {
+      let p1Hp = 0, p1Max = 0, p1Alive = 0, p1Nrg = 0;
+      let p2Hp = 0, p2Max = 0, p2Alive = 0, p2Nrg = 0;
+
+      for (const e of entities) {
+        if (e.side === 1) { p1Max += e.maxHp; p1Hp += e.hp; if (!e.dead) { p1Alive++; p1Nrg += e.energy; } }
+        else { p2Max += e.maxHp; p2Hp += e.hp; if (!e.dead) { p2Alive++; p2Nrg += e.energy; } }
+      }
+
+      document.getElementById('p1-name').textContent = `${CREATURES[selectedP1].name} Swarm`;
+      document.getElementById('p1-hp-text').textContent = `${p1Hp}/${p1Max} (${p1Alive} ALIVE)`;
+      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, (p1Hp / p1Max) * 100)}%`;
+      document.getElementById('p1-pwr-bar').style.width = p1Alive > 0 ? `${(p1Nrg / (p1Alive * 3)) * 100}%` : '0%';
+
+      document.getElementById('p2-name').textContent = `${CREATURES[selectedP2].name} Swarm`;
+      document.getElementById('p2-hp-text').textContent = `${p2Hp}/${p2Max} (${p2Alive} ALIVE)`;
+      document.getElementById('p2-hp-bar').style.width = `${Math.max(0, (p2Hp / p2Max) * 100)}%`;
+      document.getElementById('p2-pwr-bar').style.width = p2Alive > 0 ? `${(p2Nrg / (p2Alive * 3)) * 100}%` : '0%';
+
+      if (battleState === 'FIGHTING') {
+        if (p1Alive === 0 || p2Alive === 0) {
+          battleState = 'ENDED';
+          const winnerStr = p1Alive > 0 ? "ALLY FORCE" : "HOSTILE FORCE";
+          appendLog(`🏆 ${winnerStr} WINS!`, p1Alive > 0 ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
+          document.getElementById('winner-text').textContent = `${winnerStr} VICTORIOUS`;
+          if (autoLoop) setTimeout(() => startBattle(), 2500);
+        }
+      }
+    }
+
+    function startBattle() {
+      if (enemySelectionRule === 'random') {
+        const keys = Object.keys(CREATURES);
+        selectedP2 = keys[Math.floor(Math.random() * keys.length)];
+      }
+      spawnArmies();
+      battleState = 'FIGHTING';
+      document.getElementById('winner-text').textContent = "ARMY ENGAGEMENT";
+      appendLog(`⚔️ ${armySize}v${armySize} SWARM BATTLE COMMENCING`, "text-emerald-400 font-semibold");
+    }
+
+    document.getElementById('range-army-size').addEventListener('input', (e) => {
+      armySize = parseInt(e.target.value, 10);
+      document.getElementById('lbl-army-size').textContent = armySize;
+      startBattle();
+    });
+
+    document.getElementById('btn-cmd-strike').addEventListener('click', () => {
+      if (battleState !== 'FIGHTING') return;
+      entities.forEach(f => {
+        if(f.side === 1 && !f.dead && !f.activeAction) {
+          f.rushCooldown = 3.2; f.timer = 0;
+          const t = getClosestEnemy(f);
+          if (t) {
+            f.homeX += (t.mesh.position.x - f.homeX) * 0.4; f.homeZ += (t.mesh.position.z - f.homeZ) * 0.4;
+          }
+        }
+      });
+      appendLog("⚡ ARMY COMMAND: RUSH STRIKE ISSUED!", "text-cyan-300 font-bold");
+    });
+
+    document.getElementById('btn-cmd-guard').addEventListener('click', () => {
+      if (battleState !== 'FIGHTING') return;
+      entities.forEach(f => {
+        if(f.side === 1 && !f.dead && f.guardCooldown <= 0) {
+          f.guardTimer = 2.5; f.guardCooldown = 5.0; f.energy = Math.min(3, f.energy + 1);
+        }
+      });
+      appendLog("🛡️ ARMY COMMAND: MASS BRACE PROTOCOL!", "text-emerald-300 font-bold");
+      updateArmyHUD();
+    });
+
+    document.getElementById('btn-cmd-overdrive').addEventListener('click', () => {
+      if (battleState !== 'FIGHTING') return;
+      let count = 0;
+      entities.forEach(f => {
+        if(f.side === 1 && !f.dead && f.energy >= 3 && !f.activeAction) {
+          const t = getClosestEnemy(f);
+          if(t) { initiateMoveSequence(f, t); count++; }
+        }
+      });
+      if(count > 0) appendLog(`★ ARMY COMMAND: ${count} UNITS TRIGGERED OVERDRIVE!`, "text-fuchsia-300 font-extrabold");
+    });
+
+    document.getElementById('btn-sandbox-toggle').addEventListener('click', () => {
+      const p = document.getElementById('sandbox-panel');
+      p.classList.toggle('drawer-closed'); p.classList.toggle('drawer-open');
+    });
+    document.getElementById('btn-close-sandbox').addEventListener('click', () => {
+      document.getElementById('sandbox-panel').classList.add('drawer-closed');
+      document.getElementById('sandbox-panel').classList.remove('drawer-open');
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const rawDt = Math.min(clock.getDelta(), 0.1);
+      const dt = rawDt * simSpeed;
+      const elapsed = clock.getElapsedTime();
+
+      let framesTillHUD = 0;
+
+      if (battleState === 'FIGHTING') {
+        for (const f of entities) {
+          if (f.dead) continue;
+
+          // Tick cooldowns
+          if (f.guardTimer > 0) f.guardTimer -= dt;
+          if (f.guardCooldown > 0) f.guardCooldown -= dt;
+
+          const target = getClosestEnemy(f);
+          if (target && !f.activeAction) {
+            let dx = target.mesh.position.x - f.homeX;
+            let dz = target.mesh.position.z - f.homeZ;
+            const dist = Math.hypot(dx, dz);
+
+            if (dist > 0.8) {
+              // Boids Separation Logic - prevent armies from stacking perfectly
+              for (const ally of entities) {
+                if (ally !== f && ally.side === f.side && !ally.dead) {
+                  const adx = f.homeX - ally.homeX;
+                  const adz = f.homeZ - ally.homeZ;
+                  const adist = Math.hypot(adx, adz);
+                  if (adist > 0.001 && adist < 0.6) {
+                    dx += (adx / adist) * 0.8; dz += (adz / adist) * 0.8;
+                  }
+                }
+              }
+
+              const mag = Math.hypot(dx, dz);
+              if (mag > 0) {
+                const speed = 2.8 * dt * f.spd;
+                f.homeX += (dx / mag) * speed;
+                f.homeZ += (dz / mag) * speed;
+              }
+            }
+
+            if (dist < 1.95) f.timer -= dt;
+            if (f.timer <= 0) {
+              f.timer = f.cooldown * (0.8 + Math.random() * 0.4);
+              initiateMoveSequence(f, target);
+            }
+          }
+
+          // Visuals update (Locomotion & Action Animation)
+          const ud = f.mesh.userData;
+          if (f.activeAction) {
+            const act = f.activeAction;
+            act.progress += dt / act.duration;
+            const p = Math.min(1, act.progress);
+            const strike = p >= 0.18 ? Math.sin(((p - 0.18) / 0.82) * Math.PI) : 0;
+            
+            const defTarget = entities.find(e => e.id === act.defenderId);
+            const tgX = defTarget ? defTarget.mesh.position.x : f.homeX + 1;
+            const tgZ = defTarget ? defTarget.mesh.position.z : f.homeZ;
+
+            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.5);
+            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.5);
+
+            if (p >= 0.5 && !act.impactTriggered) {
+              act.impactTriggered = true;
+              if (defTarget && !defTarget.dead) resolveMoveImpact(f, defTarget, act.move, act.isPower);
+            }
+            if (p >= 1) f.activeAction = null;
+          } else {
+            f.mesh.position.x = THREE.MathUtils.lerp(f.mesh.position.x, f.homeX, dt * 8);
+            f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, dt * 8);
+          }
+
+          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, getTerrainHeight(f.mesh.position.x, f.mesh.position.z), dt * 10);
+
+          if (target && !f.activeAction) {
+            const lookYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
+            f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, lookYaw, dt * 5);
+          }
+
+          if (f.hitFlash > 0) {
+            f.hitFlash -= dt; ud.mat.color.setHex(0xffffff);
+          } else {
+            ud.mat.color.setHex(f.color);
+          }
+
+          // Simple leg wiggle
+          const moveSpeed = Math.abs(f.mesh.position.x - f.homeX) + Math.abs(f.mesh.position.z - f.homeZ);
+          ud.legs.forEach(l => {
+             l.mesh.rotation.z = Math.sin(elapsed * 8 + l.phase) * Math.min(0.15, moveSpeed * 5);
+          });
+        }
+
+        framesTillHUD++;
+        if (framesTillHUD > 5) { updateArmyHUD(); framesTillHUD = 0; }
+      } else {
+        // Death sinking animation
+        for (const f of entities) {
+          if (f.dead) {
+            f.mesh.position.y -= dt * 0.2;
+            f.mesh.userData.mat.opacity *= 0.95;
+          }
+        }
+      }
+
+      // Camera Army Tracking
+      let sumX = 0, sumZ = 0, count = 0;
+      for (const e of entities) {
+        if (!e.dead) { sumX += e.mesh.position.x; sumZ += e.mesh.position.z; count++; }
+      }
+      const midX = count > 0 ? sumX / count : 0;
+      const midZ = count > 0 ? sumZ / count : 0;
+      
+      const camTarget = new THREE.Vector3(midX, 0.5, midZ);
+      const camYaw = elapsed * 0.05;
+      const camRadius = 24.0 + (armySize * 0.2); // Zoom out based on army size
+
+      camera.position.x = THREE.MathUtils.lerp(camera.position.x, camTarget.x + Math.sin(camYaw) * camRadius, rawDt * 2);
+      camera.position.z = THREE.MathUtils.lerp(camera.position.z, camTarget.z + Math.cos(camYaw) * camRadius, rawDt * 2);
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 10.0 + (armySize * 0.15), rawDt * 2);
+      camera.lookAt(camTarget);
+
+      renderer.render(scene, camera);
+    }
+
+    window.onload = () => {
+      rebuildWorldTopology();
+      startBattle();
+      animate();
+    };
+  </script>
+</body>
+</html>
