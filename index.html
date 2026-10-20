@@ -667,49 +667,41 @@
       return root;
     }
 
-    // Procedural 3D Wireframe Skull that rises, grows, and explodes/fades over dying creatures
+    // Procedural 3D Wireframe Skull (75% smaller) that rises, stays together, and laughs as it fades out
     const deathSkulls = [];
     function spawnDeathSkull3D(worldPos, colorHex) {
       const skullRoot = new THREE.Group();
-      skullRoot.position.set(worldPos.x, worldPos.y + 0.32, worldPos.z);
+      skullRoot.position.set(worldPos.x, worldPos.y + 0.24, worldPos.z);
 
       const skullMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 1.0 });
       const glowMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 0.9 });
 
-      const parts = [];
       // Cranium dome
       const cranium = makeWirePart('IcosahedronGeometry', [0.22, 1], skullMat, [0, 0.10, 0], [0, 0, 0], [0.95, 1.08, 1.05]);
       // Cheekbone / zygomatic ridge
       const cheek = makeWirePart('BoxGeometry', [0.30, 0.10, 0.22], skullMat, [0, -0.02, 0.04]);
-      // Lower jaw / mandible
+      // Lower jaw / mandible (animated for laughing)
       const jaw = makeWirePart('BoxGeometry', [0.18, 0.13, 0.18], glowMat, [0, -0.15, 0.05]);
+      jaw.userData.baseY = -0.15;
       // Left & right eye sockets
       const eyeL = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [-0.085, 0.05, 0.19]);
       const eyeR = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [0.085, 0.05, 0.19]);
       // Nasal cavity
       const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], glowMat, [0, -0.03, 0.21], [0.2, 0, 0]);
 
-      const rawParts = [cranium, cheek, jaw, eyeL, eyeR, nose];
-      rawParts.forEach(p => {
-        p.userData.basePos = p.position.clone();
-        p.userData.explodeDir = p.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.4, (Math.random() - 0.2) * 0.4, (Math.random() - 0.5) * 0.4)).normalize();
-        p.userData.spinVec = new THREE.Vector3((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9);
-        skullRoot.add(p);
-        parts.push(p);
-      });
+      skullRoot.add(cranium, cheek, jaw, eyeL, eyeR, nose);
 
-      skullRoot.scale.set(0.05, 0.05, 0.05);
+      // Start at 25% of previous initial scale
+      skullRoot.scale.set(0.0125, 0.0125, 0.0125);
       scene.add(skullRoot);
 
       deathSkulls.push({
         group: skullRoot,
-        parts,
+        jaw,
         skullMat,
         glowMat,
         elapsed: 0,
-        duration: 2.0, // Synchronized with the 2.0s creature death disintegration
-        exploded: false,
-        colorHex
+        duration: 2.0 // Synchronized with the 2.0s creature death fade
       });
     }
 
@@ -1358,7 +1350,7 @@
           // Agile mid-air dodge jink
           defender.vx += -defender.strafeDir * 4.2;
           defender.vz += defender.strafeDir * 4.2;
-          spawnHitSparks(defender.mesh.position, 0xffffff, 3);
+          spawnHitSparks(defender.mesh.position, 0xffffff, 3, defender.key);
           return;
         }
       }
@@ -1431,18 +1423,18 @@
         defender.victimState.tiltZ = 0.28;
       }
 
-      // Spawn physical clash sparks at the exact midpoint between colliding hitboxes
+      // Spawn creature-specific fly-away body part fragments at the contact point
       const contactPoint = new THREE.Vector3(
         (attacker.mesh.position.x + defender.mesh.position.x) * 0.5,
         (attacker.mesh.position.y + defender.mesh.position.y) * 0.5,
         (attacker.mesh.position.z + defender.mesh.position.z) * 0.5
       );
-      spawnHitSparks(contactPoint, isPower ? 0xf0abfc : attacker.color, isPower ? 10 : 5);
+      spawnHitSparks(contactPoint, isPower ? 0xf0abfc : defender.color, isPower ? 10 : 5, defender.key);
 
       if (defender.hp <= 0 && !defender.dead) {
         defender.dead = true;
         defender.deathTimer = 0;
-        spawnHitSparks(defender.mesh.position, defender.color, 12);
+        spawnHitSparks(defender.mesh.position, defender.color, 12, defender.key);
         spawnDeathSkull3D(defender.mesh.position, defender.color);
         updateArmyHUD();
       }
@@ -1656,21 +1648,60 @@
       return { bodyYOffset, bodyPitchOffset, bodyRollOffset, bodyYawOffset };
     }
 
+    // Creature-specific 75% smaller fly-away part geometries (cached in GeoCache for zero bloat)
     const particles = [];
-    function spawnHitSparks(pos, colorHex, count = 10) {
+    function getCreaturePartParticleSpec(creatureKey) {
+      const r = Math.random();
+      if (creatureKey === 'king_crab') {
+        // Crusher claw tips, benthic leg segments, or carapace plates
+        if (r < 0.4) return { type: 'ConeGeometry', args: [0.009, 0.032, 5], scale: [1, 1, 1] };
+        if (r < 0.75) return { type: 'CylinderGeometry', args: [0.0025, 0.0015, 0.038, 4], scale: [1, 1, 1] };
+        return { type: 'OctahedronGeometry', args: [0.014, 0], scale: [1.1, 0.45, 1.35] };
+      } else if (creatureKey === 'mantis_shrimp') {
+        // Raptorial dactyl clubs or pleopod box segments
+        if (r < 0.5) return { type: 'OctahedronGeometry', args: [0.011, 1], scale: [1.6, 0.7, 0.7] };
+        return { type: 'BoxGeometry', args: [0.018, 0.011, 0.020], scale: [1, 1, 1] };
+      } else if (creatureKey === 'stag_beetle') {
+        // Antler horn tips, elytra shell shards, or tarsi legs
+        if (r < 0.45) return { type: 'ConeGeometry', args: [0.005, 0.036, 4], scale: [1, 1, 1] };
+        if (r < 0.75) return { type: 'SphereGeometry', args: [0.013, 5, 4], scale: [1.45, 0.62, 1.05] };
+        return { type: 'CylinderGeometry', args: [0.002, 0.001, 0.028, 3], scale: [1, 1, 1] };
+      } else if (creatureKey === 'killer_wasp') {
+        // Wing planes, stinger cones, or head capsules
+        if (r < 0.45) return { type: 'PlaneGeometry', args: [0.018, 0.040, 1, 2], scale: [1, 1, 1] };
+        if (r < 0.8) return { type: 'ConeGeometry', args: [0.009, 0.032, 5], scale: [1, 1, 1] };
+        return { type: 'OctahedronGeometry', args: [0.011, 0], scale: [1, 1, 1] };
+      } else if (creatureKey === 'emperor_dragonfly') {
+        // Elongated forewings/hindwings or tail cylinder segments
+        if (r < 0.55) return { type: 'PlaneGeometry', args: [0.013, 0.048, 1, 2], scale: [1, 1, 1] };
+        return { type: 'CylinderGeometry', args: [0.004, 0.002, 0.045, 5], scale: [1, 1, 1] };
+      } else if (creatureKey === 'tarantula_hawk') {
+        // Aposematic wing shards, curled antennae, or stinger barbs
+        if (r < 0.4) return { type: 'PlaneGeometry', args: [0.020, 0.044, 1, 2], scale: [1, 1, 1] };
+        if (r < 0.75) return { type: 'ConeGeometry', args: [0.006, 0.028, 4], scale: [1, 1, 1] };
+        return { type: 'CylinderGeometry', args: [0.002, 0.001, 0.032, 3], scale: [1, 1, 1] };
+      }
+      return { type: 'OctahedronGeometry', args: [0.0125, 0], scale: [1, 1, 1] };
+    }
+
+    function spawnHitSparks(pos, colorHex, count = 10, creatureKey = null) {
       if (armySize > 25 && Math.random() > 0.35) return;
-      const sparkGeo = getGeometry('OctahedronGeometry', 0.05, 0);
       const limit = Math.min(count, armySize > 15 ? 5 : 10);
       for (let i = 0; i < limit; i++) {
+        const spec = getCreaturePartParticleSpec(creatureKey);
+        const partGeo = getGeometry(spec.type, ...spec.args);
         const mat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 1 });
-        const spark = new THREE.Mesh(sparkGeo, mat);
+        const spark = new THREE.Mesh(partGeo, mat);
         spark.position.copy(pos);
-        spark.position.y += 0.22;
-        const speed = 1.2 + Math.random() * 2.5;
+        spark.position.y += 0.18;
+        spark.scale.set(...spec.scale);
+        spark.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const speed = 1.0 + Math.random() * 2.1;
         const angle = Math.random() * Math.PI * 2;
         particles.push({
           mesh: spark,
-          vel: new THREE.Vector3(Math.cos(angle) * speed, 1.0 + Math.random() * 2.0, Math.sin(angle) * speed),
+          vel: new THREE.Vector3(Math.cos(angle) * speed, 0.9 + Math.random() * 1.8, Math.sin(angle) * speed),
+          rotVel: new THREE.Vector3((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14),
           life: 1.0
         });
         scene.add(spark);
@@ -2953,11 +2984,16 @@
           } else {
             p.mesh.position.addScaledVector(p.vel, dt);
             p.vel.y -= 9.8 * dt;
+            if (p.rotVel) {
+              p.mesh.rotation.x += p.rotVel.x * dt;
+              p.mesh.rotation.y += p.rotVel.y * dt;
+              p.mesh.rotation.z += p.rotVel.z * dt;
+            }
             p.mesh.material.opacity = p.life;
           }
         }
 
-        // Animate 3D Wireframe Death Skulls (Pop up, grow, then explode & fade away in sync with 2.0s creature death)
+        // Animate 3D Wireframe Death Skulls (75% smaller, stays whole, and laughs as it fades out with the dying creature)
         for (let i = deathSkulls.length - 1; i >= 0; i--) {
           const sk = deathSkulls[i];
           sk.elapsed += dt;
@@ -2968,31 +3004,33 @@
             sk.skullMat.dispose();
             sk.glowMat.dispose();
             deathSkulls.splice(i, 1);
-          } else if (p < 0.55) {
-            // Phase 1 (0.0s -> 1.1s): Pop up above dying creature & grow larger while facing camera
-            const growT = p / 0.55;
+          } else {
+            // Grow to 25% of previous size (max ~0.2825 scale) then stay intact
+            const growT = Math.min(1, p / 0.35);
             const easeOut = 1 - Math.pow(1 - growT, 3);
-            const s = 0.08 + easeOut * 1.05;
+            const baseScale = 0.02 + easeOut * 0.2625;
+
+            // Laughing animation: rapid mandible chattering + head tilt/bobbing
+            const laughWave = Math.abs(Math.sin(sk.elapsed * 22.0));
+            const s = baseScale * (1 + laughWave * 0.08);
             sk.group.scale.set(s, s, s);
-            sk.group.position.y += dt * 0.65;
-            sk.group.rotation.y = Math.atan2(
+
+            if (sk.jaw) {
+              sk.jaw.position.y = sk.jaw.userData.baseY - laughWave * 0.085;
+              sk.jaw.rotation.x = laughWave * 0.38;
+            }
+
+            sk.group.position.y += dt * 0.28 + Math.sin(sk.elapsed * 22.0) * 0.003;
+            const faceYaw = Math.atan2(
               camera.position.x - sk.group.position.x,
               camera.position.z - sk.group.position.z
             );
-          } else {
-            // Phase 2 (1.1s -> 2.0s): Explode skull fragments outward and fade away as corpse disintegrates
-            if (!sk.exploded) {
-              sk.exploded = true;
-              spawnHitSparks(sk.group.position, sk.colorHex, 8);
-            }
-            const expT = (p - 0.55) / 0.45;
-            sk.parts.forEach(part => {
-              part.position.addScaledVector(part.userData.explodeDir, dt * 2.4);
-              part.rotation.x += part.userData.spinVec.x * dt;
-              part.rotation.y += part.userData.spinVec.y * dt;
-              part.rotation.z += part.userData.spinVec.z * dt;
-            });
-            const alpha = Math.max(0, 1 - expT);
+            sk.group.rotation.y = faceYaw;
+            sk.group.rotation.x = -0.12 - laughWave * 0.16;
+            sk.group.rotation.z = Math.sin(sk.elapsed * 11.0) * 0.10;
+
+            // Smoothly fade out alongside the disintegrating creature model
+            const alpha = p < 0.45 ? 1.0 : Math.max(0, 1 - (p - 0.45) / 0.55);
             sk.skullMat.opacity = alpha;
             sk.glowMat.opacity = alpha * 0.9;
           }
