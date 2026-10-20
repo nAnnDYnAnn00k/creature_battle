@@ -236,7 +236,7 @@
           <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase whitespace-nowrap">COMBAT ACTIVE</span>
         </div>
-        <span id="round-timer" class="inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700" title="2-Minute Round Countdown (Hazards at 01:30)">02:00</span>
+        <span id="round-timer" class="inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700" title="2-Minute Full Round Countdown">02:00</span>
         <button id="btn-hud-mode" class="inline-flex items-center justify-center h-6 w-28 px-2 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           MODE: SANDBOX
         </button>
@@ -438,17 +438,41 @@
           </div>
         </div>
       </div>
+
+      <!-- SQUAD FORMATIONS & TACTICAL STANCES -->
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/50 p-2 rounded border border-slate-800/70">
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between text-[8px] text-slate-400 mb-1">
+            <span>FORMATION:</span><span id="lbl-c-formation" class="text-emerald-300 font-bold">SWARM</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1 w-full">
+            <button data-formation="swarm" class="btn-formation-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Standard grid swarm">SWARM</button>
+            <button data-formation="phalanx" class="btn-formation-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Tight defensive wall (-50% knockback)">PHALANX</button>
+            <button data-formation="pincer" class="btn-formation-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Split two-wing flanking arc">PINCER</button>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between text-[8px] text-slate-400 mb-1">
+            <span>STANCE:</span><span id="lbl-c-stance" class="text-amber-300 font-bold">BALANCED</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1 w-full">
+            <button data-stance="balanced" class="btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Balanced offense and defense">BAL</button>
+            <button data-stance="phalanx_guard" class="btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="+25% DEF, -45% Knockback, 0.85x Speed">GUARD</button>
+            <button data-stance="berserk" class="btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="+25% ATK, +20% Speed, -20% DEF, Never Retreats">BERSERK</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     const CREATURES = {
       king_crab: {
-        name: "King Crab", faction: "CRUSTACEAN", color: 0x22d3ee,
+        name: "King Crab", faction: "CRUSTACEAN", archetype: "armored_tank", color: 0x22d3ee,
         hp: 130, atk: 18, def: 17, spd: 0.92, crit: 0.08,
         flightAlt: 0.0, hitboxRadius: 0.24, kiteStyle: "side_scuttle",
         behaviors: ["chelae_display", "benthic_hunker", "bubble_purge"],
-        desc: "Sideways-scuttling benthic fortress; climbs ridges",
+        desc: "Armored Tank: Deflects 25% aerial sting dmg; crushes flyers",
         moves: [
           { name: "Crusher Claw", mult: 1.02, anim: "claw_snap" },
           { name: "Carapace Lateral Ram", mult: 1.12, anim: "heavy_ram" }
@@ -456,11 +480,11 @@
         powerMove: { name: "ABYSSAL CRUSH", mult: 1.80, anim: "power_slam" }
       },
       mantis_shrimp: {
-        name: "Mantis Shrimp", faction: "CRUSTACEAN", color: 0x38bdf8,
+        name: "Mantis Shrimp", faction: "CRUSTACEAN", archetype: "shell_breaker", color: 0x38bdf8,
         hp: 100, atk: 22, def: 11, spd: 1.18, crit: 0.18,
         flightAlt: 0.0, hitboxRadius: 0.20, kiteStyle: "tail_backdash",
         behaviors: ["eye_radar", "raptorial_cock", "pleopod_ripple"],
-        desc: "Cavitation puncher; uses pleopod tail-flip backdashes",
+        desc: "Shell-Breaker: +30% armor penetration vs heavy tanks",
         moves: [
           { name: "Raptorial Club Smash", mult: 1.06, anim: "club_punch" },
           { name: "Twin Dactyl Flurry", mult: 1.14, anim: "flurry_punch" }
@@ -468,11 +492,11 @@
         powerMove: { name: "CAVITATION BLAST", mult: 1.85, anim: "power_cavitation" }
       },
       stag_beetle: {
-        name: "Stag Beetle", faction: "INSECT", color: 0xf43f5e,
+        name: "Stag Beetle", faction: "INSECT", archetype: "heavy_grappler", color: 0xf43f5e,
         hp: 125, atk: 18, def: 15, spd: 0.96, crit: 0.10,
         flightAlt: 0.0, hitboxRadius: 0.23, kiteStyle: "bulldozer",
         behaviors: ["mandible_scrape", "thorax_rear", "tarsi_stamp"],
-        desc: "Chitinous grappler; bulldozes enemies & holds high ground",
+        desc: "Heavy Grappler: +25% bonus vs ground units; flyers can evade",
         moves: [
           { name: "Mandible Clamp", mult: 1.08, anim: "claw_snap" },
           { name: "Pronotum Horn Toss", mult: 1.15, anim: "horn_toss" }
@@ -480,11 +504,11 @@
         powerMove: { name: "SEISMIC SUPLEX", mult: 1.85, anim: "power_suplex" }
       },
       killer_wasp: {
-        name: "Killer Wasp", faction: "INSECT", color: 0xfacc15,
+        name: "Killer Wasp", faction: "INSECT", archetype: "aerial_striker", color: 0xfacc15,
         hp: 90, atk: 21, def: 8, spd: 1.28, crit: 0.20,
         flightAlt: 0.22, hitboxRadius: 0.19, kiteStyle: "hit_and_kite",
         behaviors: ["abdomen_pump", "antenna_groom", "hover_jink"],
-        desc: "Low-hovering aerial striker; darts behind rock shelter",
+        desc: "Aerial Striker: 22% evasion vs ground grapples; weak to tanks",
         moves: [
           { name: "Needle Jab", mult: 1.00, anim: "sting_thrust" },
           { name: "Supersonic Dive", mult: 1.14, anim: "air_dive" }
@@ -492,11 +516,11 @@
         powerMove: { name: "HYPER-VENOM", mult: 1.85, anim: "power_multisting" }
       },
       emperor_dragonfly: {
-        name: "Emperor Dragonfly", faction: "INSECT", color: 0x34d399,
+        name: "Emperor Dragonfly", faction: "INSECT", archetype: "aerial_striker", color: 0x34d399,
         hp: 95, atk: 20, def: 9, spd: 1.36, crit: 0.22,
         flightAlt: 0.25, hitboxRadius: 0.21, kiteStyle: "vector_strafe",
         behaviors: ["head_swivel", "wing_shimmer", "abdomen_trim"],
-        desc: "4-wing aerial interceptor; 95% hunting strafe & rock kiting",
+        desc: "Aerial Interceptor: 22% evasion vs ground grapples; 8-G strafe",
         moves: [
           { name: "8-G Vector Strafe", mult: 1.04, anim: "vector_slash" },
           { name: "Raptorial Basket Snatch", mult: 1.12, anim: "air_dive" }
@@ -504,11 +528,11 @@
         powerMove: { name: "95% INTERCEPT APEX DIVE", mult: 1.82, anim: "power_intercept" }
       },
       tarantula_hawk: {
-        name: "Tarantula Hawk", faction: "INSECT", color: 0xf97316,
+        name: "Tarantula Hawk", faction: "INSECT", archetype: "aerial_striker", color: 0xf97316,
         hp: 108, atk: 21, def: 12, spd: 1.16, crit: 0.15,
         flightAlt: 0.20, hitboxRadius: 0.21, kiteStyle: "paralysis_kite",
         behaviors: ["wing_flick", "antenna_probe", "stinger_prime"],
-        desc: "Spider-hunting apex wasp; neuro-sting slows foes & kites",
+        desc: "Apex Wasp: 22% evasion vs grapples; neuro-sting slows foes",
         moves: [
           { name: "Neuro-Shock Sting", mult: 1.06, anim: "sting_thrust", slow: 1.8 },
           { name: "Aposematic Wing Buffet", mult: 1.10, anim: "wing_backdraft" }
@@ -643,6 +667,52 @@
       return root;
     }
 
+    // Procedural 3D Wireframe Skull that rises, grows, and explodes/fades over dying creatures
+    const deathSkulls = [];
+    function spawnDeathSkull3D(worldPos, colorHex) {
+      const skullRoot = new THREE.Group();
+      skullRoot.position.set(worldPos.x, worldPos.y + 0.32, worldPos.z);
+
+      const skullMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 1.0 });
+      const glowMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 0.9 });
+
+      const parts = [];
+      // Cranium dome
+      const cranium = makeWirePart('IcosahedronGeometry', [0.22, 1], skullMat, [0, 0.10, 0], [0, 0, 0], [0.95, 1.08, 1.05]);
+      // Cheekbone / zygomatic ridge
+      const cheek = makeWirePart('BoxGeometry', [0.30, 0.10, 0.22], skullMat, [0, -0.02, 0.04]);
+      // Lower jaw / mandible
+      const jaw = makeWirePart('BoxGeometry', [0.18, 0.13, 0.18], glowMat, [0, -0.15, 0.05]);
+      // Left & right eye sockets
+      const eyeL = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [-0.085, 0.05, 0.19]);
+      const eyeR = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [0.085, 0.05, 0.19]);
+      // Nasal cavity
+      const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], glowMat, [0, -0.03, 0.21], [0.2, 0, 0]);
+
+      const rawParts = [cranium, cheek, jaw, eyeL, eyeR, nose];
+      rawParts.forEach(p => {
+        p.userData.basePos = p.position.clone();
+        p.userData.explodeDir = p.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.4, (Math.random() - 0.2) * 0.4, (Math.random() - 0.5) * 0.4)).normalize();
+        p.userData.spinVec = new THREE.Vector3((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9);
+        skullRoot.add(p);
+        parts.push(p);
+      });
+
+      skullRoot.scale.set(0.05, 0.05, 0.05);
+      scene.add(skullRoot);
+
+      deathSkulls.push({
+        group: skullRoot,
+        parts,
+        skullMat,
+        glowMat,
+        elapsed: 0,
+        duration: 2.0, // Synchronized with the 2.0s creature death disintegration
+        exploded: false,
+        colorHex
+      });
+    }
+
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 500);
@@ -661,7 +731,6 @@
     const arenaRingRadius = 24.5;
     let arenaObstacles = [];
     let tacticalZones = [];
-    let hazardRings = [];
 
     function getTerrainHeight(x, z) {
       if (mapElevationScale <= 0.01) return 0;
@@ -792,11 +861,9 @@
     let simSpeed = 1;
     let autoLoop = true;
 
-    // 2-Minute Round Timer (120s) & 30-Second Deadlock Hazard System
+    // Full 2-Minute Round Timer (120s)
     const ROUND_DURATION = 120.0;
     let matchElapsedTime = 0;
-    let nextHazardEventTime = 30.0;
-    let hazardAnnounced = false;
 
     const ZOOM_LEVELS = [
       { id: 'closest',   label: 'CLOSEST',   radius: 4.5,   pitch: 0.28 },
@@ -859,9 +926,6 @@
     let activeEditTarget = 1;
     let autoRestartTimeout = null;
 
-    let activeDmgPopups = 0;
-    const MAX_POPUPS = 25;
-
     const SCALE_TIERS = {
       slow:   { label: 'SLOW',   val: 0.085 },
       medium: { label: 'MEDIUM', val: 0.125 },
@@ -872,10 +936,20 @@
       medium: { label: 'MEDIUM', val: 1.00 },
       fast:   { label: 'FAST',   val: 1.75 }
     };
+    const FORMATIONS = {
+      swarm:   { label: 'SWARM' },
+      phalanx: { label: 'PHALANX' },
+      pincer:  { label: 'PINCER' }
+    };
+    const STANCES = {
+      balanced:      { label: 'BALANCED', atkMult: 1.0,  defMult: 1.0,  spdMult: 1.0,  knockResist: 1.0 },
+      phalanx_guard: { label: 'GUARD',    atkMult: 0.92, defMult: 1.25, spdMult: 0.85, knockResist: 0.50 },
+      berserk:       { label: 'BERSERK',  atkMult: 1.25, defMult: 0.80, spdMult: 1.20, knockResist: 1.10 }
+    };
 
     const slotOverrides = {
-      1: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium' },
-      2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium' }
+      1: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced' },
+      2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced' }
     };
 
     // +15% Global Combat Aggression Multiplier
@@ -883,12 +957,17 @@
 
     function applyCreatureOverridesToArmy(side) {
       const ov = slotOverrides[side];
+      const st = STANCES[ov.stance] || STANCES.balanced;
       entities.forEach(f => {
         if (f.side === side) {
           const cfg = CREATURES[f.key];
           f.mesh.userData.bodyGroup.scale.set(ov.scale, ov.scale, ov.scale);
           f.hitboxRadius = cfg.hitboxRadius * (ov.scale / 0.125);
-          f.spd = cfg.spd * ov.spdMult;
+          f.spd = cfg.spd * ov.spdMult * st.spdMult;
+          f.atk = Math.round(cfg.atk * st.atkMult);
+          f.def = Math.round(cfg.def * st.defMult);
+          f.stance = ov.stance;
+          f.formation = ov.formation;
           f.cooldown = (2.35 / f.spd) / AGGRESSION_BOOST;
         }
       });
@@ -897,19 +976,45 @@
     function createFighterState(key, side, idx, totalCols) {
       const cfg = CREATURES[key];
       const ov = slotOverrides[side];
+      const st = STANCES[ov.stance] || STANCES.balanced;
       const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale);
       
       if (side === 2 && selectedP1 === selectedP2) {
         mesh.userData.mat.color.setHex(0xf43f5e);
       }
 
-      // Dynamically compress formation spacing when deploying massive 50-100 unit swarms so all units fit inside the arena ring
-      const spacing = armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3);
-      const row = Math.floor(idx / totalCols);
-      const col = idx % totalCols;
-      
-      let homeX = (side === 1 ? -5.8 : 5.8) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.35;
-      let homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.35;
+      const dirSign = side === 1 ? -1 : 1;
+      let homeX = 0;
+      let homeZ = 0;
+      let flankSign = idx % 2 === 0 ? 1 : -1;
+
+      if (ov.formation === 'phalanx') {
+        // Phalanx Wall: Tightly locked defensive shield line along Z-axis
+        const lineCols = Math.max(2, Math.ceil(armySize * 0.65));
+        const r = Math.floor(idx / lineCols);
+        const c = idx % lineCols;
+        const zSpacing = armySize > 40 ? 0.62 : 0.82;
+        homeX = (side === 1 ? -4.8 : 4.8) + r * 0.85 * dirSign + (Math.random() - 0.5) * 0.12;
+        homeZ = (c - (Math.min(armySize, lineCols) - 1) / 2) * zSpacing;
+      } else if (ov.formation === 'pincer') {
+        // Pincer Flank: Splits army into North and South flanking wings
+        flankSign = idx < armySize / 2 ? -1 : 1;
+        const wingIdx = idx < armySize / 2 ? idx : idx - Math.ceil(armySize / 2);
+        const wingCols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, armySize / 2))));
+        const r = Math.floor(wingIdx / wingCols);
+        const c = wingIdx % wingCols;
+        const spacing = armySize > 50 ? 0.85 : 1.05;
+        homeX = (side === 1 ? -6.2 : 6.2) + r * spacing * dirSign;
+        homeZ = flankSign * (5.2 + c * spacing * 0.78) + (Math.random() - 0.5) * 0.25;
+      } else {
+        // Standard Swarm Grid Formation
+        const spacing = armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3);
+        const row = Math.floor(idx / totalCols);
+        const col = idx % totalCols;
+        homeX = (side === 1 ? -5.8 : 5.8) + (row * spacing * dirSign) + (Math.random() - 0.5) * 0.35;
+        homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.35;
+      }
+
       const rDist = Math.hypot(homeX, homeZ);
       if (rDist > arenaRingRadius - 1.2) {
         const clampRatio = (arenaRingRadius - 1.2) / rDist;
@@ -922,27 +1027,34 @@
       if (side === 2) mesh.rotation.y = Math.PI;
       scene.add(mesh);
 
+      const finalSpd = cfg.spd * ov.spdMult * st.spdMult;
       return {
         id: Math.random().toString(36).substr(2, 9),
         key, side, name: cfg.name, faction: cfg.faction,
+        archetype: cfg.archetype || 'balanced',
+        stance: ov.stance,
+        formation: ov.formation,
+        flankSign,
         color: (side === 2 && selectedP1 === selectedP2) ? 0xf43f5e : cfg.color,
-        maxHp: cfg.hp, hp: cfg.hp, atk: cfg.atk, def: cfg.def, spd: cfg.spd * ov.spdMult, crit: cfg.crit,
+        maxHp: cfg.hp, hp: cfg.hp,
+        atk: Math.round(cfg.atk * st.atkMult),
+        def: Math.round(cfg.def * st.defMult),
+        spd: finalSpd, crit: cfg.crit,
         flightAlt: cfg.flightAlt || 0,
         hitboxRadius: (cfg.hitboxRadius || 0.21) * (ov.scale / 0.125),
         kiteStyle: cfg.kiteStyle || 'balanced',
         behaviors: cfg.behaviors || [],
         moves: cfg.moves, powerMove: cfg.powerMove,
         energy: 0, lastMoveName: "READY",
-        cooldown: (2.35 / (cfg.spd * ov.spdMult)) / AGGRESSION_BOOST,
-        timer: (1.25 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.55),
+        cooldown: (2.35 / finalSpd) / AGGRESSION_BOOST,
+        timer: (1.25 / finalSpd) * (0.35 + Math.random() * 0.55),
         mesh, homeX, homeZ,
         vx: 0, vz: 0,
-        strafeDir: Math.random() < 0.5 ? 1 : -1,
+        strafeDir: ov.formation === 'pincer' ? flankSign : (Math.random() < 0.5 ? 1 : -1),
         strafeSwitchTimer: 1.2 + Math.random() * 2.0,
         retreatTimer: 0,
         slowTimer: 0,
         takingCover: false,
-        // 3 Creature-specific natural movement/idle habit state
         habitIndex: Math.floor(Math.random() * 3),
         habitTimer: 1.0 + Math.random() * 2.2,
         habitActiveTime: 0,
@@ -958,7 +1070,10 @@
     function spawnArmies() {
       entities.forEach(f => scene.remove(f.mesh));
       entities = [];
-      activeDmgPopups = 0;
+      for (let i = deathSkulls.length - 1; i >= 0; i--) {
+        scene.remove(deathSkulls[i].group);
+      }
+      deathSkulls.length = 0;
       document.getElementById('fx-layer').innerHTML = '';
 
       const cols = Math.max(1, Math.ceil(Math.sqrt(armySize)));
@@ -967,8 +1082,6 @@
         entities.push(createFighterState(selectedP2, 2, i, cols));
       }
       matchElapsedTime = 0;
-      nextHazardEventTime = 30.0;
-      hazardAnnounced = false;
       updateRoundTimerUI();
       updateArmyHUD();
       highlightSelectedCards();
@@ -982,86 +1095,10 @@
       const secs = String(remaining % 60).padStart(2, '0');
       timerEl.textContent = `${mins}:${secs}`;
 
-      if (matchElapsedTime >= 30.0 && battleState === 'FIGHTING') {
-        timerEl.className = "inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-rose-400 rounded-full bg-rose-950/90 border border-rose-500/60 animate-pulse";
+      if (remaining <= 15 && battleState === 'FIGHTING') {
+        timerEl.className = "inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-amber-300 rounded-full bg-amber-950/90 border border-amber-500/60 animate-pulse";
       } else {
         timerEl.className = "inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700";
-      }
-    }
-
-    function triggerAntiDeadlockHazard() {
-      const living = entities.filter(e => !e.dead);
-      if (living.length === 0) return;
-
-      const hazardCatalog = {
-        forest:    { name: "CANOPY SPORE BURST", color: 0x4ade80 },
-        fire_ant:  { name: "SOLENOPSIS ACID ERUPTION", color: 0xf97316 },
-        terrarium: { name: "SOLAR HEAT-LAMP FLARE", color: 0xfacc15 },
-        canyon:    { name: "TRENCH SEISMIC TREMOR", color: 0x818cf8 },
-        grid:      { name: "ARC-GRID OVERLOAD", color: 0x22d3ee },
-        terrain:   { name: "TECTONIC SHOCKWAVE", color: 0xf43f5e }
-      };
-      const hCfg = hazardCatalog[worldTopology] || hazardCatalog.terrain;
-
-      // Balanced targeting: Strike up to 2 random units (prioritizing units hiding in cover) across both teams
-      const targets = [];
-      for (const side of [1, 2]) {
-        const sideUnits = living.filter(e => e.side === side);
-        if (sideUnits.length > 0) {
-          const coverUnits = sideUnits.filter(e => e.takingCover);
-          const pool = coverUnits.length > 0 ? coverUnits : sideUnits;
-          targets.push(pool[Math.floor(Math.random() * pool.length)]);
-        }
-      }
-
-      const blastRadius = 3.4;
-      let hitTotal = 0;
-
-      targets.forEach(centerUnit => {
-        const hx = centerUnit.mesh.position.x + (Math.random() - 0.5) * 0.8;
-        const hz = centerUnit.mesh.position.z + (Math.random() - 0.5) * 0.8;
-        const hy = getTerrainHeight(hx, hz);
-
-        // Visual expanding wireframe shockwave ring
-        const ringMesh = new THREE.Mesh(
-          getGeometry('RingGeometry', 0.25, 0.45, 24),
-          new THREE.MeshBasicMaterial({ color: hCfg.color, side: THREE.DoubleSide, transparent: true, opacity: 0.95 })
-        );
-        ringMesh.rotation.x = Math.PI / 2;
-        ringMesh.position.set(hx, hy + 0.12, hz);
-        scene.add(ringMesh);
-        hazardRings.push({ mesh: ringMesh, life: 1.0, maxScale: blastRadius * 2.4 });
-
-        living.forEach(u => {
-          const d = Math.hypot(u.mesh.position.x - hx, u.mesh.position.z - hz);
-          if (d <= blastRadius) {
-            const dmg = Math.max(6, Math.round(u.maxHp * 0.14));
-            u.hp = Math.max(0, u.hp - dmg);
-            u.hitFlash = 0.35;
-            u.takingCover = false;
-            u.retreatTimer = 0;
-
-            // Flush units out from behind terrain toward the center of the arena
-            const toCenterDist = Math.hypot(u.homeX, u.homeZ) || 1;
-            u.vx += (-u.homeX / toCenterDist) * 4.5;
-            u.vz += (-u.homeZ / toCenterDist) * 4.5;
-
-            spawnHitSparks(u.mesh.position, hCfg.color, 6);
-            if (activeDmgPopups < MAX_POPUPS) {
-              spawnFloatingDamage(u.mesh.position, dmg, true, u.side);
-            }
-            if (u.hp <= 0 && !u.dead) {
-              u.dead = true;
-              u.deathTimer = 0;
-            }
-            hitTotal++;
-          }
-        });
-      });
-
-      if (hitTotal > 0) {
-        appendLog(`🌋 ${hCfg.name}! (${hitTotal} units struck & flushed from cover)`, "text-amber-300 font-bold");
-        updateArmyHUD();
       }
     }
 
@@ -1310,15 +1347,47 @@
         return; // Out of physical hitbox reach
       }
 
+      // STRATEGIC DEPTH: Type Advantage & Evasion Matrix (Rock-Paper-Scissors)
+      let archetypeMult = 1.0;
+      let effectiveDef = defender.def;
+
+      // 1. Aerial Strikers have a 22% chance to evade slow ground grapples/rams
+      if (defender.archetype === 'aerial_striker' && attacker.flightAlt === 0 && !isPower) {
+        const isGrappleOrRam = move.anim === 'horn_toss' || move.anim === 'heavy_ram' || move.anim === 'claw_snap';
+        if (isGrappleOrRam && Math.random() < 0.22) {
+          // Agile mid-air dodge jink
+          defender.vx += -defender.strafeDir * 4.2;
+          defender.vz += defender.strafeDir * 4.2;
+          spawnHitSparks(defender.mesh.position, 0xffffff, 3);
+          return;
+        }
+      }
+
+      // 2. Shell-Breakers (Mantis Shrimp) shatter heavy armor (+30% bonus & ignores 35% DEF vs Armored Tanks / Grapplers)
+      if (attacker.archetype === 'shell_breaker' && (defender.archetype === 'armored_tank' || defender.archetype === 'heavy_grappler')) {
+        archetypeMult = 1.30;
+        effectiveDef *= 0.65;
+      }
+      // 3. Armored Tanks (King Crab) deflect 25% of Aerial Striker stings and deal +20% anti-air swat damage
+      else if (attacker.archetype === 'aerial_striker' && defender.archetype === 'armored_tank') {
+        archetypeMult = 0.75;
+      } else if (attacker.archetype === 'armored_tank' && defender.archetype === 'aerial_striker') {
+        archetypeMult = 1.20;
+      }
+      // 4. Heavy Grapplers (Stag Beetle) overpower Shell-Breakers & ground units (+25% bonus)
+      else if (attacker.archetype === 'heavy_grappler' && defender.flightAlt === 0) {
+        archetypeMult = 1.25;
+      }
+
       const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
       const highGroundMult = elevDiff > 0.22 ? 1.15 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
       const coverMult = defender.takingCover ? 0.75 : 1.0;
       const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
-      const mitigation = 100 / (100 + defender.def * 3.2);
+      const mitigation = 100 / (100 + effectiveDef * 3.2);
       const variance = 0.9 + Math.random() * 0.2;
       
-      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult * coverMult));
+      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * archetypeMult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult * coverMult));
       defender.hp = Math.max(0, defender.hp - dmg);
       defender.hitFlash = isPower ? 0.35 : 0.22;
 
@@ -1326,26 +1395,28 @@
         defender.slowTimer = Math.max(defender.slowTimer, move.slow);
       }
 
-      if (attacker.kiteStyle === 'tail_backdash') {
+      if (attacker.kiteStyle === 'tail_backdash' && attacker.stance !== 'berserk') {
         const awayX = attacker.homeX - defender.mesh.position.x;
         const awayZ = attacker.homeZ - defender.mesh.position.z;
         const d = Math.hypot(awayX, awayZ) || 1;
         attacker.vx += (awayX / d) * 5.8;
         attacker.vz += (awayZ / d) * 5.8;
         attacker.retreatTimer = 1.05;
-      } else if (attacker.flightAlt > 0) {
+      } else if (attacker.flightAlt > 0 && attacker.stance !== 'berserk') {
         attacker.retreatTimer = 1.15;
         attacker.strafeDir *= -1;
       }
 
-      if (defender.hp < defender.maxHp * 0.28 && defender.retreatTimer <= 0 && Math.random() < 0.42) {
+      if (defender.hp < defender.maxHp * 0.28 && defender.retreatTimer <= 0 && defender.stance !== 'berserk' && Math.random() < 0.42) {
         defender.retreatTimer = 1.15;
       }
 
       const pushDx = defender.mesh.position.x - attacker.mesh.position.x;
       const pushDz = defender.mesh.position.z - attacker.mesh.position.z;
       const pushDist = Math.hypot(pushDx, pushDz) || 1;
-      const knockMag = isPower ? 0.95 : 0.38;
+      const defStanceCfg = STANCES[defender.stance] || STANCES.balanced;
+      const formationKnockMult = defender.formation === 'phalanx' ? 0.55 : 1.0;
+      const knockMag = (isPower ? 0.95 : 0.38) * defStanceCfg.knockResist * formationKnockMult;
       defender.vx += (pushDx / pushDist) * knockMag * 3.8;
       defender.vz += (pushDz / pushDist) * knockMag * 3.8;
 
@@ -1368,14 +1439,11 @@
       );
       spawnHitSparks(contactPoint, isPower ? 0xf0abfc : attacker.color, isPower ? 10 : 5);
 
-      if (activeDmgPopups < MAX_POPUPS && (armySize <= 15 || isPower || isCrit)) {
-        spawnFloatingDamage(defender.mesh.position, dmg, isCrit, defender.side);
-      }
-
       if (defender.hp <= 0 && !defender.dead) {
         defender.dead = true;
         defender.deathTimer = 0;
         spawnHitSparks(defender.mesh.position, defender.color, 12);
+        spawnDeathSkull3D(defender.mesh.position, defender.color);
         updateArmyHUD();
       }
     }
@@ -1607,23 +1675,6 @@
         });
         scene.add(spark);
       }
-    }
-
-    function spawnFloatingDamage(worldPos, dmg, isCrit, side) {
-      activeDmgPopups++;
-      const vec = worldPos.clone(); vec.y += 0.55; vec.project(camera);
-      const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
-
-      const el = document.createElement('div');
-      const colorCls = isCrit ? 'text-amber-300 text-sm' : (side === 1 ? 'text-rose-400 text-xs' : 'text-cyan-300 text-xs');
-      el.className = `dmg-popup text-center ${colorCls}`;
-      el.style.left = `${x + (Math.random() * 20 - 10)}px`;
-      el.style.top = `${y}px`;
-      el.textContent = `-${dmg}`;
-      
-      document.getElementById('fx-layer').appendChild(el);
-      setTimeout(() => { el.remove(); activeDmgPopups--; }, 850);
     }
 
     function appendLog(msg, colorClass = "text-slate-400") {
@@ -1868,9 +1919,13 @@
       const ov = slotOverrides[activeEditTarget];
       const sCfg = SCALE_TIERS[ov.scaleTier] || SCALE_TIERS.medium;
       const spdCfg = SPEED_TIERS[ov.spdTier] || SPEED_TIERS.medium;
+      const formCfg = FORMATIONS[ov.formation] || FORMATIONS.swarm;
+      const stanceCfg = STANCES[ov.stance] || STANCES.balanced;
 
       document.getElementById('lbl-c-scale').textContent = sCfg.label;
       document.getElementById('lbl-c-spd').textContent = spdCfg.label;
+      document.getElementById('lbl-c-formation').textContent = formCfg.label;
+      document.getElementById('lbl-c-stance').textContent = stanceCfg.label;
 
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         const active = btn.dataset.scaleTier === ov.scaleTier;
@@ -1886,6 +1941,24 @@
         btn.className = `btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
           active
             ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+        }`;
+      });
+
+      document.querySelectorAll('.btn-formation-preset').forEach(btn => {
+        const active = btn.dataset.formation === ov.formation;
+        btn.className = `btn-formation-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
+          active
+            ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+        }`;
+      });
+
+      document.querySelectorAll('.btn-stance-preset').forEach(btn => {
+        const active = btn.dataset.stance === ov.stance;
+        btn.className = `btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
+          active
+            ? 'bg-amber-500/30 text-amber-200 border-amber-400 font-extrabold'
             : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
@@ -2261,6 +2334,31 @@
         });
       });
 
+      document.querySelectorAll('.btn-formation-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const form = btn.dataset.formation;
+          if (!FORMATIONS[form]) return;
+          slotOverrides[activeEditTarget].formation = form;
+          syncLabControlsUI();
+          applyCreatureOverridesToArmy(activeEditTarget);
+          if (battleState === 'STANDBY' || battleState === 'ENDED') {
+            spawnArmies();
+          }
+          appendLog(`📐 ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Formation set to ${FORMATIONS[form].label}`, "text-emerald-300 font-bold");
+        });
+      });
+
+      document.querySelectorAll('.btn-stance-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const st = btn.dataset.stance;
+          if (!STANCES[st]) return;
+          slotOverrides[activeEditTarget].stance = st;
+          syncLabControlsUI();
+          applyCreatureOverridesToArmy(activeEditTarget);
+          appendLog(`⚔️ ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Stance set to ${STANCES[st].label}`, "text-amber-300 font-bold");
+        });
+      });
+
       // Shared Randomizer Logic for both Main UI and Sandbox Toolkit Randomizer Buttons
       const triggerRandomizerAll = () => {
         const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium'];
@@ -2286,6 +2384,8 @@
         document.getElementById('cs-enemy-mode').value = 'manual';
 
         const tierKeys = ['slow', 'medium', 'fast'];
+        const formKeys = ['swarm', 'phalanx', 'pincer'];
+        const stanceKeys = ['balanced', 'phalanx_guard', 'berserk'];
         for (const s of [1, 2]) {
           const rScale = tierKeys[Math.floor(Math.random() * tierKeys.length)];
           const rSpd = tierKeys[Math.floor(Math.random() * tierKeys.length)];
@@ -2293,6 +2393,8 @@
           slotOverrides[s].scale = SCALE_TIERS[rScale].val;
           slotOverrides[s].spdTier = rSpd;
           slotOverrides[s].spdMult = SPEED_TIERS[rSpd].val;
+          slotOverrides[s].formation = formKeys[Math.floor(Math.random() * formKeys.length)];
+          slotOverrides[s].stance = stanceKeys[Math.floor(Math.random() * stanceKeys.length)];
         }
         syncLabControlsUI();
 
@@ -2494,17 +2596,9 @@
         matchElapsedTime += dt;
         updateRoundTimerUI();
 
-        // 2-Minute (120s) Round Timer Decision
+        // Full 2-Minute (120s) Round Timer Decision without 30s interruption
         if (matchElapsedTime >= ROUND_DURATION) {
           resolveRoundTimeLimit();
-        } else if (matchElapsedTime >= nextHazardEventTime) {
-          // 30-Second Anti-Deadlock Environmental Hazards
-          if (!hazardAnnounced) {
-            hazardAnnounced = true;
-            appendLog("⚠️ 30s STALEMATE PROTOCOL: Environmental hazards active to flush cover!", "text-rose-400 font-extrabold");
-          }
-          triggerAntiDeadlockHazard();
-          nextHazardEventTime += 5.5;
         }
 
         zoneHealTimer += dt;
@@ -2586,11 +2680,10 @@
             const idealContactDist = f.hitboxRadius + target.hitboxRadius + 0.04;
             const strikeTriggerRange = idealContactDist + 0.62;
 
-            // +15% Aggression: Lower defensive retreat threshold & shorter cooldown kiting
+            // +15% Aggression & Tactical Stance behavior (Berserk units never retreat or hide)
             const isLowHp = f.hp < f.maxHp * 0.28;
             const isCoolingDown = f.timer > f.cooldown * 0.72;
-            const hazardsActive = matchElapsedTime >= 30.0;
-            const wantsToKiteOrHide = !hazardsActive && (f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0));
+            const wantsToKiteOrHide = f.stance !== 'berserk' && (f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0));
 
             let steerX = 0;
             let steerZ = 0;
@@ -2657,6 +2750,20 @@
                 const approach = distToEnemy > idealContactDist ? 1.28 : -0.08;
                 steerX = dirX * approach + perpX * 0.65;
                 steerZ = dirZ * approach + perpZ * 0.65;
+              }
+
+              // Apply Squad Formation & Stance steering modifiers
+              if (f.formation === 'pincer' && distToEnemy > 1.8) {
+                const flankPerpX = -dirZ * f.flankSign;
+                const flankPerpZ = dirX * f.flankSign;
+                steerX += flankPerpX * 0.95;
+                steerZ += flankPerpZ * 0.95;
+              } else if (f.formation === 'phalanx') {
+                steerX *= 0.85;
+              }
+              if (f.stance === 'berserk') {
+                steerX += dirX * 0.65;
+                steerZ += dirZ * 0.65;
               }
             }
 
@@ -2850,17 +2957,44 @@
           }
         }
 
-        for (let i = hazardRings.length - 1; i >= 0; i--) {
-          const hr = hazardRings[i];
-          hr.life -= dt * 1.8;
-          if (hr.life <= 0) {
-            scene.remove(hr.mesh);
-            hr.mesh.material.dispose();
-            hazardRings.splice(i, 1);
+        // Animate 3D Wireframe Death Skulls (Pop up, grow, then explode & fade away in sync with 2.0s creature death)
+        for (let i = deathSkulls.length - 1; i >= 0; i--) {
+          const sk = deathSkulls[i];
+          sk.elapsed += dt;
+          const p = sk.elapsed / sk.duration;
+
+          if (p >= 1.0) {
+            scene.remove(sk.group);
+            sk.skullMat.dispose();
+            sk.glowMat.dispose();
+            deathSkulls.splice(i, 1);
+          } else if (p < 0.55) {
+            // Phase 1 (0.0s -> 1.1s): Pop up above dying creature & grow larger while facing camera
+            const growT = p / 0.55;
+            const easeOut = 1 - Math.pow(1 - growT, 3);
+            const s = 0.08 + easeOut * 1.05;
+            sk.group.scale.set(s, s, s);
+            sk.group.position.y += dt * 0.65;
+            sk.group.rotation.y = Math.atan2(
+              camera.position.x - sk.group.position.x,
+              camera.position.z - sk.group.position.z
+            );
           } else {
-            const s = 1 + (1 - hr.life) * hr.maxScale;
-            hr.mesh.scale.set(s, s, 1);
-            hr.mesh.material.opacity = hr.life;
+            // Phase 2 (1.1s -> 2.0s): Explode skull fragments outward and fade away as corpse disintegrates
+            if (!sk.exploded) {
+              sk.exploded = true;
+              spawnHitSparks(sk.group.position, sk.colorHex, 8);
+            }
+            const expT = (p - 0.55) / 0.45;
+            sk.parts.forEach(part => {
+              part.position.addScaledVector(part.userData.explodeDir, dt * 2.4);
+              part.rotation.x += part.userData.spinVec.x * dt;
+              part.rotation.y += part.userData.spinVec.y * dt;
+              part.rotation.z += part.userData.spinVec.z * dt;
+            });
+            const alpha = Math.max(0, 1 - expT);
+            sk.skullMat.opacity = alpha;
+            sk.glowMat.opacity = alpha * 0.9;
           }
         }
       }
