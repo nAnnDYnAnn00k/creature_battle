@@ -231,45 +231,51 @@
     <!-- Center Control Strip -->
     <div class="pointer-events-auto flex flex-col items-center justify-center order-3 sm:order-2 w-full sm:w-auto gap-1.5">
       <!-- Top Row: Telemetry, Mode, Camera, Zoom -->
-      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1 rounded-full shadow-lg text-[10px]">
-        <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase px-1">COMBAT ACTIVE</span>
-        <span class="text-slate-700">|</span>
-        <span id="round-timer" class="font-mono font-extrabold text-cyan-300 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700" title="2-Minute Round Countdown (Hazards at 01:30)">02:00</span>
-        <span class="text-slate-700">|</span>
-        <button id="btn-hud-mode" class="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-bold">
+      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1.5 rounded-full shadow-lg text-[10px]">
+        <div class="inline-flex items-center justify-center gap-1.5 h-6 px-2.5 rounded-full bg-slate-900/90 border border-slate-800">
+          <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase whitespace-nowrap">COMBAT ACTIVE</span>
+        </div>
+        <span id="round-timer" class="inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700" title="2-Minute Round Countdown (Hazards at 01:30)">02:00</span>
+        <button id="btn-hud-mode" class="inline-flex items-center justify-center h-6 w-28 px-2 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           MODE: SANDBOX
         </button>
-        <button id="btn-open-char-select" class="px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-bold">
-          🕹️ ARMIES
+        <button id="btn-open-char-select" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-extrabold whitespace-nowrap">
+          <span>🕹️</span><span>ARMIES</span>
         </button>
-        <button id="btn-auto" class="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold">
+        <button id="btn-auto" class="inline-flex items-center justify-center h-6 w-24 px-2 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           AUTO: ON
         </button>
-        <button id="btn-speed" class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-white transition cursor-pointer font-semibold">
+        <button id="btn-speed" class="inline-flex items-center justify-center h-6 w-16 px-2 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-white transition cursor-pointer font-extrabold whitespace-nowrap">
           1X
         </button>
-        <button id="btn-cam-mode" title="Cycle Camera Mode: Track / Free Orbit / Chase Cam" class="px-2 py-0.5 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-semibold">
+        <button id="btn-cam-mode" title="Cycle Camera Mode: Track / Free Orbit / Chase Cam" class="inline-flex items-center justify-center h-6 w-28 px-2 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           CAM: TRACK
         </button>
-        <button id="btn-zoom-level" title="Cycle Zoom Preset (or use Scroll Wheel / Pinch)" class="px-2 py-0.5 rounded-full bg-slate-900 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold">
+        <button id="btn-zoom-level" title="Cycle Zoom Preset (or use Scroll Wheel / Pinch)" class="inline-flex items-center justify-center h-6 w-28 px-2 rounded-full bg-slate-900 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           🔍 MEDIUM
         </button>
       </div>
 
-      <!-- Second Row: 4 Dedicated Match Control Buttons with Icons -->
-      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-slate-800/90 px-2.5 py-1 rounded-full shadow-lg text-[10px]">
-        <button id="btn-match-start" title="Start or Resume Battle" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+      <!-- Second Row: Randomizer, 4 Match Control Buttons & Sandbox Toolkit Button (Uniform Size & Alignment) -->
+      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-slate-800/90 px-2.5 py-1.5 rounded-full shadow-lg text-[10px]">
+        <button id="btn-main-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-extrabold uppercase tracking-wider transition active:scale-95 cursor-pointer whitespace-nowrap">
+          <span>🎲</span><span>RANDOMIZER</span>
+        </button>
+        <button id="btn-match-start" title="Start or Resume Battle" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
           <span>▶️</span><span>START BATTLE</span>
         </button>
-        <button id="btn-match-pause" title="Pause / Resume Tactical Simulation" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+        <button id="btn-match-pause" title="Pause / Resume Tactical Simulation" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
           <span>⏸️</span><span id="lbl-pause-btn">PAUSE BATTLE</span>
         </button>
-        <button id="btn-match-end" title="End Current Battle & Unlock Army Selection" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-950/90 hover:bg-rose-900 text-rose-300 border border-rose-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+        <button id="btn-match-end" title="End Current Battle & Unlock Army Selection" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-rose-950/90 hover:bg-rose-900 text-rose-300 border border-rose-500/50 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
           <span>⏹️</span><span>END BATTLE</span>
         </button>
-        <button id="btn-match-reset" title="Reset Positions & Full HP to Standby Formation" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+        <button id="btn-match-reset" title="Reset Positions & Full HP to Standby Formation" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/50 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
           <span>🔄</span><span>RESET BATTLE</span>
+        </button>
+        <button id="btn-sandbox-toggle" title="Open Sandbox Toolkit" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-slate-900 hover:bg-slate-800 border border-amber-500/50 hover:border-amber-400 text-amber-300 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
+          <span>🛠️</span><span>SANDBOX</span>
         </button>
       </div>
     </div>
@@ -309,24 +315,18 @@
       </div>
       <div id="roster-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
     </div>
-
-    <div class="w-full max-w-2xl flex items-center justify-end gap-2 pointer-events-auto">
-      <button id="btn-sandbox-toggle" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-amber-500/50 hover:border-amber-400 shadow-lg shadow-amber-950/30 transition active:scale-95 cursor-pointer text-amber-300 text-[11px] font-bold">
-        🛠️ SANDBOX
-      </button>
-    </div>
   </div>
 
-  <div id="sandbox-panel" class="drawer-closed fixed bottom-[13vh] right-3 sm:right-6 z-30 w-80 sm:w-96 max-h-[82vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-xl shadow-2xl p-3.5 text-xs">
+  <div id="sandbox-panel" class="drawer-closed fixed top-28 right-3 sm:right-6 z-30 w-80 sm:w-96 max-h-[80vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-xl shadow-2xl p-3.5 text-xs">
     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
       <div class="flex items-center gap-1.5 text-amber-400 font-extrabold tracking-wider uppercase">
         <span>🛠️</span><span>EXO // SANDBOX TOOLKIT</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <button id="btn-sandbox-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[9px] font-extrabold uppercase tracking-wider cursor-pointer transition active:scale-95">
+        <button id="btn-sandbox-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center h-6 px-2.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[9px] font-extrabold uppercase tracking-wider cursor-pointer transition active:scale-95">
           🎲 RANDOMIZER
         </button>
-        <button id="btn-close-sandbox" class="text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] cursor-pointer">✕</button>
+        <button id="btn-close-sandbox" class="inline-flex items-center justify-center h-6 px-2.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-[9px] font-extrabold cursor-pointer transition">✕</button>
       </div>
     </div>
 
@@ -339,21 +339,27 @@
       <div id="combat-log" class="w-full h-14 px-1.5 py-0.5 overflow-y-auto text-[9px] leading-tight space-y-0.5 text-slate-300 font-mono"></div>
     </div>
 
-    <!-- TACTICAL COMMANDS & ZONE DECK (MOVED TO SANDBOX) -->
+    <!-- TACTICAL COMMANDS & ZONE DECK (INCLUDES HEAL ARMY & MAX CHARGE, UNIFORM BUTTON SIZING) -->
     <div class="bg-slate-900/90 border border-cyan-500/30 rounded-lg p-2 mb-2.5 space-y-1.5">
       <div class="text-[9px] font-extrabold text-cyan-300 uppercase tracking-wider">⚡ TACTICAL COMMAND DECK</div>
       <div class="grid grid-cols-2 gap-1.5">
-        <button id="btn-cmd-strike" class="px-2 py-1 rounded bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+        <button id="btn-cmd-strike" class="w-full h-7 px-2 rounded bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer truncate">
           ⚡ [1] ARMY RUSH
         </button>
-        <button id="btn-cmd-guard" class="px-2 py-1 rounded bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+        <button id="btn-cmd-guard" class="w-full h-7 px-2 rounded bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer truncate">
           🛡️ [2] MASS GUARD
         </button>
-        <button id="btn-cmd-overdrive" class="px-2 py-1 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-bold transition active:scale-95 cursor-pointer opacity-60 truncate">
+        <button id="btn-cmd-overdrive" class="w-full h-7 px-2 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer opacity-60 truncate">
           ★ [3] OVERDRIVE SYNC
         </button>
-        <button id="btn-spawn-hazard" class="px-2 py-1 rounded bg-slate-950 hover:bg-slate-800 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+        <button id="btn-spawn-hazard" class="w-full h-7 px-2 rounded bg-slate-950 hover:bg-slate-800 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer truncate">
           ✨ DEPLOY ZONE
+        </button>
+        <button id="btn-sandbox-heal" class="w-full h-7 px-2 rounded bg-slate-950 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 cursor-pointer transition active:scale-95 truncate">
+          ⚡ HEAL ARMY
+        </button>
+        <button id="btn-sandbox-instant-power" class="w-full h-7 px-2 rounded bg-slate-950 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/40 hover:border-fuchsia-400 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 cursor-pointer transition active:scale-95 truncate">
+          ★ MAX CHARGE
         </button>
       </div>
     </div>
@@ -403,40 +409,34 @@
       </div>
 
       <div class="text-[10px] font-extrabold text-fuchsia-400 uppercase tracking-wider border-b border-slate-800 pb-1 pt-1">🧬 CREATURE LAB OVERRIDES</div>
-      <div class="flex items-center justify-between bg-slate-900/90 p-1.5 rounded border border-slate-800">
-        <span class="text-[10px] text-slate-400 font-semibold">EDIT TARGET:</span>
-        <div class="flex gap-1">
-          <button id="btn-target-p1" class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[10px] font-bold cursor-pointer">ALLY (01)</button>
-          <button id="btn-target-p2" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer">HOSTILE (02)</button>
+      <div class="bg-slate-900/90 p-2 rounded border border-slate-800 space-y-1.5">
+        <div class="text-[9px] text-slate-400 font-semibold uppercase">EDIT TARGET:</div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="btn-target-p1" class="w-full h-7 px-2 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition">ALLY (01)</button>
+          <button id="btn-target-p2" class="w-full h-7 px-2 rounded bg-slate-800 text-slate-400 border border-transparent text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition">HOSTILE (02)</button>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-2 bg-slate-900/50 p-1.5 rounded border border-slate-800/70">
-        <div class="flex flex-col items-start">
-          <div class="flex items-center gap-1 text-[8px] text-slate-400 mb-1">
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/50 p-2 rounded border border-slate-800/70">
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between text-[8px] text-slate-400 mb-1">
             <span>SCALE:</span><span id="lbl-c-scale" class="text-cyan-300 font-bold">MEDIUM</span>
           </div>
-          <!-- 75% Shrunk Micro Preset Buttons for Scale (Slow / Medium / Fast) -->
-          <div class="inline-flex gap-0.5">
-            <button data-scale-tier="slow" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">SLOW</button>
-            <button data-scale-tier="medium" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">MEDIUM</button>
-            <button data-scale-tier="fast" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">FAST</button>
+          <div class="grid grid-cols-3 gap-1 w-full">
+            <button data-scale-tier="slow" class="btn-scale-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">SLOW</button>
+            <button data-scale-tier="medium" class="btn-scale-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">MED</button>
+            <button data-scale-tier="fast" class="btn-scale-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">FAST</button>
           </div>
         </div>
-        <div class="flex flex-col items-start">
-          <div class="flex items-center gap-1 text-[8px] text-slate-400 mb-1">
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between text-[8px] text-slate-400 mb-1">
             <span>SPEED:</span><span id="lbl-c-spd" class="text-cyan-300 font-bold">MEDIUM</span>
           </div>
-          <!-- 75% Shrunk Micro Preset Buttons for Speed (Slow / Medium / Fast) -->
-          <div class="inline-flex gap-0.5">
-            <button data-spd-tier="slow" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">SLOW</button>
-            <button data-spd-tier="medium" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">MEDIUM</button>
-            <button data-spd-tier="fast" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">FAST</button>
+          <div class="grid grid-cols-3 gap-1 w-full">
+            <button data-spd-tier="slow" class="btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">SLOW</button>
+            <button data-spd-tier="medium" class="btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">MED</button>
+            <button data-spd-tier="fast" class="btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">FAST</button>
           </div>
         </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80">
-        <button id="btn-sandbox-heal" class="px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold cursor-pointer transition">⚡ HEAL ARMY</button>
-        <button id="btn-sandbox-instant-power" class="px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 text-[10px] font-bold cursor-pointer transition">★ MAX CHARGE</button>
       </div>
     </div>
   </div>
@@ -983,9 +983,9 @@
       timerEl.textContent = `${mins}:${secs}`;
 
       if (matchElapsedTime >= 30.0 && battleState === 'FIGHTING') {
-        timerEl.className = "font-mono font-extrabold text-rose-400 px-1.5 py-0.5 rounded bg-rose-950/90 border border-rose-500/60 animate-pulse";
+        timerEl.className = "inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-rose-400 rounded-full bg-rose-950/90 border border-rose-500/60 animate-pulse";
       } else {
-        timerEl.className = "font-mono font-extrabold text-cyan-300 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700";
+        timerEl.className = "inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700";
       }
     }
 
@@ -1671,9 +1671,9 @@
       const btnOd = document.getElementById('btn-cmd-overdrive');
       if (btnOd) {
         if (p1ReadyOd > 0 && battleState === 'FIGHTING') {
-          btnOd.className = "px-2 py-1 rounded bg-fuchsia-600 hover:bg-fuchsia-500 border border-fuchsia-300 text-white text-[9px] font-extrabold transition active:scale-95 cursor-pointer animate-pulse shadow-md shadow-fuchsia-500/40 truncate";
+          btnOd.className = "w-full h-7 px-2 rounded bg-fuchsia-600 hover:bg-fuchsia-500 border border-fuchsia-300 text-white text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer animate-pulse shadow-md shadow-fuchsia-500/40 truncate";
         } else {
-          btnOd.className = "px-2 py-1 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-bold transition active:scale-95 cursor-pointer opacity-60 truncate";
+          btnOd.className = "w-full h-7 px-2 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-extrabold inline-flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer opacity-60 truncate";
         }
       }
 
@@ -1874,30 +1874,30 @@
 
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         const active = btn.dataset.scaleTier === ov.scaleTier;
-        btn.className = `btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition ${
+        btn.className = `btn-scale-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
           active
             ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
       document.querySelectorAll('.btn-spd-preset').forEach(btn => {
         const active = btn.dataset.spdTier === ov.spdTier;
-        btn.className = `btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition ${
+        btn.className = `btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
           active
             ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
       const btn1 = document.getElementById('btn-target-p1');
       const btn2 = document.getElementById('btn-target-p2');
       if (activeEditTarget === 1) {
-        btn1.className = "px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[10px] font-bold cursor-pointer";
-        btn2.className = "px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer";
+        btn1.className = "w-full h-7 px-2 rounded bg-cyan-950 text-cyan-300 border border-cyan-400 text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition";
+        btn2.className = "w-full h-7 px-2 rounded bg-slate-800 text-slate-400 border border-transparent text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition";
       } else {
-        btn2.className = "px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-400 text-[10px] font-bold cursor-pointer";
-        btn1.className = "px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer";
+        btn2.className = "w-full h-7 px-2 rounded bg-rose-950 text-rose-300 border border-rose-400 text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition";
+        btn1.className = "w-full h-7 px-2 rounded bg-slate-800 text-slate-400 border border-transparent text-[9px] font-extrabold inline-flex items-center justify-center cursor-pointer transition";
       }
     }
 
@@ -2006,8 +2006,8 @@
         autoLoop = !autoLoop;
         e.target.textContent = `AUTO: ${autoLoop ? 'ON' : 'OFF'}`;
         e.target.className = autoLoop
-          ? 'px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold'
-          : 'px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition cursor-pointer font-semibold';
+          ? 'inline-flex items-center justify-center h-6 w-24 px-2 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-extrabold whitespace-nowrap'
+          : 'inline-flex items-center justify-center h-6 w-24 px-2 rounded-full bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition cursor-pointer font-extrabold whitespace-nowrap';
       });
       document.getElementById('btn-speed').addEventListener('click', (e) => {
         simSpeed = simSpeed === 1 ? 2 : simSpeed === 2 ? 4 : 1;
@@ -2261,8 +2261,8 @@
         });
       });
 
-      // Sandbox Toolkit Randomizer Button
-      document.getElementById('btn-sandbox-randomizer').addEventListener('click', () => {
+      // Shared Randomizer Logic for both Main UI and Sandbox Toolkit Randomizer Buttons
+      const triggerRandomizerAll = () => {
         const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium'];
         worldTopology = biomes[Math.floor(Math.random() * biomes.length)];
         document.getElementById('select-topology').value = worldTopology;
@@ -2302,7 +2302,10 @@
         battleState = 'FIGHTING';
         syncMatchControlUI();
         appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name} on ${worldTopology.toUpperCase()}!`, "text-amber-300 font-extrabold");
-      });
+      };
+
+      document.getElementById('btn-sandbox-randomizer').addEventListener('click', triggerRandomizerAll);
+      document.getElementById('btn-main-randomizer').addEventListener('click', triggerRandomizerAll);
 
       document.getElementById('btn-sandbox-heal').addEventListener('click', () => {
         let healed = 0;
