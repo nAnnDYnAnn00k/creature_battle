@@ -3024,7 +3024,7 @@
             const faceYaw = Math.atan2(
               camera.position.x - sk.group.position.x,
               camera.position.z - sk.group.position.z
-            );
+            ) + Math.PI;
             sk.group.rotation.y = faceYaw;
             sk.group.rotation.x = -0.12 - laughWave * 0.16;
             sk.group.rotation.z = Math.sin(sk.elapsed * 11.0) * 0.10;
