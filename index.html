@@ -42,20 +42,6 @@
       background-size: 100% 4px;
     }
 
-    /* Floating Damage Numbers */
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translate(-50%, 0) scale(0.9); }
-      20% { transform: translate(-50%, -12px) scale(1.1); }
-      100% { opacity: 0; transform: translate(-50%, -42px) scale(0.95); }
-    }
-    .dmg-popup {
-      position: fixed;
-      pointer-events: none;
-      z-index: 15;
-      font-weight: 800;
-      animation: floatUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
     #roster-drawer, #sandbox-panel {
       transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -391,6 +377,7 @@
           <option value="forest">Ancient Canopy Forest</option>
           <option value="fire_ant">Fire Ant Colony</option>
           <option value="terrarium">Giant Bio-Terrarium</option>
+          <option value="picnic">Picnic Feast Blanket</option>
         </select>
       </div>
       <div class="grid grid-cols-2 gap-2.5">
@@ -667,9 +654,9 @@
       return root;
     }
 
-    // Procedural 3D Wireframe Skull (75% smaller) that rises, stays together, and laughs as it fades out
+    // Procedural 3D Solid-White + Wireframe Skull (75% smaller) with Glowing Red Eyes
     const deathSkulls = [];
-    function spawnDeathSkull3D(worldPos, colorHex) {
+    function spawnDeathSkull3D(worldPos) {
       const skullRoot = new THREE.Group();
       skullRoot.position.set(worldPos.x, worldPos.y + 0.24, worldPos.z);
 
@@ -677,25 +664,50 @@
       const head = new THREE.Group();
       skullRoot.add(head);
 
-      const skullMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 1.0 });
-      const glowMat = new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 0.9 });
+      // Solid white bone fill + crisp white wireframe overlay
+      const solidWhiteMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.94,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+      const wireWhiteMat = new THREE.MeshBasicMaterial({ color: 0xe2e8f0, wireframe: true, transparent: true, opacity: 1.0 });
+      // Glowing red eyes (solid core + outer crimson wireframe aura)
+      const eyeCoreMat = new THREE.MeshBasicMaterial({ color: 0xff1122, transparent: true, opacity: 1.0 });
+      const eyeGlowMat = new THREE.MeshBasicMaterial({ color: 0xff4455, wireframe: true, transparent: true, opacity: 0.95 });
+      // Dark nasal cavity for contrast against solid white skull
+      const nasalMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.95 });
 
-      // Cranium dome
-      const cranium = makeWirePart('IcosahedronGeometry', [0.22, 1], skullMat, [0, 0.10, 0], [0, 0, 0], [0.95, 1.08, 1.05]);
-      // Cheekbone / zygomatic ridge
-      const cheek = makeWirePart('BoxGeometry', [0.30, 0.10, 0.22], skullMat, [0, -0.02, 0.04]);
-      // Lower jaw / mandible (animated for laughing)
-      const jaw = makeWirePart('BoxGeometry', [0.18, 0.13, 0.18], glowMat, [0, -0.15, 0.05]);
+      const makeDualBonePart = (type, args, pos, rot = [0, 0, 0], scale = [1, 1, 1]) => {
+        const partGroup = new THREE.Group();
+        partGroup.position.set(...pos);
+        partGroup.rotation.set(...rot);
+        partGroup.scale.set(...scale);
+        const geo = getGeometry(type, ...args);
+        partGroup.add(new THREE.Mesh(geo, solidWhiteMat));
+        partGroup.add(new THREE.Mesh(geo, wireWhiteMat));
+        return partGroup;
+      };
+
+      // Cranium dome, cheekbone ridge, and laughing lower jaw (all solid white + wireframe)
+      const cranium = makeDualBonePart('IcosahedronGeometry', [0.22, 1], [0, 0.10, 0], [0, 0, 0], [0.95, 1.08, 1.05]);
+      const cheek = makeDualBonePart('BoxGeometry', [0.30, 0.10, 0.22], [0, -0.02, 0.04]);
+      const jaw = makeDualBonePart('BoxGeometry', [0.18, 0.13, 0.18], [0, -0.15, 0.05]);
       jaw.userData.baseY = -0.15;
-      // Left & right eye sockets
-      const eyeL = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [-0.085, 0.05, 0.19]);
-      const eyeR = makeWirePart('OctahedronGeometry', [0.065, 0], glowMat, [0.085, 0.05, 0.19]);
+
+      // Glowing red eye sockets (solid red core + pulsing wireframe halo)
+      const eyeLCore = makeWirePart('OctahedronGeometry', [0.062, 1], eyeCoreMat, [-0.085, 0.05, 0.195]);
+      const eyeLGlow = makeWirePart('OctahedronGeometry', [0.082, 0], eyeGlowMat, [-0.085, 0.05, 0.195]);
+      const eyeRCore = makeWirePart('OctahedronGeometry', [0.062, 1], eyeCoreMat, [0.085, 0.05, 0.195]);
+      const eyeRGlow = makeWirePart('OctahedronGeometry', [0.082, 0], eyeGlowMat, [0.085, 0.05, 0.195]);
+
       // Nasal cavity
-      const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], glowMat, [0, -0.03, 0.21], [0.2, 0, 0]);
+      const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], nasalMat, [0, -0.03, 0.215], [0.2, 0, 0]);
 
-      head.add(cranium, cheek, jaw, eyeL, eyeR, nose);
+      head.add(cranium, cheek, jaw, eyeLCore, eyeLGlow, eyeRCore, eyeRGlow, nose);
 
-      // Start at 25% of previous initial scale
       skullRoot.scale.set(0.0125, 0.0125, 0.0125);
       scene.add(skullRoot);
 
@@ -703,10 +715,11 @@
         group: skullRoot,
         head,
         jaw,
-        skullMat,
-        glowMat,
+        eyeLGlow,
+        eyeRGlow,
+        mats: [solidWhiteMat, wireWhiteMat, eyeCoreMat, eyeGlowMat, nasalMat],
         elapsed: 0,
-        duration: 2.0 // Synchronized with the 2.0s creature death fade
+        duration: 2.0
       });
     }
 
@@ -753,14 +766,35 @@
         const dish = Math.pow(Math.min(1.2, dist / arenaRingRadius), 2) * 0.95;
         const substrate = Math.sin(x * 0.18 + mapSeed) * Math.sin(z * 0.18) * 0.32;
         return (dish + substrate) * mapElevationScale;
+      } else if (worldTopology === 'picnic') {
+        // Woven picnic blanket folds + raised serving platter plateaus
+        const blanketFolds = (Math.sin(x * 0.42 + mapSeed) * 0.22 + Math.cos(z * 0.42 - mapSeed) * 0.22);
+        constcenterPlatter = dist < 7.2 ? 0.42 : (Math.abs(dist - 7.4) < 0.55 ? 0.62 : 0);
+        return (blanketFolds + centerPlatter) * mapElevationScale;
       }
       const wave1 = Math.sin(x * 0.22 + mapSeed) * Math.cos(z * 0.22 + mapSeed) * 0.75;
       const wave2 = Math.sin(x * 0.5 - z * 0.35) * 0.25;
       return (wave1 + wave2) * mapElevationScale;
     }
 
+    function disposeHierarchyMaterials(obj) {
+      obj.traverse(child => {
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+          else child.material.dispose();
+        }
+      });
+    }
+
     function rebuildWorldTopology() {
-      while (worldGroup.children.length > 0) worldGroup.remove(worldGroup.children[0]);
+      while (worldGroup.children.length > 0) {
+        const child = worldGroup.children[0];
+        disposeHierarchyMaterials(child);
+        if (child.geometry && !Object.values(GeoCache).includes(child.geometry)) {
+          child.geometry.dispose();
+        }
+        worldGroup.remove(child);
+      }
       arenaObstacles = []; tacticalZones = [];
 
       const groundGeo = new THREE.PlaneGeometry(84, 84, 64, 64);
@@ -774,9 +808,21 @@
       if (worldTopology === 'forest') { groundColor = 0x15803d; ringColor = 0x4ade80; }
       else if (worldTopology === 'fire_ant') { groundColor = 0xb91c1c; ringColor = 0xf97316; }
       else if (worldTopology === 'terrarium') { groundColor = 0x0f766e; ringColor = 0x38bdf8; }
+      else if (worldTopology === 'picnic') { groundColor = 0xe11d48; ringColor = 0xfef08a; }
 
       const groundMat = new THREE.MeshBasicMaterial({ color: groundColor, wireframe: true, transparent: true, opacity: 0.42 });
       worldGroup.add(new THREE.Mesh(groundGeo, groundMat));
+
+      // Picnic Feast secondary white gingham weave & central ceramic plate rim
+      if (worldTopology === 'picnic') {
+        const plateRim = new THREE.Mesh(
+          getGeometry('RingGeometry', 7.0, 7.65, 48),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
+        );
+        plateRim.rotation.x = Math.PI / 2;
+        plateRim.position.y = getTerrainHeight(7.3, 0) + 0.05;
+        worldGroup.add(plateRim);
+      }
 
       const ringPoints = [];
       for (let i = 0; i <= 64; i++) {
@@ -815,8 +861,7 @@
             new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true, transparent: true, opacity: 0.65 })
           );
           canopy.position.y = trunkH + r * 0.9;
-          treeGroup.add(trunk);
-          treeGroup.add(canopy);
+          treeGroup.add(trunk, canopy);
           treeGroup.position.set(x, y, z);
           worldGroup.add(treeGroup);
           arenaObstacles.push({ x, z, y, radius: r * 0.65, mesh: treeGroup });
@@ -837,6 +882,113 @@
           crystal.rotation.set(0.3, angle, 0.2);
           worldGroup.add(crystal);
           arenaObstacles.push({ x, z, y, radius: r * 0.95, mesh: crystal });
+        } else if (worldTopology === 'picnic') {
+          // Procedural Picnic Food & Feast Items: 0=Watermelon Wedge, 1=Cupcake, 2=Soda Can, 3=Picnic Basket, 4=Apple
+          const foodGroup = new THREE.Group();
+          const itemType = i % 5;
+          let hitRad = r;
+
+          if (itemType === 0) {
+            // Watermelon Slice (Green rind arc + red flesh wedge)
+            const rind = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 1.2, r * 1.2, r * 0.45, 8, 1, false, 0, Math.PI),
+              new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true, transparent: true, opacity: 0.85 })
+            );
+            rind.rotation.z = Math.PI / 2;
+            rind.position.y = r * 0.55;
+            const flesh = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 1.02, r * 1.02, r * 0.50, 8, 1, false, 0, Math.PI),
+              new THREE.MeshBasicMaterial({ color: 0xf43f5e, wireframe: true, transparent: true, opacity: 0.85 })
+            );
+            flesh.rotation.z = Math.PI / 2;
+            flesh.position.y = r * 0.58;
+            foodGroup.add(rind, flesh);
+            hitRad = r * 1.05;
+          } else if (itemType === 1) {
+            // Frosted Cupcake with Cherry on Top
+            const cup = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 0.85, r * 0.62, r * 0.85, 7),
+              new THREE.MeshBasicMaterial({ color: 0xf59e0b, wireframe: true, transparent: true, opacity: 0.8 })
+            );
+            cup.position.y = r * 0.42;
+            const frosting = new THREE.Mesh(
+              getGeometry('SphereGeometry', r * 0.82, 7, 5),
+              new THREE.MeshBasicMaterial({ color: 0xf472b6, wireframe: true, transparent: true, opacity: 0.85 })
+            );
+            frosting.position.y = r * 0.95;
+            const cherry = new THREE.Mesh(
+              getGeometry('OctahedronGeometry', r * 0.22, 0),
+              new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.95 })
+            );
+            cherry.position.y = r * 1.75;
+            foodGroup.add(cup, frosting, cherry);
+            hitRad = r * 0.88;
+          } else if (itemType === 2) {
+            // Soda Can + Bent Drinking Straw
+            const can = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 0.68, r * 0.68, r * 1.85, 8),
+              new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.8 })
+            );
+            can.position.y = r * 0.92;
+            const rim = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 0.64, r * 0.68, r * 0.15, 8),
+              new THREE.MeshBasicMaterial({ color: 0xe2e8f0, wireframe: true, transparent: true, opacity: 0.9 })
+            );
+            rim.position.y = r * 1.88;
+            const straw = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 0.08, r * 0.08, r * 1.1, 4),
+              new THREE.MeshBasicMaterial({ color: 0xfef08a, wireframe: true, transparent: true, opacity: 0.9 })
+            );
+            straw.position.set(r * 0.18, r * 2.25, 0);
+            straw.rotation.z = -0.28;
+            foodGroup.add(can, rim, straw);
+            hitRad = r * 0.75;
+          } else if (itemType === 3) {
+            // Woven Picnic Basket + Handle
+            const basket = new THREE.Mesh(
+              getGeometry('BoxGeometry', r * 1.65, r * 1.05, r * 1.15),
+              new THREE.MeshBasicMaterial({ color: 0xd97706, wireframe: true, transparent: true, opacity: 0.82 })
+            );
+            basket.position.y = r * 0.52;
+            const lid = new THREE.Mesh(
+              getGeometry('BoxGeometry', r * 1.75, r * 0.18, r * 1.25),
+              new THREE.MeshBasicMaterial({ color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0.88 })
+            );
+            lid.position.y = r * 1.10;
+            const handle = new THREE.Mesh(
+              getGeometry('BoxGeometry', r * 0.20, r * 0.65, r * 1.20),
+              new THREE.MeshBasicMaterial({ color: 0x92400e, wireframe: true, transparent: true, opacity: 0.85 })
+            );
+            handle.position.y = r * 1.45;
+            foodGroup.add(basket, lid, handle);
+            hitRad = r * 1.08;
+          } else {
+            // Giant Crisp Apple + Stem & Leaf
+            const apple = new THREE.Mesh(
+              getGeometry('SphereGeometry', r * 0.92, 7, 6),
+              new THREE.MeshBasicMaterial({ color: 0xdc2626, wireframe: true, transparent: true, opacity: 0.82 })
+            );
+            apple.scale.set(1.05, 0.92, 1.05);
+            apple.position.y = r * 0.82;
+            const stem = new THREE.Mesh(
+              getGeometry('CylinderGeometry', r * 0.06, r * 0.04, r * 0.45, 4),
+              new THREE.MeshBasicMaterial({ color: 0xa16207, wireframe: true, transparent: true, opacity: 0.9 })
+            );
+            stem.position.y = r * 1.75;
+            const leaf = new THREE.Mesh(
+              getGeometry('ConeGeometry', r * 0.22, r * 0.50, 3),
+              new THREE.MeshBasicMaterial({ color: 0x4ade80, wireframe: true, transparent: true, opacity: 0.9 })
+            );
+            leaf.position.set(r * 0.20, r * 1.78, 0);
+            leaf.rotation.z = -1.1;
+            foodGroup.add(apple, stem, leaf);
+            hitRad = r * 0.95;
+          }
+
+          foodGroup.position.set(x, y, z);
+          foodGroup.rotation.y = angle;
+          worldGroup.add(foodGroup);
+          arenaObstacles.push({ x, z, y, radius: hitRad, mesh: foodGroup });
         } else {
           const mesh = new THREE.Mesh(getGeometry('DodecahedronGeometry', r, 0), new THREE.MeshBasicMaterial({ color: 0x14b8a6, wireframe: true, opacity: 0.7 }));
           mesh.position.set(x, y + r * 0.45, z);
@@ -881,6 +1033,8 @@
     let camPitch = ZOOM_LEVELS[currentZoomIdx].pitch;
     const camTarget = new THREE.Vector3(0, 0.5, 0);
     const camLookTarget = new THREE.Vector3(0, 0.5, 0);
+    const _tempVecA = new THREE.Vector3();
+    const _tempVecB = new THREE.Vector3();
 
     // True Free-Look Camera State (WASD/Arrows + Drag Look + Right-Click/Two-Finger Pan, Clamped above ground)
     const freeCamPos = new THREE.Vector3(0, 12, 24);
@@ -1065,9 +1219,13 @@
     }
 
     function spawnArmies() {
-      entities.forEach(f => scene.remove(f.mesh));
+      entities.forEach(f => {
+        disposeHierarchyMaterials(f.mesh);
+        scene.remove(f.mesh);
+      });
       entities = [];
       for (let i = deathSkulls.length - 1; i >= 0; i--) {
+        deathSkulls[i].mats.forEach(m => m.dispose());
         scene.remove(deathSkulls[i].group);
       }
       deathSkulls.length = 0;
@@ -1429,18 +1587,18 @@
       }
 
       // Spawn creature-specific fly-away body part fragments at the contact point
-      const contactPoint = new THREE.Vector3(
+      _tempVecA.set(
         (attacker.mesh.position.x + defender.mesh.position.x) * 0.5,
         (attacker.mesh.position.y + defender.mesh.position.y) * 0.5,
         (attacker.mesh.position.z + defender.mesh.position.z) * 0.5
       );
-      spawnHitSparks(contactPoint, isPower ? 0xf0abfc : defender.color, isPower ? 10 : 5, defender.key);
+      spawnHitSparks(_tempVecA, isPower ? 0xf0abfc : defender.color, isPower ? 10 : 5, defender.key);
 
       if (defender.hp <= 0 && !defender.dead) {
         defender.dead = true;
         defender.deathTimer = 0;
         spawnHitSparks(defender.mesh.position, defender.color, 12, defender.key);
-        spawnDeathSkull3D(defender.mesh.position, defender.color);
+        spawnDeathSkull3D(defender.mesh.position);
         updateArmyHUD();
       }
     }
@@ -2397,7 +2555,7 @@
 
       // Shared Randomizer Logic for both Main UI and Sandbox Toolkit Randomizer Buttons
       const triggerRandomizerAll = () => {
-        const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium'];
+        const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium', 'picnic'];
         worldTopology = biomes[Math.floor(Math.random() * biomes.length)];
         document.getElementById('select-topology').value = worldTopology;
 
@@ -2663,6 +2821,7 @@
             f.deathTimer += dt;
             // Disintegrate corpse after 2 seconds
             if (f.deathTimer >= 2.0) {
+              disposeHierarchyMaterials(f.mesh);
               scene.remove(f.mesh);
               entities.splice(i, 1);
             } else {
@@ -3006,8 +3165,7 @@
 
           if (p >= 1.0) {
             scene.remove(sk.group);
-            sk.skullMat.dispose();
-            sk.glowMat.dispose();
+            sk.mats.forEach(m => m.dispose());
             deathSkulls.splice(i, 1);
           } else {
             // Grow to 25% of previous size (max ~0.2825 scale) then stay intact
@@ -3025,6 +3183,13 @@
               sk.jaw.rotation.x = laughWave * 0.38;
             }
 
+            // Pulse the glowing red eye halos as the skull laughs
+            if (sk.eyeLGlow && sk.eyeRGlow) {
+              const eyePulse = 1.0 + laughWave * 0.42;
+              sk.eyeLGlow.scale.set(eyePulse, eyePulse, eyePulse);
+              sk.eyeRGlow.scale.set(eyePulse, eyePulse, eyePulse);
+            }
+
             sk.group.position.y += dt * 0.28 + Math.sin(sk.elapsed * 22.0) * 0.003;
 
             // Orient the outer group's +Z axis (where eyes, nose, and jaw are built) directly at the user's camera in full 3D
@@ -3038,8 +3203,11 @@
 
             // Smoothly fade out alongside the disintegrating creature model
             const alpha = p < 0.45 ? 1.0 : Math.max(0, 1 - (p - 0.45) / 0.55);
-            sk.skullMat.opacity = alpha;
-            sk.glowMat.opacity = alpha * 0.9;
+            sk.mats[0].opacity = alpha * 0.94;
+            sk.mats[1].opacity = alpha;
+            sk.mats[2].opacity = alpha;
+            sk.mats[3].opacity = alpha * 0.95;
+            sk.mats[4].opacity = alpha * 0.95;
           }
         }
       }
@@ -3056,17 +3224,19 @@
           const chaseDist = Math.max(2.2, camRadius * 0.38);
           const chaseHeight = Math.max(1.1, Math.sin(camPitch) * chaseDist + 0.65);
 
-          const desiredCamPos = new THREE.Vector3(
+          _tempVecA.set(
             pos.x + backX * chaseDist,
             pos.y + chaseHeight,
             pos.z + backZ * chaseDist
           );
-          camera.position.lerp(desiredCamPos, Math.min(1, rawDt * 7.5));
+          camera.position.lerp(_tempVecA, Math.min(1, rawDt * 7.5));
 
-          const lookPos = enemy
-            ? new THREE.Vector3((pos.x + enemy.mesh.position.x) * 0.5, pos.y + 0.35, (pos.z + enemy.mesh.position.z) * 0.5)
-            : new THREE.Vector3(pos.x - backX * 3, pos.y + 0.35, pos.z - backZ * 3);
-          camLookTarget.lerp(lookPos, Math.min(1, rawDt * 8.0));
+          if (enemy) {
+            _tempVecB.set((pos.x + enemy.mesh.position.x) * 0.5, pos.y + 0.35, (pos.z + enemy.mesh.position.z) * 0.5);
+          } else {
+            _tempVecB.set(pos.x - backX * 3, pos.y + 0.35, pos.z - backZ * 3);
+          }
+          camLookTarget.lerp(_tempVecB, Math.min(1, rawDt * 8.0));
           camera.lookAt(camLookTarget);
         }
       } else if (camMode === 'free') {
@@ -3120,10 +3290,12 @@
             count++;
           }
         }
-        const desiredTarget = count > 0
-          ? new THREE.Vector3(sumX / count, (sumY / count) + 0.4, sumZ / count)
-          : new THREE.Vector3(0, 0.5, 0);
-        camTarget.lerp(desiredTarget, Math.min(1, rawDt * 4.5));
+        if (count > 0) {
+          _tempVecA.set(sumX / count, (sumY / count) + 0.4, sumZ / count);
+        } else {
+          _tempVecA.set(0, 0.5, 0);
+        }
+        camTarget.lerp(_tempVecA, Math.min(1, rawDt * 4.5));
 
         if (!isDraggingArena && !isPaused) {
           camYaw += rawDt * 0.045;
