@@ -208,7 +208,7 @@
     <!-- Player 1 Army HUD -->
     <div id="btn-p1-hud" class="pointer-events-auto flex-1 max-w-[48%] sm:flex-none sm:w-64 sm:max-w-none bg-slate-950/80 hover:bg-slate-900/95 backdrop-blur-md border border-cyan-500/35 hover:border-cyan-400 rounded-lg px-3 py-2 shadow-lg flex flex-col justify-between cursor-pointer transition active:scale-[0.98]">
       <div class="flex items-center justify-between h-5 text-[10px] text-cyan-400 font-bold tracking-wider">
-        <span class="truncate">ALLY FORCE // [LOCKED]</span>
+        <span id="p1-lock-label" class="truncate">ALLY FORCE // [LOCKED]</span>
         <div class="flex items-center gap-1 shrink-0">
           <span id="p1-faction" class="text-[9px] h-4 inline-flex items-center px-1.5 bg-cyan-950/90 text-cyan-300 rounded border border-cyan-800/50">CRUSTACEAN</span>
         </div>
@@ -229,7 +229,8 @@
     </div>
 
     <!-- Center Control Strip -->
-    <div class="pointer-events-auto flex flex-col items-center justify-center order-3 sm:order-2 w-full sm:w-auto">
+    <div class="pointer-events-auto flex flex-col items-center justify-center order-3 sm:order-2 w-full sm:w-auto gap-1.5">
+      <!-- Top Row: Telemetry, Mode, Camera, Zoom -->
       <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1 rounded-full shadow-lg text-[10px]">
         <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
         <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase px-1">COMBAT ACTIVE</span>
@@ -252,12 +253,22 @@
         <button id="btn-zoom-level" title="Cycle Zoom Preset (or use Scroll Wheel / Pinch)" class="px-2 py-0.5 rounded-full bg-slate-900 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold">
           🔍 MEDIUM
         </button>
-        <button id="btn-quick-rematch" title="Instant Rematch" class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 hover:text-cyan-300 transition cursor-pointer font-semibold">
-          ↻
-        </button>
       </div>
-      <div class="text-[9px] text-slate-400 tracking-widest uppercase mt-1 hidden sm:flex items-center gap-2">
-        <span>Drag to Orbit • Scroll/Pinch to Zoom • Playable Command Deck Below</span>
+
+      <!-- Second Row: 4 Dedicated Match Control Buttons with Icons -->
+      <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-slate-800/90 px-2.5 py-1 rounded-full shadow-lg text-[10px]">
+        <button id="btn-match-start" title="Start or Resume Battle" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+          <span>▶️</span><span>START BATTLE</span>
+        </button>
+        <button id="btn-match-pause" title="Pause / Resume Tactical Simulation" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+          <span>⏸️</span><span id="lbl-pause-btn">PAUSE BATTLE</span>
+        </button>
+        <button id="btn-match-end" title="End Current Battle & Unlock Army Selection" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-950/90 hover:bg-rose-900 text-rose-300 border border-rose-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+          <span>⏹️</span><span>END BATTLE</span>
+        </button>
+        <button id="btn-match-reset" title="Reset Positions & Full HP to Standby Formation" class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/50 font-extrabold transition active:scale-95 cursor-pointer">
+          <span>🔄</span><span>RESET BATTLE</span>
+        </button>
       </div>
     </div>
 
@@ -268,7 +279,7 @@
           <span id="p2-faction" class="text-[9px] h-4 inline-flex items-center px-1.5 bg-rose-950/90 text-rose-300 rounded border border-rose-800/50">INSECT</span>
           <button id="btn-random" class="h-4 w-4 inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-700 text-[9px] leading-none cursor-pointer">🎲</button>
         </div>
-        <span class="truncate ml-1">[LOCKED] HOSTILE FORCE</span>
+        <span id="p2-lock-label" class="truncate ml-1">[LOCKED] HOSTILE FORCE</span>
       </div>
       <div class="flex items-baseline justify-between mt-0.5 h-5">
         <div id="p2-hp-text" class="text-[10px] font-bold text-rose-300 mr-2 shrink-0">0/0 (0)</div>
@@ -405,7 +416,8 @@
       king_crab: {
         name: "King Crab", faction: "CRUSTACEAN", color: 0x22d3ee,
         hp: 130, atk: 18, def: 17, spd: 0.92, crit: 0.08,
-        flightAlt: 0.0, kiteStyle: "side_scuttle",
+        flightAlt: 0.0, hitboxRadius: 0.24, kiteStyle: "side_scuttle",
+        behaviors: ["chelae_display", "benthic_hunker", "bubble_purge"],
         desc: "Sideways-scuttling benthic fortress; climbs ridges",
         moves: [
           { name: "Crusher Claw", mult: 1.02, anim: "claw_snap" },
@@ -416,7 +428,8 @@
       mantis_shrimp: {
         name: "Mantis Shrimp", faction: "CRUSTACEAN", color: 0x38bdf8,
         hp: 100, atk: 22, def: 11, spd: 1.18, crit: 0.18,
-        flightAlt: 0.0, kiteStyle: "tail_backdash",
+        flightAlt: 0.0, hitboxRadius: 0.20, kiteStyle: "tail_backdash",
+        behaviors: ["eye_radar", "raptorial_cock", "pleopod_ripple"],
         desc: "Cavitation puncher; uses pleopod tail-flip backdashes",
         moves: [
           { name: "Raptorial Club Smash", mult: 1.06, anim: "club_punch" },
@@ -427,7 +440,8 @@
       stag_beetle: {
         name: "Stag Beetle", faction: "INSECT", color: 0xf43f5e,
         hp: 125, atk: 18, def: 15, spd: 0.96, crit: 0.10,
-        flightAlt: 0.0, kiteStyle: "bulldozer",
+        flightAlt: 0.0, hitboxRadius: 0.23, kiteStyle: "bulldozer",
+        behaviors: ["mandible_scrape", "thorax_rear", "tarsi_stamp"],
         desc: "Chitinous grappler; bulldozes enemies & holds high ground",
         moves: [
           { name: "Mandible Clamp", mult: 1.08, anim: "claw_snap" },
@@ -438,7 +452,8 @@
       killer_wasp: {
         name: "Killer Wasp", faction: "INSECT", color: 0xfacc15,
         hp: 90, atk: 21, def: 8, spd: 1.28, crit: 0.20,
-        flightAlt: 0.24, kiteStyle: "hit_and_kite",
+        flightAlt: 0.22, hitboxRadius: 0.19, kiteStyle: "hit_and_kite",
+        behaviors: ["abdomen_pump", "antenna_groom", "hover_jink"],
         desc: "Low-hovering aerial striker; darts behind rock shelter",
         moves: [
           { name: "Needle Jab", mult: 1.00, anim: "sting_thrust" },
@@ -449,7 +464,8 @@
       emperor_dragonfly: {
         name: "Emperor Dragonfly", faction: "INSECT", color: 0x34d399,
         hp: 95, atk: 20, def: 9, spd: 1.36, crit: 0.22,
-        flightAlt: 0.28, kiteStyle: "vector_strafe",
+        flightAlt: 0.25, hitboxRadius: 0.21, kiteStyle: "vector_strafe",
+        behaviors: ["head_swivel", "wing_shimmer", "abdomen_trim"],
         desc: "4-wing aerial interceptor; 95% hunting strafe & rock kiting",
         moves: [
           { name: "8-G Vector Strafe", mult: 1.04, anim: "vector_slash" },
@@ -460,7 +476,8 @@
       tarantula_hawk: {
         name: "Tarantula Hawk", faction: "INSECT", color: 0xf97316,
         hp: 108, atk: 21, def: 12, spd: 1.16, crit: 0.15,
-        flightAlt: 0.22, kiteStyle: "paralysis_kite",
+        flightAlt: 0.20, hitboxRadius: 0.21, kiteStyle: "paralysis_kite",
+        behaviors: ["wing_flick", "antenna_probe", "stinger_prime"],
         desc: "Spider-hunting apex wasp; neuro-sting slows foes & kites",
         moves: [
           { name: "Neuro-Shock Sting", mult: 1.06, anim: "sting_thrust", slow: 1.8 },
@@ -497,57 +514,66 @@
       const mat = new THREE.MeshBasicMaterial({ color: hexColor, wireframe: true, transparent: true, opacity: opacity });
       const subMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: opacity * 0.45 });
 
-      const wings = []; const claws = []; const legs = [];
+      const wings = []; const claws = []; const legs = []; const extras = [];
 
       if (key === 'king_crab') {
-        bodyGroup.add(makeWirePart('OctahedronGeometry', [1.15, 1], mat, [0, 0.75, 0], [0, 0, 0], [1.1, 0.45, 1.35]));
+        const carapace = makeWirePart('OctahedronGeometry', [1.15, 1], mat, [0, 0.75, 0], [0, 0, 0], [1.1, 0.45, 1.35]);
+        bodyGroup.add(carapace); extras.push(carapace);
         for (let s of [-1, 1]) {
           for (let i = 0; i < 4; i++) {
             const z = (i - 1.5) * 0.55;
             const leg = makeWirePart('CylinderGeometry', [0.06, 0.03, 1.5, 4], mat, [0.15, 0.45, z + s * 0.95], [s * 0.65, 0, 0]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.65, phase: i + s });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.65, phase: i + s, side: s, idx: i });
           }
           const claw = makeWirePart('ConeGeometry', [0.32, 1.15, 5], mat, [0.95, 0.65, s * 0.75], [0, 0, -Math.PI / 2]);
           bodyGroup.add(claw); claws.push(claw);
         }
       } else if (key === 'mantis_shrimp') {
         for (let i = 0; i < 4; i++) {
-          bodyGroup.add(makeWirePart('BoxGeometry', [0.65, 0.38, 0.75 - i * 0.05], mat, [-i * 0.48 + 0.4, 0.55 + Math.sin(i * 0.5) * 0.18, 0]));
+          const seg = makeWirePart('BoxGeometry', [0.65, 0.38, 0.75 - i * 0.05], mat, [-i * 0.48 + 0.4, 0.55 + Math.sin(i * 0.5) * 0.18, 0]);
+          bodyGroup.add(seg); extras.push(seg);
         }
         for (let s of [-1, 1]) {
+          const eye = makeWirePart('OctahedronGeometry', [0.16, 0], subMat, [0.92, 0.88, s * 0.24]);
+          bodyGroup.add(eye); extras.push(eye);
           const club = makeWirePart('OctahedronGeometry', [0.38, 1], mat, [1.05, 0.45, s * 0.48], [0, 0, -0.4], [1.6, 0.7, 0.7]);
           bodyGroup.add(club); claws.push(club);
           for (let i = 0; i < 3; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.03, 0.02, 0.75, 3], subMat, [-i * 0.4, 0.28, s * 0.45], [s * 0.4, 0, 0]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.4, phase: i });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.4, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'killer_wasp') {
-        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.34, 0], mat, [0.85, 1.25, 0]));
-        bodyGroup.add(makeWirePart('IcosahedronGeometry', [0.42, 0], mat, [0.1, 1.22, 0], [0, 0, 0], [1.2, 0.85, 0.85]));
-        bodyGroup.add(makeWirePart('ConeGeometry', [0.45, 1.45, 6], mat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]));
+        const head = makeWirePart('OctahedronGeometry', [0.34, 0], mat, [0.85, 1.25, 0]);
+        const thorax = makeWirePart('IcosahedronGeometry', [0.42, 0], mat, [0.1, 1.22, 0], [0, 0, 0], [1.2, 0.85, 0.85]);
+        const abdomen = makeWirePart('ConeGeometry', [0.45, 1.45, 6], mat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]);
+        bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(abdomen);
+        extras.push(head, abdomen);
         for (let s of [-1, 1]) {
           const wing = makeWirePart('PlaneGeometry', [0.65, 1.55, 2, 3], subMat, [0.2, 1.55, s * 0.75], [s * 1.15, 0, 0.2]);
           bodyGroup.add(wing); wings.push({ mesh: wing, side: s, phase: 0 });
           for (let i = 0; i < 3; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.75, 3], mat, [0.3 - i * 0.25, 0.75, s * 0.38], [s * 0.35, 0, 0.2]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.35, phase: i });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.35, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'stag_beetle') {
-        bodyGroup.add(makeWirePart('SphereGeometry', [0.85, 6, 5], mat, [-0.25, 0.65, 0], [0, 0, 0], [1.45, 0.62, 1.05]));
+        const elytra = makeWirePart('SphereGeometry', [0.85, 6, 5], mat, [-0.25, 0.65, 0], [0, 0, 0], [1.45, 0.62, 1.05]);
+        bodyGroup.add(elytra); extras.push(elytra);
         for (let s of [-1, 1]) {
           const horn = makeWirePart('ConeGeometry', [0.14, 1.35, 4], subMat, [1.35, 0.78, s * 0.32], [0, -s * 0.28, -Math.PI / 2.3]);
           bodyGroup.add(horn); claws.push(horn);
           for (let i = -1; i <= 1; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 0.9, 3], mat, [i * 0.45, 0.35, s * 0.75], [s * 0.6, 0, 0]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.6, phase: i });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.6, phase: i, side: s, idx: i + 1 });
           }
         }
       } else if (key === 'emperor_dragonfly') {
-        bodyGroup.add(makeWirePart('SphereGeometry', [0.38, 6, 5], mat, [1.15, 1.28, 0], [0, 0, 0], [0.9, 0.9, 1.35]));
-        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.46, 1], mat, [0.45, 1.25, 0], [0, 0, 0], [1.35, 0.85, 0.85]));
-        bodyGroup.add(makeWirePart('CylinderGeometry', [0.14, 0.07, 2.25, 5], mat, [-0.95, 1.22, 0], [0, 0, Math.PI / 2]));
+        const head = makeWirePart('SphereGeometry', [0.38, 6, 5], mat, [1.15, 1.28, 0], [0, 0, 0], [0.9, 0.9, 1.35]);
+        const thorax = makeWirePart('OctahedronGeometry', [0.46, 1], mat, [0.45, 1.25, 0], [0, 0, 0], [1.35, 0.85, 0.85]);
+        const tail = makeWirePart('CylinderGeometry', [0.14, 0.07, 2.25, 5], mat, [-0.95, 1.22, 0], [0, 0, Math.PI / 2]);
+        bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(tail);
+        extras.push(head, tail);
         for (let s of [-1, 1]) {
           const foreWing = makeWirePart('PlaneGeometry', [0.42, 1.95, 2, 4], subMat, [0.58, 1.52, s * 0.95], [s * 1.22, 0, 0.12]);
           const hindWing = makeWirePart('PlaneGeometry', [0.50, 1.75, 2, 4], mat, [0.18, 1.48, s * 0.88], [s * 1.22, 0, -0.14]);
@@ -557,13 +583,15 @@
           wings.push({ mesh: hindWing, side: s, phase: Math.PI * 0.65 });
           for (let i = 0; i < 3; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.7, 3], subMat, [0.65 - i * 0.22, 0.82, s * 0.32], [s * 0.3, 0, 0.35]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.3, phase: i });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.3, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'tarantula_hawk') {
-        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.36, 0], mat, [0.95, 1.22, 0]));
-        bodyGroup.add(makeWirePart('IcosahedronGeometry', [0.50, 1], mat, [0.22, 1.25, 0], [0, 0, 0], [1.35, 0.92, 0.9]));
-        bodyGroup.add(makeWirePart('ConeGeometry', [0.48, 1.65, 6], mat, [-1.05, 1.08, 0], [0, 0, -Math.PI / 2.25]));
+        const head = makeWirePart('OctahedronGeometry', [0.36, 0], mat, [0.95, 1.22, 0]);
+        const thorax = makeWirePart('IcosahedronGeometry', [0.50, 1], mat, [0.22, 1.25, 0], [0, 0, 0], [1.35, 0.92, 0.9]);
+        const abdomen = makeWirePart('ConeGeometry', [0.48, 1.65, 6], mat, [-1.05, 1.08, 0], [0, 0, -Math.PI / 2.25]);
+        bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(abdomen);
+        extras.push(head, abdomen);
         const stinger = makeWirePart('ConeGeometry', [0.08, 0.55, 4], subMat, [-1.92, 0.95, 0], [0, 0, Math.PI / 2]);
         bodyGroup.add(stinger); claws.push(stinger);
         for (let s of [-1, 1]) {
@@ -574,19 +602,14 @@
           for (let i = 0; i < 3; i++) {
             const legLen = i === 2 ? 1.15 : 0.85;
             const leg = makeWirePart('CylinderGeometry', [0.03, 0.015, legLen, 3], mat, [0.35 - i * 0.32, 0.68, s * 0.46], [s * 0.48, 0, 0.15]);
-            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.48, phase: i });
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.48, phase: i, side: s, idx: i });
           }
         }
       }
 
-      const ringMat = new THREE.MeshBasicMaterial({ color: hexColor, side: THREE.DoubleSide, transparent: true, opacity: opacity * 0.7 });
-      const ring = new THREE.Mesh(getGeometry('RingGeometry', 0.22, 0.28, 16), ringMat);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.02;
-      root.add(ring);
-
       claws.forEach(c => { c.userData.basePos = c.position.clone(); c.userData.baseRot = c.rotation.clone(); });
-      root.userData = { bodyGroup, mat, subMat, wings, claws, legs, ring, baseColor: hexColor };
+      extras.forEach(e => { e.userData.basePos = e.position.clone(); e.userData.baseRot = e.rotation.clone(); });
+      root.userData = { bodyGroup, mat, subMat, wings, claws, legs, extras, baseColor: hexColor };
       return root;
     }
 
@@ -665,6 +688,7 @@
     let enemySelectionRule = 'random';
     
     let entities = [];
+    // States: 'FIGHTING' | 'PAUSED' | 'STANDBY' | 'ENDED'
     let battleState = 'FIGHTING';
     let simSpeed = 1;
     let autoLoop = true;
@@ -736,10 +760,9 @@
         if (f.side === side) {
           const cfg = CREATURES[f.key];
           f.mesh.userData.bodyGroup.scale.set(ov.scale, ov.scale, ov.scale);
-          const ringScale = ov.scale / 0.125;
-          f.mesh.userData.ring.scale.set(ringScale, ringScale, 1);
+          f.hitboxRadius = cfg.hitboxRadius * (ov.scale / 0.125);
           f.spd = cfg.spd * ov.spdMult;
-          f.cooldown = 2.65 / f.spd;
+          f.cooldown = 2.35 / f.spd;
         }
       });
     }
@@ -748,20 +771,17 @@
       const cfg = CREATURES[key];
       const ov = slotOverrides[side];
       const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale);
-      const ringScale = ov.scale / 0.125;
-      mesh.userData.ring.scale.set(ringScale, ringScale, 1);
       
       if (side === 2 && selectedP1 === selectedP2) {
         mesh.userData.mat.color.setHex(0xf43f5e);
-        mesh.userData.ring.material.color.setHex(0xf43f5e);
       }
 
-      const spacing = 1.4;
+      const spacing = 1.3;
       const row = Math.floor(idx / totalCols);
       const col = idx % totalCols;
       
-      const homeX = (side === 1 ? -6.5 : 6.5) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.5;
-      const homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.5;
+      const homeX = (side === 1 ? -6.2 : 6.2) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.4;
+      const homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.4;
       const homeY = getTerrainHeight(homeX, homeZ);
       
       mesh.position.set(homeX, homeY, homeZ);
@@ -774,11 +794,13 @@
         color: (side === 2 && selectedP1 === selectedP2) ? 0xf43f5e : cfg.color,
         maxHp: cfg.hp, hp: cfg.hp, atk: cfg.atk, def: cfg.def, spd: cfg.spd * ov.spdMult, crit: cfg.crit,
         flightAlt: cfg.flightAlt || 0,
+        hitboxRadius: (cfg.hitboxRadius || 0.21) * (ov.scale / 0.125),
         kiteStyle: cfg.kiteStyle || 'balanced',
+        behaviors: cfg.behaviors || [],
         moves: cfg.moves, powerMove: cfg.powerMove,
-        energy: 0, lastMoveName: "ENGAGING",
+        energy: 0, lastMoveName: "READY",
         cooldown: 2.35 / (cfg.spd * ov.spdMult),
-        timer: (1.6 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.65),
+        timer: (1.5 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.65),
         mesh, homeX, homeZ,
         vx: 0, vz: 0,
         strafeDir: Math.random() < 0.5 ? 1 : -1,
@@ -786,6 +808,11 @@
         retreatTimer: 0,
         slowTimer: 0,
         takingCover: false,
+        // 3 Creature-specific natural movement/idle habit state
+        habitIndex: Math.floor(Math.random() * 3),
+        habitTimer: 1.0 + Math.random() * 2.2,
+        habitActiveTime: 0,
+        habitDuration: 1.1,
         seed: Math.random() * Math.PI * 2,
         hitFlash: 0, activeAction: null,
         guardTimer: 0, rushCooldown: 0, guardCooldown: 0,
@@ -807,6 +834,118 @@
       }
       updateArmyHUD();
       highlightSelectedCards();
+    }
+
+    function syncMatchControlUI() {
+      const dot = document.getElementById('status-dot');
+      const banner = document.getElementById('winner-text');
+      const pauseLbl = document.getElementById('lbl-pause-btn');
+      const p1Lock = document.getElementById('p1-lock-label');
+      const p2Lock = document.getElementById('p2-lock-label');
+
+      const isLocked = battleState === 'FIGHTING' || battleState === 'PAUSED';
+      if (p1Lock) p1Lock.textContent = isLocked ? "ALLY FORCE // [LOCKED]" : "ALLY FORCE // [SWAP]";
+      if (p2Lock) p2Lock.textContent = isLocked ? "[LOCKED] HOSTILE FORCE" : "[SWAP] HOSTILE FORCE";
+
+      if (battleState === 'FIGHTING') {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+        banner.textContent = "COMBAT ACTIVE";
+        banner.className = "font-extrabold tracking-wider text-emerald-400 uppercase px-1";
+        if (pauseLbl) pauseLbl.textContent = "PAUSE BATTLE";
+      } else if (battleState === 'PAUSED') {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
+        banner.textContent = "BATTLE PAUSED";
+        banner.className = "font-extrabold tracking-wider text-amber-300 uppercase px-1";
+        if (pauseLbl) pauseLbl.textContent = "RESUME BATTLE";
+      } else if (battleState === 'STANDBY') {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-cyan-400";
+        banner.textContent = "STANDBY // READY";
+        banner.className = "font-extrabold tracking-wider text-cyan-300 uppercase px-1";
+        if (pauseLbl) pauseLbl.textContent = "PAUSE BATTLE";
+      } else if (battleState === 'ENDED') {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-rose-400";
+        if (pauseLbl) pauseLbl.textContent = "PAUSE BATTLE";
+      }
+    }
+
+    // 1) Start Battle
+    function startBattle() {
+      if (autoRestartTimeout) {
+        clearTimeout(autoRestartTimeout);
+        autoRestartTimeout = null;
+      }
+      document.getElementById('post-match-modal').classList.add('hidden');
+
+      if (battleState === 'PAUSED') {
+        battleState = 'FIGHTING';
+        syncMatchControlUI();
+        appendLog("▶️ Battle Resumed!", "text-emerald-300 font-bold");
+        return;
+      }
+
+      if (battleState === 'STANDBY' && entities.length > 0) {
+        battleState = 'FIGHTING';
+        syncMatchControlUI();
+        appendLog(`▶️ Battle Engaged: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}!`, "text-emerald-400 font-bold");
+        return;
+      }
+
+      if (enemySelectionRule === 'random') {
+        const keys = Object.keys(CREATURES);
+        selectedP2 = keys[Math.floor(Math.random() * keys.length)];
+      }
+      spawnArmies();
+      battleState = 'FIGHTING';
+      syncMatchControlUI();
+      appendLog(`▶️ ${armySize}v${armySize}: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}`, "text-emerald-400 font-semibold");
+    }
+
+    // 2) Pause Battle
+    function pauseBattle() {
+      if (battleState === 'FIGHTING') {
+        battleState = 'PAUSED';
+        syncMatchControlUI();
+        appendLog("⏸️ Battle Paused — Inspect wireframes or issue commands.", "text-amber-300 font-bold");
+      } else if (battleState === 'PAUSED') {
+        battleState = 'FIGHTING';
+        syncMatchControlUI();
+        appendLog("▶️ Battle Resumed!", "text-emerald-300 font-bold");
+      } else {
+        appendLog("ℹ️ Start a battle first before pausing.", "text-slate-400");
+      }
+    }
+
+    // 3) End Battle
+    function endBattleCommand() {
+      if (autoRestartTimeout) {
+        clearTimeout(autoRestartTimeout);
+        autoRestartTimeout = null;
+      }
+      if (battleState === 'ENDED') {
+        appendLog("ℹ️ Battle is already concluded. Army selection is unlocked.", "text-slate-400");
+        return;
+      }
+      battleState = 'ENDED';
+      entities.forEach(f => { f.activeAction = null; f.vx = 0; f.vz = 0; });
+      const banner = document.getElementById('winner-text');
+      banner.textContent = "BATTLE TERMINATED";
+      banner.className = "font-extrabold tracking-wider text-rose-400 uppercase px-1";
+      syncMatchControlUI();
+      updateArmyHUD();
+      appendLog("⏹️ Battle Ended by Commander — Army selection unlocked!", "text-rose-300 font-bold");
+    }
+
+    // 4) Reset Battle
+    function resetBattleCommand() {
+      if (autoRestartTimeout) {
+        clearTimeout(autoRestartTimeout);
+        autoRestartTimeout = null;
+      }
+      document.getElementById('post-match-modal').classList.add('hidden');
+      spawnArmies();
+      battleState = 'STANDBY';
+      syncMatchControlUI();
+      appendLog("🔄 Battle Reset to Standby Formation — Click ▶️ START BATTLE or swap armies!", "text-cyan-300 font-bold");
     }
 
     function getBestEnemyTarget(f) {
@@ -887,14 +1026,26 @@
       if (isPower) attacker.energy = 0; else attacker.energy = Math.min(3, attacker.energy + 1);
       
       attacker.lastMoveName = move.name;
+      // Extended duration & contact hold window for physical close-quarters clashing
       attacker.activeAction = {
         move, isPower, defenderId: defender.id,
         startPos: attacker.mesh.position.clone(),
-        progress: 0, duration: isPower ? 1.55 : 1.05, impactTriggered: false
+        progress: 0, duration: isPower ? 1.70 : 1.22, impactTriggered: false
       };
     }
 
     function resolveMoveImpact(attacker, defender, move, isPower) {
+      // Balanced 3D Hitbox Verification across ground & aerial classes
+      const dx = attacker.mesh.position.x - defender.mesh.position.x;
+      const dz = attacker.mesh.position.z - defender.mesh.position.z;
+      const dy = (attacker.mesh.position.y - defender.mesh.position.y) * 0.55;
+      const dist3D = Math.hypot(dx, dz, dy);
+      const maxHitReach = (attacker.hitboxRadius + defender.hitboxRadius) * 1.65 + 0.35;
+
+      if (dist3D > maxHitReach) {
+        return; // Out of physical hitbox reach
+      }
+
       const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
       const highGroundMult = elevDiff > 0.22 ? 1.15 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
@@ -905,7 +1056,7 @@
       
       const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult * coverMult));
       defender.hp = Math.max(0, defender.hp - dmg);
-      defender.hitFlash = isPower ? 0.35 : 0.20;
+      defender.hitFlash = isPower ? 0.35 : 0.22;
 
       if (move.slow) {
         defender.slowTimer = Math.max(defender.slowTimer, move.slow);
@@ -915,35 +1066,43 @@
         const awayX = attacker.homeX - defender.mesh.position.x;
         const awayZ = attacker.homeZ - defender.mesh.position.z;
         const d = Math.hypot(awayX, awayZ) || 1;
-        attacker.vx += (awayX / d) * 6.5;
-        attacker.vz += (awayZ / d) * 6.5;
-        attacker.retreatTimer = 1.15;
+        attacker.vx += (awayX / d) * 5.8;
+        attacker.vz += (awayZ / d) * 5.8;
+        attacker.retreatTimer = 1.05;
       } else if (attacker.flightAlt > 0) {
-        attacker.retreatTimer = 1.25;
+        attacker.retreatTimer = 1.15;
         attacker.strafeDir *= -1;
       }
 
       if (defender.hp < defender.maxHp * 0.45 && defender.retreatTimer <= 0 && Math.random() < 0.65) {
-        defender.retreatTimer = 1.65;
+        defender.retreatTimer = 1.55;
       }
 
       const pushDx = defender.mesh.position.x - attacker.mesh.position.x;
       const pushDz = defender.mesh.position.z - attacker.mesh.position.z;
       const pushDist = Math.hypot(pushDx, pushDz) || 1;
-      const knockMag = isPower ? 1.15 : 0.48;
-      defender.vx += (pushDx / pushDist) * knockMag * 4.2;
-      defender.vz += (pushDz / pushDist) * knockMag * 4.2;
+      const knockMag = isPower ? 0.95 : 0.38;
+      defender.vx += (pushDx / pushDist) * knockMag * 3.8;
+      defender.vz += (pushDz / pushDist) * knockMag * 3.8;
 
       const anim = move.anim;
       if (anim === 'horn_toss' || anim === 'power_suplex') {
         defender.victimState.liftY = isPower ? 0.75 : 0.45;
         defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
       } else if (anim === 'power_cavitation' || anim === 'club_punch' || anim === 'wing_backdraft') {
-        defender.victimState.knockX = isPower ? 0.95 : 0.45;
+        defender.victimState.knockX = isPower ? 0.85 : 0.38;
       } else {
-        defender.victimState.knockX = isPower ? 0.6 : 0.3;
-        defender.victimState.tiltZ = 0.3;
+        defender.victimState.knockX = isPower ? 0.5 : 0.24;
+        defender.victimState.tiltZ = 0.28;
       }
+
+      // Spawn physical clash sparks at the exact midpoint between colliding hitboxes
+      const contactPoint = new THREE.Vector3(
+        (attacker.mesh.position.x + defender.mesh.position.x) * 0.5,
+        (attacker.mesh.position.y + defender.mesh.position.y) * 0.5,
+        (attacker.mesh.position.z + defender.mesh.position.z) * 0.5
+      );
+      spawnHitSparks(contactPoint, isPower ? 0xf0abfc : attacker.color, isPower ? 10 : 5);
 
       if (activeDmgPopups < MAX_POPUPS && (armySize <= 15 || isPower || isCrit)) {
         spawnFloatingDamage(defender.mesh.position, dmg, isCrit, defender.side, isPower ? move.name : "");
@@ -955,6 +1114,214 @@
         spawnHitSparks(defender.mesh.position, defender.color, 12);
         updateArmyHUD();
       }
+    }
+
+    // 3 Naturalistic Idle & Movement Body Habits per Creature (18 total procedural animations)
+    function applyNaturalCreatureBehaviors(f, elapsed, dt, speedMag) {
+      const ud = f.mesh.userData;
+      const s = Math.sin;
+      const c = Math.cos;
+
+      // Cycle through the 3 natural habits for each individual creature between attacks
+      if (!f.activeAction) {
+        f.habitTimer -= dt;
+        if (f.habitTimer <= 0) {
+          f.habitActiveTime += dt;
+          if (f.habitActiveTime >= f.habitDuration) {
+            f.habitActiveTime = 0;
+            f.habitTimer = 1.4 + Math.random() * 2.4;
+            f.habitIndex = (f.habitIndex + 1) % 3;
+            f.habitDuration = 0.95 + Math.random() * 0.65;
+          }
+        }
+      } else {
+        f.habitActiveTime = 0;
+      }
+
+      const hp = f.habitDuration > 0 ? Math.min(1, f.habitActiveTime / f.habitDuration) : 0;
+      const pulse = s(hp * Math.PI); // Smooth 0 -> 1 -> 0 envelope for natural habit
+
+      // Reset claws & extras toward baseline before applying procedural motion
+      ud.claws.forEach(cl => {
+        cl.position.copy(cl.userData.basePos);
+        cl.rotation.copy(cl.userData.baseRot);
+      });
+      ud.extras.forEach(ex => {
+        ex.position.copy(ex.userData.basePos);
+        ex.rotation.copy(ex.userData.baseRot);
+      });
+
+      let bodyYOffset = 0;
+      let bodyPitchOffset = 0;
+      let bodyRollOffset = 0;
+      let bodyYawOffset = 0;
+
+      if (f.key === 'king_crab') {
+        // Locomotion: Multi-phase benthic sideways leg gait
+        ud.legs.forEach(l => {
+          const stride = s(elapsed * 9.5 + l.idx * 1.3 + l.side * 0.8) * (0.06 + Math.min(0.24, speedMag * 0.08));
+          l.mesh.rotation.z = stride;
+          l.mesh.rotation.x = l.baseRotX + c(elapsed * 9.5 + l.idx) * 0.08;
+        });
+
+        // 3 Natural Habits: 0 = Chelae Threat Display, 1 = Benthic Carapace Hunker, 2 = Gill Bubble Purge
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0) {
+            // 1. Chelae Threat Display: Rears both crusher claws high and snaps them
+            ud.claws.forEach((cl, i) => {
+              const dir = i === 0 ? -1 : 1;
+              cl.position.y += pulse * 0.42;
+              cl.position.z += dir * pulse * 0.25;
+              cl.rotation.y += dir * s(hp * Math.PI * 3) * 0.45;
+            });
+          } else if (f.habitIndex === 1) {
+            // 2. Benthic Carapace Hunker: Press carapace low into terrain & flare legs wide
+            bodyYOffset -= pulse * 0.06;
+            ud.legs.forEach(l => { l.mesh.rotation.x = l.baseRotX + l.side * pulse * 0.28; });
+          } else {
+            // 3. Gill Bubble Purge: Rapid high-frequency carapace respiratory shudder
+            bodyRollOffset += s(hp * Math.PI * 10) * 0.09 * pulse;
+            ud.claws.forEach(cl => { cl.position.x += s(hp * Math.PI * 8) * 0.12 * pulse; });
+          }
+        }
+      } else if (f.key === 'mantis_shrimp') {
+        // Locomotion: Pleopod undulating body wave
+        ud.extras.forEach((seg, idx) => {
+          if (idx < 4) {
+            seg.position.y = seg.userData.basePos.y + s(elapsed * 8.0 - idx * 0.9 + f.seed) * 0.09;
+          }
+        });
+        ud.legs.forEach(l => {
+          l.mesh.rotation.z = s(elapsed * 12 + l.phase) * (0.08 + Math.min(0.22, speedMag * 0.07));
+        });
+
+        // 3 Natural Habits: 0 = Independent Trinocular Eye Radar, 1 = Raptorial Spring Cocking, 2 = Pleopod Coil
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0) {
+            // 1. Trinocular Eye Stalk Radar: Independent rotation of compound eye stalks + head scan
+            bodyYawOffset += s(hp * Math.PI * 2) * 0.22 * pulse;
+            if (ud.extras[4]) ud.extras[4].rotation.y = s(hp * Math.PI * 4) * 0.8;
+            if (ud.extras[5]) ud.extras[5].rotation.x = c(hp * Math.PI * 4) * 0.8;
+          } else if (f.habitIndex === 1) {
+            // 2. Raptorial Club Cocking: Draws smashing clubs tightly back against thorax
+            ud.claws.forEach(cl => {
+              cl.position.x -= pulse * 0.35;
+              cl.position.y += pulse * 0.22;
+              cl.rotation.z += pulse * 0.55;
+            });
+          } else {
+            // 3. Pleopod Fan Ripple: Rapid S-curve abdominal wave & hover hop
+            bodyYOffset += pulse * 0.05;
+            ud.extras.forEach((seg, idx) => {
+              if (idx < 4) seg.position.y += s(hp * Math.PI * 6 - idx * 1.2) * 0.14 * pulse;
+            });
+          }
+        }
+      } else if (f.key === 'stag_beetle') {
+        // Locomotion: Heavy deliberate tripod beetle march
+        ud.legs.forEach(l => {
+          const tripodPhase = (l.idx % 2 === 0 ? 0 : Math.PI) + (l.side > 0 ? 0.5 : 0);
+          l.mesh.rotation.z = s(elapsed * 8.5 + tripodPhase) * (0.06 + Math.min(0.22, speedMag * 0.07));
+        });
+
+        // 3 Natural Habits: 0 = Mandible Scrape, 1 = Pronotum Threat Rear-Up, 2 = Tarsi Ground Stamp
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0) {
+            // 1. Mandible Scrape: Rhythmically shears giant antler mandibles inward and outward
+            ud.claws.forEach((horn, i) => {
+              const dir = i === 0 ? -1 : 1;
+              horn.rotation.y = horn.userData.baseRot.y + dir * s(hp * Math.PI * 4) * 0.38 * pulse;
+            });
+          } else if (f.habitIndex === 1) {
+            // 2. Pronotum Threat Rear-Up: Pitches entire armored body upward to tower over foes
+            bodyPitchOffset += pulse * 0.34;
+            bodyYOffset += pulse * 0.05;
+          } else {
+            // 3. Tarsi Ground Stamp: Aggressive lateral weight stomp & horn dip
+            bodyPitchOffset -= pulse * 0.18;
+            bodyRollOffset += s(hp * Math.PI * 6) * 0.12 * pulse;
+          }
+        }
+      } else if (f.key === 'killer_wasp') {
+        // Locomotion: High-frequency figure-8 wing buzz & trailing legs
+        ud.wings.forEach(w => {
+          w.mesh.rotation.x = w.side * (0.82 + s(elapsed * 62 + f.seed) * 0.72);
+        });
+        ud.legs.forEach(l => {
+          l.mesh.rotation.z = -0.15 + s(elapsed * 10 + l.phase) * 0.08;
+        });
+
+        // 3 Natural Habits: 0 = Abdomen Venom-Pumping, 1 = Foreleg Antenna Grooming, 2 = Predatory Hover Jink
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0 && ud.extras[1]) {
+            // 1. Abdomen Venom-Pumping: Rhythmic respiratory/stinger telescoping of metasoma
+            ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z + s(hp * Math.PI * 6) * 0.28 * pulse;
+          } else if (f.habitIndex === 1 && ud.extras[0]) {
+            // 2. Foreleg Antenna Grooming: Head nods while front legs brush forward
+            ud.extras[0].rotation.x = s(hp * Math.PI * 6) * 0.35 * pulse;
+            ud.legs.forEach(l => { if (l.idx === 0) l.mesh.rotation.z = 0.55 * pulse; });
+          } else {
+            // 3. Predatory Hover Jink: Sharp lateral micro-dart in mid-air
+            bodyRollOffset += s(hp * Math.PI * 4) * 0.26 * pulse;
+            bodyYOffset += s(hp * Math.PI * 2) * 0.04 * pulse;
+          }
+        }
+      } else if (f.key === 'emperor_dragonfly') {
+        // Locomotion: 4-wing out-of-phase counter-stroking
+        ud.wings.forEach(w => {
+          w.mesh.rotation.x = w.side * (0.78 + s(elapsed * 46 + (w.phase || 0)) * 0.68);
+        });
+        ud.legs.forEach(l => {
+          l.mesh.rotation.z = 0.22 + s(elapsed * 8 + l.phase) * 0.06; // Raptorial basket tuck
+        });
+
+        // 3 Natural Habits: 0 = 360 Compound Head Swivel, 1 = Out-of-Phase Wing Shimmer, 2 = Abdomen Trim Rudder
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0 && ud.extras[0]) {
+            // 1. Compound Head Swivel: Rapidly tilts and pans spherical compound eyes
+            ud.extras[0].rotation.y = s(hp * Math.PI * 4) * 0.55 * pulse;
+            ud.extras[0].rotation.x = c(hp * Math.PI * 4) * 0.35 * pulse;
+          } else if (f.habitIndex === 1) {
+            // 2. Wing Thermoregulation Shimmer: High-speedlow-amplitude wing vibration glide
+            ud.wings.forEach(w => {
+              w.mesh.rotation.x = w.side * (1.15 + s(elapsed * 110 + (w.phase || 0)) * 0.18);
+            });
+          } else if (ud.extras[1]) {
+            // 3. Abdomen Counter-Balance Trim: Long tail flexes up and down like a flight rudder
+            ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z + s(hp * Math.PI * 3) * 0.24 * pulse;
+          }
+        }
+      } else if (f.key === 'tarantula_hawk') {
+        // Locomotion: Heavy deliberate aposematic wingbeats & trailing spider-grappling hind legs
+        ud.wings.forEach(w => {
+          w.mesh.rotation.x = w.side * (0.85 + s(elapsed * 50 + f.seed) * 0.68);
+        });
+        ud.legs.forEach(l => {
+          l.mesh.rotation.z = s(elapsed * 11 + l.phase) * (0.09 + Math.min(0.2, speedMag * 0.06));
+        });
+
+        // 3 Natural Habits: 0 = Aposematic Wing Flick, 1 = Curled Antenna Ground Probe, 2 = Stinger Prime Arch
+        if (pulse > 0.01) {
+          if (f.habitIndex === 0) {
+            // 1. Aposematic Warning Wing Flick: Sharp double-snap of orange wings while stalking
+            ud.wings.forEach(w => {
+              w.mesh.rotation.x = w.side * (0.35 + Math.abs(s(hp * Math.PI * 4)) * 0.95);
+            });
+          } else if (f.habitIndex === 1) {
+            // 2. Curled Antenna Chemotaxis Probe: Antennae rapidly tap downward to sense vibrations
+            bodyPitchOffset -= pulse * 0.16;
+            ud.claws.forEach((cl, i) => {
+              if (i > 0) cl.rotation.z = cl.userData.baseRot.z - s(hp * Math.PI * 6) * 0.45 * pulse;
+            });
+          } else {
+            // 3. Stinger Prime Arch: Curls abdomen & extends stinger tip forward underneath
+            if (ud.extras[1]) ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z - pulse * 0.32;
+            if (ud.claws[0]) ud.claws[0].position.x -= pulse * 0.28;
+          }
+        }
+      }
+
+      return { bodyYOffset, bodyPitchOffset, bodyRollOffset, bodyYawOffset };
     }
 
     const particles = [];
@@ -1061,6 +1428,7 @@
           const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
           appendLog(`🏆 ${winnerStr} (${winnerName}) WINS!`, p1Won ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
           document.getElementById('winner-text').textContent = `${winnerStr} VICTORIOUS`;
+          syncMatchControlUI();
 
           if (gameMode === 'arcade') {
             const pmModal = document.getElementById('post-match-modal');
@@ -1075,22 +1443,6 @@
           }
         }
       }
-    }
-
-    function startBattle() {
-      if (autoRestartTimeout) {
-        clearTimeout(autoRestartTimeout);
-        autoRestartTimeout = null;
-      }
-      document.getElementById('post-match-modal').classList.add('hidden');
-      if (enemySelectionRule === 'random') {
-        const keys = Object.keys(CREATURES);
-        selectedP2 = keys[Math.floor(Math.random() * keys.length)];
-      }
-      spawnArmies();
-      battleState = 'FIGHTING';
-      document.getElementById('winner-text').textContent = "ARMY ENGAGEMENT";
-      appendLog(`⚔️ ${armySize}v${armySize}: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}`, "text-emerald-400 font-semibold");
     }
 
     let csRenderer = null, csScene = null, csCamera = null, csPreviewGroup = null, csPreviewMesh = null;
@@ -1160,8 +1512,8 @@
     }
 
     function openRosterDrawer(slot) {
-      if (battleState === 'FIGHTING') {
-        appendLog("🔒 Armies are locked in combat! Cannot swap fighters mid-match.", "text-amber-300");
+      if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+        appendLog("🔒 Match in progress! Click ⏹️ END BATTLE or 🔄 RESET BATTLE to swap armies.", "text-amber-300");
         return;
       }
       activeDrawerSlot = slot;
@@ -1189,8 +1541,8 @@
     }
 
     function openCharSelectModal(slot = 1) {
-      if (battleState === 'FIGHTING') {
-        appendLog("🔒 Armies are locked in combat! Cannot open character select mid-match.", "text-amber-300");
+      if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+        appendLog("🔒 Match in progress! Click ⏹️ END BATTLE or 🔄 RESET BATTLE to open Commander Select.", "text-amber-300");
         return;
       }
       csActiveSlot = slot;
@@ -1289,8 +1641,8 @@
           </div>
         `;
         card.addEventListener('click', () => {
-          if (battleState === 'FIGHTING') {
-            appendLog("🔒 Armies locked in battle! Cannot swap units.", "text-amber-300");
+          if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+            appendLog("🔒 Match in progress! End or Reset battle before swapping units.", "text-amber-300");
             return;
           }
           if (activeDrawerSlot === 1) {
@@ -1303,7 +1655,7 @@
             appendLog(`🧬 HOSTILE FORCE switched to ${c.name} Swarm`, "text-rose-300 font-bold");
           }
           closeRosterDrawer();
-          startBattle();
+          spawnArmies();
         });
         rosterGrid.appendChild(card);
 
@@ -1344,8 +1696,8 @@
       });
       document.getElementById('btn-random').addEventListener('click', (e) => {
         e.stopPropagation();
-        if (battleState === 'FIGHTING') {
-          appendLog("🔒 Armies locked in battle! Cannot randomize mid-match.", "text-amber-300");
+        if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+          appendLog("🔒 Match in progress! Click ⏹️ END BATTLE or 🔄 RESET BATTLE to randomize.", "text-amber-300");
           return;
         }
         const keys = Object.keys(CREATURES);
@@ -1353,12 +1705,16 @@
         enemySelectionRule = 'manual';
         document.getElementById('cs-enemy-mode').value = 'manual';
         appendLog(`🎲 Randomized Hostile Force: ${CREATURES[selectedP2].name} Swarm`, "text-rose-300 font-bold");
-        startBattle();
+        spawnArmies();
       });
       document.getElementById('btn-close-drawer').addEventListener('click', closeRosterDrawer);
 
       document.getElementById('btn-open-char-select').addEventListener('click', () => openCharSelectModal(1));
       document.getElementById('btn-hud-mode').addEventListener('click', (e) => {
+        if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+          appendLog("🔒 Cannot switch game mode mid-battle! Click ⏹️ END BATTLE first.", "text-amber-300");
+          return;
+        }
         gameMode = gameMode === 'sandbox' ? 'arcade' : 'sandbox';
         e.target.textContent = `MODE: ${gameMode.toUpperCase()}`;
         if (gameMode === 'arcade') openCharSelectModal(1);
@@ -1369,7 +1725,6 @@
         e.target.className = autoLoop
           ? 'px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer font-semibold'
           : 'px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700 hover:text-white transition cursor-pointer font-semibold';
-        if (autoLoop && battleState === 'ENDED') startBattle();
       });
       document.getElementById('btn-speed').addEventListener('click', (e) => {
         simSpeed = simSpeed === 1 ? 2 : simSpeed === 2 ? 4 : 1;
@@ -1395,9 +1750,11 @@
         setZoomLevelByIndex(currentZoomIdx + 1);
       });
 
-      document.getElementById('btn-quick-rematch').addEventListener('click', () => {
-        startBattle();
-      });
+      // 4 Dedicated Match Control Buttons
+      document.getElementById('btn-match-start').addEventListener('click', startBattle);
+      document.getElementById('btn-match-pause').addEventListener('click', pauseBattle);
+      document.getElementById('btn-match-end').addEventListener('click', endBattleCommand);
+      document.getElementById('btn-match-reset').addEventListener('click', resetBattleCommand);
 
       const isUIElement = (el) => {
         return el.closest('button') || el.closest('select') || el.closest('input') ||
@@ -1610,6 +1967,9 @@
           document.getElementById('btn-cmd-guard').click();
         } else if (e.key === '3') {
           document.getElementById('btn-cmd-overdrive').click();
+        } else if (e.key === ' ') {
+          e.preventDefault();
+          pauseBattle();
         }
       });
 
@@ -1623,7 +1983,11 @@
     document.getElementById('range-army-size').addEventListener('input', (e) => {
       armySize = parseInt(e.target.value, 10);
       document.getElementById('lbl-army-size').textContent = armySize;
-      startBattle();
+      if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
+        appendLog(`📐 Army Size queued to ${armySize}v${armySize} for next Reset/Start.`, "text-emerald-300");
+      } else {
+        spawnArmies();
+      }
     });
 
     document.getElementById('btn-cmd-strike').addEventListener('click', () => {
@@ -1633,7 +1997,7 @@
           f.rushCooldown = 3.2; f.timer = 0;
           const t = getClosestEnemy(f);
           if (t) {
-            f.homeX += (t.mesh.position.x - f.homeX) * 0.4; f.homeZ += (t.mesh.position.z - f.homeZ) * 0.4;
+            f.homeX += (t.mesh.position.x - f.homeX) * 0.45; f.homeZ += (t.mesh.position.z - f.homeZ) * 0.45;
           }
         }
       });
@@ -1679,7 +2043,8 @@
     function animate() {
       requestAnimationFrame(animate);
       const rawDt = Math.min(clock.getDelta(), 0.1);
-      const dt = rawDt * simSpeed;
+      const isPaused = battleState === 'PAUSED';
+      const dt = isPaused ? 0 : rawDt * simSpeed;
       const elapsed = clock.getElapsedTime();
 
       const csModal = document.getElementById('char-select-modal');
@@ -1692,6 +2057,19 @@
           });
         }
         csRenderer.render(csScene, csCamera);
+      }
+
+      // Standby & Ended idle breathing/natural habits so creatures look alive before & after battle
+      if (battleState === 'STANDBY' || battleState === 'ENDED') {
+        for (const f of entities) {
+          if (f.dead) continue;
+          const nat = applyNaturalCreatureBehaviors(f, elapsed, rawDt, 0);
+          const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
+          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.04 : 0;
+          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + f.flightAlt + bobWave + nat.bodyYOffset, Math.min(1, rawDt * 10));
+          f.mesh.userData.bodyGroup.rotation.z = nat.bodyPitchOffset;
+          f.mesh.userData.bodyGroup.rotation.x = nat.bodyRollOffset;
+        }
       }
 
       if (battleState === 'FIGHTING') {
@@ -1754,8 +2132,12 @@
             const hGradX = (getTerrainHeight(f.homeX + 0.6, f.homeZ) - hHere) / 0.6;
             const hGradZ = (getTerrainHeight(f.homeX, f.homeZ + 0.6) - hHere) / 0.6;
 
+            // Balanced physical contact distance based on both units' hitbox radii (nearly touching without overlapping)
+            const idealContactDist = f.hitboxRadius + target.hitboxRadius + 0.04;
+            const strikeTriggerRange = idealContactDist + 0.55;
+
             const isLowHp = f.hp < f.maxHp * 0.45;
-            const isCoolingDown = f.timer > f.cooldown * 0.48;
+            const isCoolingDown = f.timer > f.cooldown * 0.55;
             const wantsToKiteOrHide = f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0);
 
             let steerX = 0;
@@ -1792,52 +2174,55 @@
                   steerZ = (sz / sd) * 1.45 + perpZ * 0.45;
                 }
               } else {
-                steerX = -dirX * 1.1 + perpX * 0.95;
-                steerZ = -dirZ * 1.1 + perpZ * 0.95;
+                steerX = -dirX * 1.05 + perpX * 0.95;
+                steerZ = -dirZ * 1.05 + perpZ * 0.95;
               }
             } else {
               const blockingObs = isLineOfSightBlocked(f.homeX, f.homeZ, target.mesh.position.x, target.mesh.position.z);
-              if (blockingObs && distToEnemy > 1.6) {
+              if (blockingObs && distToEnemy > 1.2) {
                 const tangX = -(blockingObs.z - f.homeZ) * f.strafeDir;
                 const tangZ = (blockingObs.x - f.homeX) * f.strafeDir;
                 const td = Math.hypot(tangX, tangZ) || 1;
                 steerX = (tangX / td) * 1.35 + dirX * 0.55;
                 steerZ = (tangZ / td) * 1.35 + dirZ * 0.55;
               } else if (f.key === 'king_crab') {
-                const approach = distToEnemy > 1.35 ? 0.72 : -0.25;
-                steerX = dirX * approach + perpX * 1.15 + hGradX * 0.65;
-                steerZ = dirZ * approach + perpZ * 1.15 + hGradZ * 0.65;
+                const approach = distToEnemy > idealContactDist ? 0.95 : -0.15;
+                steerX = dirX * approach + perpX * 0.85 + hGradX * 0.55;
+                steerZ = dirZ * approach + perpZ * 0.85 + hGradZ * 0.55;
               } else if (f.key === 'emperor_dragonfly') {
                 const wave = Math.sin(elapsed * 3.8 + f.seed);
-                const approach = distToEnemy > 1.45 ? 0.95 : 0.15;
-                steerX = dirX * approach + perpX * (1.25 * wave);
-                steerZ = dirZ * approach + perpZ * (1.25 * wave);
+                const approach = distToEnemy > idealContactDist ? 1.15 : 0.2;
+                steerX = dirX * approach + perpX * (0.95 * wave);
+                steerZ = dirZ * approach + perpZ * (0.95 * wave);
               } else if (f.key === 'mantis_shrimp') {
-                const burst = distToEnemy < 3.6 ? 1.45 : 0.85;
-                steerX = dirX * burst + perpX * 0.55 - hGradX * 0.45;
-                steerZ = dirZ * burst + perpZ * 0.55 - hGradZ * 0.45;
+                const burst = distToEnemy < 3.2 ? 1.55 : 0.95;
+                steerX = dirX * burst + perpX * 0.45 - hGradX * 0.4;
+                steerZ = dirZ * burst + perpZ * 0.45 - hGradZ * 0.4;
               } else if (f.key === 'stag_beetle') {
-                steerX = dirX * 1.05 + perpX * 0.35 + hGradX * 0.75;
-                steerZ = dirZ * 1.05 + perpZ * 0.35 + hGradZ * 0.75;
+                steerX = dirX * 1.25 + perpX * 0.28 + hGradX * 0.65;
+                steerZ = dirZ * 1.25 + perpZ * 0.28 + hGradZ * 0.65;
               } else {
-                const approach = distToEnemy > 1.4 ? 0.9 : -0.3;
-                steerX = dirX * approach + perpX * 0.95;
-                steerZ = dirZ * approach + perpZ * 0.95;
+                const approach = distToEnemy > idealContactDist ? 1.1 : -0.15;
+                steerX = dirX * approach + perpX * 0.75;
+                steerZ = dirZ * approach + perpZ * 0.75;
               }
             }
 
+            // Balanced Hitbox Separation: Allies space out comfortably; Enemies close in until their hitboxes almost touch
             for (const other of entities) {
               if (other !== f && !other.dead) {
                 const adx = f.homeX - other.homeX;
                 const adz = f.homeZ - other.homeZ;
                 const adist = Math.hypot(adx, adz);
-                const minSep = other.side === f.side ? 0.88 : 0.68;
+                const minSep = other.side === f.side
+                  ? (f.hitboxRadius + other.hitboxRadius) * 1.55
+                  : (f.hitboxRadius + other.hitboxRadius) * 0.96; // Almost touching without overlapping
                 if (adist > 0.001 && adist < minSep) {
                   const push = (minSep - adist) / minSep;
                   const nx = adx / adist;
                   const nz = adz / adist;
-                  steerX += (nx * 1.75 - nz * 0.65 * f.strafeDir) * push;
-                  steerZ += (nz * 1.75 + nx * 0.65 * f.strafeDir) * push;
+                  steerX += (nx * 1.85 - nz * 0.45 * f.strafeDir) * push;
+                  steerZ += (nz * 1.85 + nx * 0.45 * f.strafeDir) * push;
                 }
               }
             }
@@ -1846,7 +2231,7 @@
               const odx = f.homeX - obs.x;
               const odz = f.homeZ - obs.z;
               const odist = Math.hypot(odx, odz);
-              const minObsDist = obs.radius + 0.68;
+              const minObsDist = obs.radius + f.hitboxRadius + 0.35;
               if (odist > 0.001 && odist < minObsDist) {
                 const push = (minObsDist - odist) / minObsDist;
                 const nx = odx / odist;
@@ -1883,36 +2268,62 @@
             }
 
             const blockedByRock = isLineOfSightBlocked(f.mesh.position.x, f.mesh.position.z, target.mesh.position.x, target.mesh.position.z);
-            if (distToEnemy < 2.45 && !blockedByRock) {
+            if (distToEnemy <= strikeTriggerRange && !blockedByRock) {
               f.timer -= dt;
             } else {
-              f.timer -= dt * 0.35;
+              f.timer -= dt * 0.4;
             }
 
-            if (f.timer <= 0 && distToEnemy < 2.45 && !blockedByRock) {
+            if (f.timer <= 0 && distToEnemy <= strikeTriggerRange && !blockedByRock) {
               f.timer = f.cooldown * (0.82 + Math.random() * 0.36);
               initiateMoveSequence(f, target);
             }
           }
 
           const ud = f.mesh.userData;
+          const speedMag = Math.hypot(f.vx, f.vz);
+          const nat = applyNaturalCreatureBehaviors(f, elapsed, dt, speedMag);
+
           let strikeDiveFactor = 0;
 
           if (f.activeAction) {
             const act = f.activeAction;
             act.progress += dt / act.duration;
             const p = Math.min(1, act.progress);
-            const strike = p >= 0.15 ? Math.sin(((p - 0.15) / 0.85) * Math.PI) : 0;
-            strikeDiveFactor = strike;
+
+            // Sustained Physical Clash Curve: Rapidly closes in (0.0 -> 0.22), holds physical mandibles-to-carapace contact (0.22 -> 0.68), then disengages (0.68 -> 1.0)
+            let clashHold = 0;
+            if (p < 0.22) {
+              clashHold = Math.sin((p / 0.22) * (Math.PI * 0.5));
+            } else if (p < 0.68) {
+              clashHold = 1.0; // Sustained close-contact grapple/clash window
+            } else {
+              clashHold = Math.cos(((p - 0.68) / 0.32) * (Math.PI * 0.5));
+            }
+            strikeDiveFactor = clashHold;
             
             const defTarget = entities.find(e => e.id === act.defenderId);
-            const tgX = defTarget ? defTarget.mesh.position.x : f.homeX + 1;
-            const tgZ = defTarget ? defTarget.mesh.position.z : f.homeZ;
+            if (defTarget) {
+              const dxToDef = defTarget.mesh.position.x - act.startPos.x;
+              const dzToDef = defTarget.mesh.position.z - act.startPos.z;
+              const distToDef = Math.hypot(dxToDef, dzToDef) || 0.001;
+              // Stop right at the combined hitbox surface so models almost touch without clipping inside each other
+              const touchShellDist = (f.hitboxRadius + defTarget.hitboxRadius) * 0.88;
+              const contactX = defTarget.mesh.position.x - (dxToDef / distToDef) * touchShellDist;
+              const contactZ = defTarget.mesh.position.z - (dzToDef / distToDef) * touchShellDist;
 
-            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.72);
-            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.72);
+              f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, contactX, clashHold);
+              f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, contactZ, clashHold);
+            }
 
-            if (p >= 0.48 && !act.impactTriggered) {
+            // Animate claws/mandibles snapping during the sustained contact window
+            ud.claws.forEach((cl, idx) => {
+              const sDir = idx === 0 ? -1 : 1;
+              cl.position.x = cl.userData.basePos.x + clashHold * 0.45;
+              cl.rotation.y = cl.userData.baseRot.y + sDir * clashHold * 0.55;
+            });
+
+            if (p >= 0.38 && !act.impactTriggered) {
               act.impactTriggered = true;
               if (defTarget && !defTarget.dead) resolveMoveImpact(f, defTarget, act.move, act.isPower);
             }
@@ -1923,21 +2334,26 @@
           }
 
           const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
-          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.05 : 0;
-          const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.85);
-          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + hoverOffset + f.victimState.liftY, Math.min(1, dt * 12));
+          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.04 : 0;
+          const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.92);
+          f.mesh.position.y = THREE.MathUtils.lerp(
+            f.mesh.position.y,
+            groundY + hoverOffset + f.victimState.liftY + nat.bodyYOffset,
+            Math.min(1, dt * 12)
+          );
 
-          ud.ring.position.y = -(hoverOffset + f.victimState.liftY) + 0.02;
-
-          const speedMag = Math.hypot(f.vx, f.vz);
-          const forwardTilt = f.flightAlt > 0 ? -Math.min(0.28, speedMag * 0.06) : 0;
-          ud.bodyGroup.rotation.z = f.victimState.tiltZ + forwardTilt;
-          ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(ud.bodyGroup.rotation.x, (f.strafeDir * speedMag * 0.045), Math.min(1, dt * 8));
+          const forwardTilt = f.flightAlt > 0 ? -Math.min(0.26, speedMag * 0.06) : 0;
+          ud.bodyGroup.rotation.z = f.victimState.tiltZ + forwardTilt + nat.bodyPitchOffset;
+          ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(
+            ud.bodyGroup.rotation.x,
+            (f.strafeDir * speedMag * 0.045) + nat.bodyRollOffset,
+            Math.min(1, dt * 8)
+          );
 
           if (target && !f.activeAction) {
             const targetYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
             const moveYaw = speedMag > 0.4 ? Math.atan2(-f.vz, f.vx) : targetYaw;
-            const desiredYaw = (f.key === 'king_crab' || !f.takingCover) ? targetYaw : moveYaw;
+            const desiredYaw = ((f.key === 'king_crab' || !f.takingCover) ? targetYaw : moveYaw) + nat.bodyYawOffset;
             f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, desiredYaw, Math.min(1, dt * 7));
           }
 
@@ -1950,14 +2366,6 @@
           } else {
             ud.mat.color.setHex(f.color);
           }
-
-          ud.legs.forEach(l => {
-            l.mesh.rotation.z = Math.sin(elapsed * 10 + l.phase) * Math.min(0.24, 0.05 + speedMag * 0.06);
-          });
-          ud.wings.forEach(w => {
-            const wingSpeed = f.key === 'emperor_dragonfly' ? 42 : 58;
-            w.mesh.rotation.x = w.side * (0.8 + Math.sin(elapsed * wingSpeed + (w.phase || 0)) * 0.7);
-          });
         }
 
         framesTillHUD++;
@@ -1967,17 +2375,19 @@
         }
       }
 
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life -= dt * 2.2;
-        if (p.life <= 0) {
-          scene.remove(p.mesh);
-          p.mesh.material.dispose();
-          particles.splice(i, 1);
-        } else {
-          p.mesh.position.addScaledVector(p.vel, dt);
-          p.vel.y -= 9.8 * dt;
-          p.mesh.material.opacity = p.life;
+      if (!isPaused) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.life -= dt * 2.2;
+          if (p.life <= 0) {
+            scene.remove(p.mesh);
+            p.mesh.material.dispose();
+            particles.splice(i, 1);
+          } else {
+            p.mesh.position.addScaledVector(p.vel, dt);
+            p.vel.y -= 9.8 * dt;
+            p.mesh.material.opacity = p.life;
+          }
         }
       }
 
@@ -2022,7 +2432,7 @@
             : new THREE.Vector3(0, 0.5, 0);
           camTarget.lerp(desiredTarget, Math.min(1, rawDt * 4.5));
 
-          if (!isDraggingArena) {
+          if (!isDraggingArena && !isPaused) {
             camYaw += rawDt * 0.045;
           }
         } else {
