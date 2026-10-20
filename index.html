@@ -404,31 +404,69 @@
     const CREATURES = {
       king_crab: {
         name: "King Crab", faction: "CRUSTACEAN", color: 0x22d3ee,
-        hp: 120, atk: 18, def: 16, spd: 0.95, crit: 0.08,
-        desc: "Heavy armored benthic tank",
-        moves: [{ name: "Crusher Claw", mult: 1.00, anim: "claw_snap" }, { name: "Carapace Ram", mult: 1.10, anim: "heavy_ram" }],
+        hp: 130, atk: 18, def: 17, spd: 0.92, crit: 0.08,
+        flightAlt: 0.0, kiteStyle: "side_scuttle",
+        desc: "Sideways-scuttling benthic fortress; climbs ridges",
+        moves: [
+          { name: "Crusher Claw", mult: 1.02, anim: "claw_snap" },
+          { name: "Carapace Lateral Ram", mult: 1.12, anim: "heavy_ram" }
+        ],
         powerMove: { name: "ABYSSAL CRUSH", mult: 1.80, anim: "power_slam" }
       },
       mantis_shrimp: {
         name: "Mantis Shrimp", faction: "CRUSTACEAN", color: 0x38bdf8,
-        hp: 100, atk: 22, def: 10, spd: 1.15, crit: 0.18,
-        desc: "Hyper-velocity striker",
-        moves: [{ name: "Club Smash", mult: 1.05, anim: "club_punch" }, { name: "Flurry", mult: 1.12, anim: "flurry_punch" }],
+        hp: 100, atk: 22, def: 11, spd: 1.18, crit: 0.18,
+        flightAlt: 0.0, kiteStyle: "tail_backdash",
+        desc: "Cavitation puncher; uses pleopod tail-flip backdashes",
+        moves: [
+          { name: "Raptorial Club Smash", mult: 1.06, anim: "club_punch" },
+          { name: "Twin Dactyl Flurry", mult: 1.14, anim: "flurry_punch" }
+        ],
         powerMove: { name: "CAVITATION BLAST", mult: 1.85, anim: "power_cavitation" }
-      },
-      killer_wasp: {
-        name: "Killer Wasp", faction: "INSECT", color: 0xfacc15,
-        hp: 90, atk: 22, def: 8, spd: 1.25, crit: 0.20,
-        desc: "Airborne rapid neuro-stinger",
-        moves: [{ name: "Needle Jab", mult: 1.00, anim: "sting_thrust" }, { name: "Dive Peck", mult: 1.15, anim: "air_dive" }],
-        powerMove: { name: "HYPER-VENOM", mult: 1.85, anim: "power_multisting" }
       },
       stag_beetle: {
         name: "Stag Beetle", faction: "INSECT", color: 0xf43f5e,
-        hp: 125, atk: 17, def: 15, spd: 0.95, crit: 0.10,
-        desc: "Chitinous mandible grappler",
-        moves: [{ name: "Mandible Clamp", mult: 1.08, anim: "claw_snap" }, { name: "Horn Gore", mult: 1.12, anim: "horn_toss" }],
+        hp: 125, atk: 18, def: 15, spd: 0.96, crit: 0.10,
+        flightAlt: 0.0, kiteStyle: "bulldozer",
+        desc: "Chitinous grappler; bulldozes enemies & holds high ground",
+        moves: [
+          { name: "Mandible Clamp", mult: 1.08, anim: "claw_snap" },
+          { name: "Pronotum Horn Toss", mult: 1.15, anim: "horn_toss" }
+        ],
         powerMove: { name: "SEISMIC SUPLEX", mult: 1.85, anim: "power_suplex" }
+      },
+      killer_wasp: {
+        name: "Killer Wasp", faction: "INSECT", color: 0xfacc15,
+        hp: 90, atk: 21, def: 8, spd: 1.28, crit: 0.20,
+        flightAlt: 0.24, kiteStyle: "hit_and_kite",
+        desc: "Low-hovering aerial striker; darts behind rock shelter",
+        moves: [
+          { name: "Needle Jab", mult: 1.00, anim: "sting_thrust" },
+          { name: "Supersonic Dive", mult: 1.14, anim: "air_dive" }
+        ],
+        powerMove: { name: "HYPER-VENOM", mult: 1.85, anim: "power_multisting" }
+      },
+      emperor_dragonfly: {
+        name: "Emperor Dragonfly", faction: "INSECT", color: 0x34d399,
+        hp: 95, atk: 20, def: 9, spd: 1.36, crit: 0.22,
+        flightAlt: 0.28, kiteStyle: "vector_strafe",
+        desc: "4-wing aerial interceptor; 95% hunting strafe & rock kiting",
+        moves: [
+          { name: "8-G Vector Strafe", mult: 1.04, anim: "vector_slash" },
+          { name: "Raptorial Basket Snatch", mult: 1.12, anim: "air_dive" }
+        ],
+        powerMove: { name: "95% INTERCEPT APEX DIVE", mult: 1.82, anim: "power_intercept" }
+      },
+      tarantula_hawk: {
+        name: "Tarantula Hawk", faction: "INSECT", color: 0xf97316,
+        hp: 108, atk: 21, def: 12, spd: 1.16, crit: 0.15,
+        flightAlt: 0.22, kiteStyle: "paralysis_kite",
+        desc: "Spider-hunting apex wasp; neuro-sting slows foes & kites",
+        moves: [
+          { name: "Neuro-Shock Sting", mult: 1.06, anim: "sting_thrust", slow: 1.8 },
+          { name: "Aposematic Wing Buffet", mult: 1.10, anim: "wing_backdraft" }
+        ],
+        powerMove: { name: "SCHMIDT 4.0 PARALYSIS", mult: 1.84, anim: "power_paralysis", slow: 3.0 }
       }
     };
 
@@ -486,10 +524,11 @@
         }
       } else if (key === 'killer_wasp') {
         bodyGroup.add(makeWirePart('OctahedronGeometry', [0.34, 0], mat, [0.85, 1.25, 0]));
+        bodyGroup.add(makeWirePart('IcosahedronGeometry', [0.42, 0], mat, [0.1, 1.22, 0], [0, 0, 0], [1.2, 0.85, 0.85]));
         bodyGroup.add(makeWirePart('ConeGeometry', [0.45, 1.45, 6], mat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]));
         for (let s of [-1, 1]) {
           const wing = makeWirePart('PlaneGeometry', [0.65, 1.55, 2, 3], subMat, [0.2, 1.55, s * 0.75], [s * 1.15, 0, 0.2]);
-          bodyGroup.add(wing); wings.push({ mesh: wing, side: s });
+          bodyGroup.add(wing); wings.push({ mesh: wing, side: s, phase: 0 });
           for (let i = 0; i < 3; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.75, 3], mat, [0.3 - i * 0.25, 0.75, s * 0.38], [s * 0.35, 0, 0.2]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.35, phase: i });
@@ -503,6 +542,47 @@
           for (let i = -1; i <= 1; i++) {
             const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 0.9, 3], mat, [i * 0.45, 0.35, s * 0.75], [s * 0.6, 0, 0]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.6, phase: i });
+          }
+        }
+      } else if (key === 'emperor_dragonfly') {
+        // Compound head, synthorax, and long 6-segment abdomen
+        bodyGroup.add(makeWirePart('SphereGeometry', [0.38, 6, 5], mat, [1.15, 1.28, 0], [0, 0, 0], [0.9, 0.9, 1.35]));
+        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.46, 1], mat, [0.45, 1.25, 0], [0, 0, 0], [1.35, 0.85, 0.85]));
+        bodyGroup.add(makeWirePart('CylinderGeometry', [0.14, 0.07, 2.25, 5], mat, [-0.95, 1.22, 0], [0, 0, Math.PI / 2]));
+        // 4 Independent Wings (Forewings & Hindwings out of phase)
+        for (let s of [-1, 1]) {
+          const foreWing = makeWirePart('PlaneGeometry', [0.42, 1.95, 2, 4], subMat, [0.58, 1.52, s * 0.95], [s * 1.22, 0, 0.12]);
+          const hindWing = makeWirePart('PlaneGeometry', [0.50, 1.75, 2, 4], mat, [0.18, 1.48, s * 0.88], [s * 1.22, 0, -0.14]);
+          bodyGroup.add(foreWing);
+          bodyGroup.add(hindWing);
+          wings.push({ mesh: foreWing, side: s, phase: 0 });
+          wings.push({ mesh: hindWing, side: s, phase: Math.PI * 0.65 });
+          // Raptorial basket legs
+          for (let i = 0; i < 3; i++) {
+            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.7, 3], subMat, [0.65 - i * 0.22, 0.82, s * 0.32], [s * 0.3, 0, 0.35]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.3, phase: i });
+          }
+        }
+      } else if (key === 'tarantula_hawk') {
+        // Armored Pepsini Spider-Wasp with curled antennae, long spiny hind legs, and aposematic wings
+        bodyGroup.add(makeWirePart('OctahedronGeometry', [0.36, 0], mat, [0.95, 1.22, 0]));
+        bodyGroup.add(makeWirePart('IcosahedronGeometry', [0.50, 1], mat, [0.22, 1.25, 0], [0, 0, 0], [1.35, 0.92, 0.9]));
+        bodyGroup.add(makeWirePart('ConeGeometry', [0.48, 1.65, 6], mat, [-1.05, 1.08, 0], [0, 0, -Math.PI / 2.25]));
+        // Stinger tip
+        const stinger = makeWirePart('ConeGeometry', [0.08, 0.55, 4], subMat, [-1.92, 0.95, 0], [0, 0, Math.PI / 2]);
+        bodyGroup.add(stinger); claws.push(stinger);
+        for (let s of [-1, 1]) {
+          // Curled antennae
+          const ant = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.65, 3], subMat, [1.28, 1.38, s * 0.22], [0, -s * 0.35, -0.8]);
+          bodyGroup.add(ant); claws.push(ant);
+          // Broad orange-tinted wireframe wings
+          const wing = makeWirePart('PlaneGeometry', [0.75, 1.75, 2, 3], subMat, [0.22, 1.62, s * 0.82], [s * 1.12, 0, 0.18]);
+          bodyGroup.add(wing); wings.push({ mesh: wing, side: s, phase: 0 });
+          // Long hooked spider-grappling legs
+          for (let i = 0; i < 3; i++) {
+            const legLen = i === 2 ? 1.15 : 0.85;
+            const leg = makeWirePart('CylinderGeometry', [0.03, 0.015, legLen, 3], mat, [0.35 - i * 0.32, 0.68, s * 0.46], [s * 0.48, 0, 0.15]);
+            bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.48, phase: i });
           }
         }
       }
@@ -705,11 +785,19 @@
         key, side, name: cfg.name, faction: cfg.faction,
         color: (side === 2 && selectedP1 === selectedP2) ? 0xf43f5e : cfg.color,
         maxHp: cfg.hp, hp: cfg.hp, atk: cfg.atk, def: cfg.def, spd: cfg.spd * ov.spdMult, crit: cfg.crit,
+        flightAlt: cfg.flightAlt || 0,
+        kiteStyle: cfg.kiteStyle || 'balanced',
         moves: cfg.moves, powerMove: cfg.powerMove,
         energy: 0, lastMoveName: "ENGAGING",
-        cooldown: 2.65 / (cfg.spd * ov.spdMult),
-        timer: (1.9 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.65),
+        cooldown: 2.35 / (cfg.spd * ov.spdMult),
+        timer: (1.6 / (cfg.spd * ov.spdMult)) * (0.35 + Math.random() * 0.65),
         mesh, homeX, homeZ,
+        vx: 0, vz: 0,
+        strafeDir: Math.random() < 0.5 ? 1 : -1,
+        strafeSwitchTimer: 1.2 + Math.random() * 2.0,
+        retreatTimer: 0,
+        slowTimer: 0,
+        takingCover: false,
         seed: Math.random() * Math.PI * 2,
         hitFlash: 0, activeAction: null,
         guardTimer: 0, rushCooldown: 0, guardCooldown: 0,
@@ -734,21 +822,81 @@
       highlightSelectedCards();
     }
 
-    function getClosestEnemy(f) {
-      let closest = null;
+    function getBestEnemyTarget(f) {
+      let best = null;
       let minScore = Infinity;
       for (const e of entities) {
         if (e.side !== f.side && !e.dead) {
           const dx = f.mesh.position.x - e.mesh.position.x;
           const dz = f.mesh.position.z - e.mesh.position.z;
-          const distSq = dx * dx + dz * dz;
-          if (distSq < minScore) {
-            minScore = distSq;
-            closest = e;
+          let score = dx * dx + dz * dz;
+          // Assassins & flyers prioritize wounded or isolated targets to break frontline stalls
+          if (f.flightAlt > 0 || f.key === 'mantis_shrimp') {
+            const hpRatio = e.hp / e.maxHp;
+            score *= (0.55 + hpRatio * 0.65);
+          }
+          if (score < minScore) {
+            minScore = score;
+            best = e;
           }
         }
       }
-      return closest;
+      return best;
+    }
+
+    function getClosestEnemy(f) {
+      return getBestEnemyTarget(f);
+    }
+
+    // Finds a tactical shelter point behind the nearest obstacle relative to the enemy's line of sight
+    function findObstacleShelterPoint(f, enemy) {
+      if (arenaObstacles.length === 0 || !enemy) return null;
+      let bestObs = null;
+      let bestScore = Infinity;
+      for (const obs of arenaObstacles) {
+        const dToUnit = Math.hypot(obs.x - f.homeX, obs.z - f.homeZ);
+        if (dToUnit < 11.5) {
+          // Prefer rocks that are close to the unit
+          const score = dToUnit - obs.radius * 0.5;
+          if (score < bestScore) {
+            bestScore = score;
+            bestObs = obs;
+          }
+        }
+      }
+      if (!bestObs) return null;
+
+      // Calculate point on the exact opposite side of the obstacle from the enemy
+      let awayX = bestObs.x - enemy.mesh.position.x;
+      let awayZ = bestObs.z - enemy.mesh.position.z;
+      const len = Math.hypot(awayX, awayZ) || 1;
+      awayX /= len;
+      awayZ /= len;
+
+      const shelterDist = bestObs.radius + 1.05;
+      return {
+        x: bestObs.x + awayX * shelterDist,
+        z: bestObs.z + awayZ * shelterDist,
+        obs: bestObs
+      };
+    }
+
+    // Checks if a rock obstacle currently blocks direct line-of-sight between two units
+    function isLineOfSightBlocked(ax, az, bx, bz) {
+      const segX = bx - ax;
+      const segZ = bz - az;
+      const segLenSq = segX * segX + segZ * segZ;
+      if (segLenSq < 0.01) return null;
+      for (const obs of arenaObstacles) {
+        const t = Math.max(0, Math.min(1, ((obs.x - ax) * segX + (obs.z - az) * segZ) / segLenSq));
+        const projX = ax + t * segX;
+        const projZ = az + t * segZ;
+        const distToRay = Math.hypot(obs.x - projX, obs.z - projZ);
+        if (distToRay < obs.radius * 0.85) {
+          return obs;
+        }
+      }
+      return null;
     }
 
     function initiateMoveSequence(attacker, defender) {
@@ -760,35 +908,61 @@
       attacker.activeAction = {
         move, isPower, defenderId: defender.id,
         startPos: attacker.mesh.position.clone(),
-        progress: 0, duration: isPower ? 1.85 : 1.25, impactTriggered: false
+        progress: 0, duration: isPower ? 1.55 : 1.05, impactTriggered: false
       };
     }
 
     function resolveMoveImpact(attacker, defender, move, isPower) {
       const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
-      const highGroundMult = elevDiff > 0.25 ? 1.15 : 1.0;
+      const highGroundMult = elevDiff > 0.22 ? 1.15 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
+      const coverMult = defender.takingCover ? 0.75 : 1.0;
       const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
       const mitigation = 100 / (100 + defender.def * 3.2);
       const variance = 0.9 + Math.random() * 0.2;
       
-      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult));
+      const dmg = Math.max(2, Math.round(attacker.atk * move.mult * mitigation * variance * (isCrit ? 1.5 : 1.0) * highGroundMult * guardMult * coverMult));
       defender.hp = Math.max(0, defender.hp - dmg);
       defender.hitFlash = isPower ? 0.35 : 0.20;
+
+      // Apply Neuro-Venom slow effect from Tarantula Hawk
+      if (move.slow) {
+        defender.slowTimer = Math.max(defender.slowTimer, move.slow);
+      }
+
+      // Trigger natural post-strike kiting/evasion for agile & flying creatures
+      if (attacker.kiteStyle === 'tail_backdash') {
+        // Mantis Shrimp rapid pleopod tail-flip backdash after striking
+        const awayX = attacker.homeX - defender.mesh.position.x;
+        const awayZ = attacker.homeZ - defender.mesh.position.z;
+        const d = Math.hypot(awayX, awayZ) || 1;
+        attacker.vx += (awayX / d) * 6.5;
+        attacker.vz += (awayZ / d) * 6.5;
+        attacker.retreatTimer = 1.15;
+      } else if (attacker.flightAlt > 0) {
+        // Flyers (Wasp, Dragonfly, Tarantula Hawk) swoop out to kite around terrain after a sting/slash
+        attacker.retreatTimer = 1.25;
+        attacker.strafeDir *= -1;
+      }
+
+      // If defender is wounded, trigger survival instinct to seek rock shelter orregen zone
+      if (defender.hp < defender.maxHp * 0.45 && defender.retreatTimer <= 0 && Math.random() < 0.65) {
+        defender.retreatTimer = 1.65;
+      }
 
       // Apply directional knockback away from attacker
       const pushDx = defender.mesh.position.x - attacker.mesh.position.x;
       const pushDz = defender.mesh.position.z - attacker.mesh.position.z;
       const pushDist = Math.hypot(pushDx, pushDz) || 1;
-      const knockMag = isPower ? 0.85 : 0.35;
-      defender.homeX += (pushDx / pushDist) * knockMag;
-      defender.homeZ += (pushDz / pushDist) * knockMag;
+      const knockMag = isPower ? 1.15 : 0.48;
+      defender.vx += (pushDx / pushDist) * knockMag * 4.2;
+      defender.vz += (pushDz / pushDist) * knockMag * 4.2;
 
       const anim = move.anim;
       if (anim === 'horn_toss' || anim === 'power_suplex') {
         defender.victimState.liftY = isPower ? 0.75 : 0.45;
         defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
-      } else if (anim === 'power_cavitation' || anim === 'club_punch') {
+      } else if (anim === 'power_cavitation' || anim === 'club_punch' || anim === 'wing_backdraft') {
         defender.victimState.knockX = isPower ? 0.95 : 0.45;
       } else {
         defender.victimState.knockX = isPower ? 0.6 : 0.3;
@@ -1534,6 +1708,11 @@
       if (csModal && !csModal.classList.contains('hidden') && csRenderer) {
         if (!csIsDragging) csTurntableYaw += rawDt * 0.65;
         csPreviewGroup.rotation.y = csTurntableYaw;
+        if (csPreviewMesh) {
+          csPreviewMesh.userData.wings.forEach(w => {
+            w.mesh.rotation.x = w.side * (0.8 + Math.sin(elapsed * 45 + (w.phase || 0)) * 0.65);
+          });
+        }
         csRenderer.render(csScene, csCamera);
       }
 
@@ -1552,10 +1731,18 @@
             continue;
           }
 
-          // Tick cooldowns & recovery
+          // Tick cooldowns, statuses & recovery
           if (f.guardTimer > 0) f.guardTimer = Math.max(0, f.guardTimer - dt);
           if (f.guardCooldown > 0) f.guardCooldown = Math.max(0, f.guardCooldown - dt);
           if (f.rushCooldown > 0) f.rushCooldown = Math.max(0, f.rushCooldown - dt);
+          if (f.retreatTimer > 0) f.retreatTimer = Math.max(0, f.retreatTimer - dt);
+          if (f.slowTimer > 0) f.slowTimer = Math.max(0, f.slowTimer - dt);
+
+          f.strafeSwitchTimer -= dt;
+          if (f.strafeSwitchTimer <= 0) {
+            f.strafeDir *= -1;
+            f.strafeSwitchTimer = 1.4 + Math.random() * 2.2;
+          }
 
           f.victimState.liftY = THREE.MathUtils.lerp(f.victimState.liftY, 0, Math.min(1, dt * 5));
           f.victimState.tiltZ = THREE.MathUtils.lerp(f.victimState.tiltZ, 0, Math.min(1, dt * 5));
@@ -1564,122 +1751,256 @@
           if (applyZoneTick && tacticalZones.length > 0) {
             for (const z of tacticalZones) {
               if (Math.hypot(f.mesh.position.x - z.x, f.mesh.position.z - z.z) <= z.radius && f.hp < f.maxHp) {
-                f.hp = Math.min(f.maxHp, f.hp + 6);
+                f.hp = Math.min(f.maxHp, f.hp + 7);
                 break;
               }
             }
           }
 
-          const target = getClosestEnemy(f);
+          const target = getBestEnemyTarget(f);
+          f.takingCover = false;
+
           if (target && !f.activeAction) {
-            let dx = target.mesh.position.x - f.homeX;
-            let dz = target.mesh.position.z - f.homeZ;
-            const dist = Math.hypot(dx, dz);
+            const toEnemyX = target.mesh.position.x - f.homeX;
+            const toEnemyZ = target.mesh.position.z - f.homeZ;
+            const distToEnemy = Math.hypot(toEnemyX, toEnemyZ) || 0.001;
+            const dirX = toEnemyX / distToEnemy;
+            const dirZ = toEnemyZ / distToEnemy;
+            // Perpendicular tangent vector for orbiting, crab-scuttling, and flanking
+            const perpX = -dirZ * f.strafeDir;
+            const perpZ = dirX * f.strafeDir;
 
-            if (dist > 0.78) {
-              dx /= dist;
-              dz /= dist;
+            // Terrain slope gradient sampling (so creatures feel hills and trenches)
+            const hHere = getTerrainHeight(f.homeX, f.homeZ);
+            const hGradX = (getTerrainHeight(f.homeX + 0.6, f.homeZ) - hHere) / 0.6;
+            const hGradZ = (getTerrainHeight(f.homeX, f.homeZ + 0.6) - hHere) / 0.6;
 
-              // Boids Separation Logic - prevent armies from stacking on the same coordinate
-              for (const other of entities) {
-                if (other !== f && !other.dead) {
-                  const adx = f.homeX - other.homeX;
-                  const adz = f.homeZ - other.homeZ;
-                  const adist = Math.hypot(adx, adz);
-                  const minSep = other.side === f.side ? 0.72 : 0.55;
-                  if (adist > 0.001 && adist < minSep) {
-                    const push = (minSep - adist) / minSep;
-                    dx += (adx / adist) * push * 1.65;
-                    dz += (adz / adist) * push * 1.65;
+            const isLowHp = f.hp < f.maxHp * 0.45;
+            const isCoolingDown = f.timer > f.cooldown * 0.48;
+            const wantsToKiteOrHide = f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0);
+
+            let steerX = 0;
+            let steerZ = 0;
+
+            if (wantsToKiteOrHide) {
+              // 1. Seek Bio-Regen Zone if wounded and one exists nearby
+              let soughtZone = null;
+              if (isLowHp && tacticalZones.length > 0) {
+                for (const z of tacticalZones) {
+                  if (Math.hypot(z.x - f.homeX, z.z - f.homeZ) < 14.0) {
+                    soughtZone = z;
+                    break;
                   }
                 }
               }
 
-              // Obstacle Avoidance
-              for (const obs of arenaObstacles) {
-                const odx = f.homeX - obs.x;
-                const odz = f.homeZ - obs.z;
-                const odist = Math.hypot(odx, odz);
-                const avoidRad = obs.radius + 0.85;
-                if (odist > 0.001 && odist < avoidRad) {
-                  const push = (avoidRad - odist) / avoidRad;
-                  dx += (odx / odist) * push * 2.2;
-                  dz += (odz / odist) * push * 2.2;
+              // 2. Otherwise find shelter behind the nearest terrain obstacle to break line-of-sight
+              const shelter = findObstacleShelterPoint(f, target);
+              if (soughtZone) {
+                const zx = soughtZone.x - f.homeX;
+                const zz = soughtZone.z - f.homeZ;
+                const zd = Math.hypot(zx, zz) || 1;
+                steerX = (zx / zd) * 1.4 + perpX * 0.5;
+                steerZ = (zz / zd) * 1.4 + perpZ * 0.5;
+              } else if (shelter) {
+                const sx = shelter.x - f.homeX;
+                const sz = shelter.z - f.homeZ;
+                const sd = Math.hypot(sx, sz) || 1;
+                if (sd < 1.25) {
+                  // Safely behind obstacle shelter! Kite laterally around the rock perimeter
+                  f.takingCover = true;
+                  steerX = perpX * 1.15 - dirX * 0.25;
+                  steerZ = perpZ * 1.15 - dirZ * 0.25;
+                } else {
+                  steerX = (sx / sd) * 1.45 + perpX * 0.45;
+                  steerZ = (sz / sd) * 1.45 + perpZ * 0.45;
                 }
+              } else {
+                // Open ground kiting: retreat diagonally while weaving
+                steerX = -dirX * 1.1 + perpX * 0.95;
+                steerZ = -dirZ * 1.1 + perpZ * 0.95;
               }
-
-              const mag = Math.hypot(dx, dz);
-              if (mag > 0) {
-                const speed = 2.8 * dt * f.spd;
-                f.homeX += (dx / mag) * speed;
-                f.homeZ += (dz / mag) * speed;
-              }
-
-              // Clamp within Arena Ring
-              const rFromCenter = Math.hypot(f.homeX, f.homeZ);
-              if (rFromCenter > arenaRingRadius - 0.8) {
-                const scaleBack = (arenaRingRadius - 0.8) / rFromCenter;
-                f.homeX *= scaleBack;
-                f.homeZ *= scaleBack;
+            } else {
+              // Active Engagement: Species-specific natural approach & terrain usage
+              // If an obstacle blocks direct line-of-sight to the target, curve around it
+              const blockingObs = isLineOfSightBlocked(f.homeX, f.homeZ, target.mesh.position.x, target.mesh.position.z);
+              if (blockingObs && distToEnemy > 1.6) {
+                const tangX = -(blockingObs.z - f.homeZ) * f.strafeDir;
+                const tangZ = (blockingObs.x - f.homeX) * f.strafeDir;
+                const td = Math.hypot(tangX, tangZ) || 1;
+                steerX = (tangX / td) * 1.35 + dirX * 0.55;
+                steerZ = (tangZ / td) * 1.35 + dirZ * 0.55;
+              } else if (f.key === 'king_crab') {
+                // King Crab scuttles sideways laterally while climbing high-ground ridges
+                const approach = distToEnemy > 1.35 ? 0.72 : -0.25;
+                steerX = dirX * approach + perpX * 1.15 + hGradX * 0.65;
+                steerZ = dirZ * approach + perpZ * 1.15 + hGradZ * 0.65;
+              } else if (f.key === 'emperor_dragonfly') {
+                // Emperor Dragonfly executes high-speed 8-G figure-8 vector strafing arcs
+                const wave = Math.sin(elapsed * 3.8 + f.seed);
+                const approach = distToEnemy > 1.45 ? 0.95 : 0.15;
+                steerX = dirX * approach + perpX * (1.25 * wave);
+                steerZ = dirZ * approach + perpZ * (1.25 * wave);
+              } else if (f.key === 'mantis_shrimp') {
+                // Mantis Shrimp stalks low terrain trenches then darts in at hyper-velocity
+                const burst = distToEnemy < 3.6 ? 1.45 : 0.85;
+                steerX = dirX * burst + perpX * 0.55 - hGradX * 0.45;
+                steerZ = dirZ * burst + perpZ * 0.55 - hGradZ * 0.45;
+              } else if (f.key === 'stag_beetle') {
+                // Stag Beetle charges up high ground to suplex/bulldoze opponents off ridges
+                steerX = dirX * 1.05 + perpX * 0.35 + hGradX * 0.75;
+                steerZ = dirZ * 1.05 + perpZ * 0.35 + hGradZ * 0.75;
+              } else {
+                // Killer Wasp & Tarantula Hawk spiral-flank around the target's blind spot
+                const approach = distToEnemy > 1.4 ? 0.9 : -0.3;
+                steerX = dirX * approach + perpX * 0.95;
+                steerZ = dirZ * approach + perpZ * 0.95;
               }
             }
 
-            if (dist < 2.05) f.timer -= dt;
-            if (f.timer <= 0) {
-              f.timer = f.cooldown * (0.8 + Math.random() * 0.4);
+            // Dynamic Boids Separation + Tangential Swirl (Prevents armies from ever stalling in a gridlock)
+            for (const other of entities) {
+              if (other !== f && !other.dead) {
+                const adx = f.homeX - other.homeX;
+                const adz = f.homeZ - other.homeZ;
+                const adist = Math.hypot(adx, adz);
+                const minSep = other.side === f.side ? 0.88 : 0.68;
+                if (adist > 0.001 && adist < minSep) {
+                  const push = (minSep - adist) / minSep;
+                  const nx = adx / adist;
+                  const nz = adz / adist;
+                  // Add rotational slipstream so crowded allies roll around each other into the flanks
+                  steerX += (nx * 1.75 - nz * 0.65 * f.strafeDir) * push;
+                  steerZ += (nz * 1.75 + nx * 0.65 * f.strafeDir) * push;
+                }
+              }
+            }
+
+            // Physical Obstacle Collision & Perimeter Sliding
+            for (const obs of arenaObstacles) {
+              const odx = f.homeX - obs.x;
+              const odz = f.homeZ - obs.z;
+              const odist = Math.hypot(odx, odz);
+              const minObsDist = obs.radius + 0.68;
+              if (odist > 0.001 && odist < minObsDist) {
+                const push = (minObsDist - odist) / minObsDist;
+                const nx = odx / odist;
+                const nz = odz / odist;
+                steerX += (nx * 2.5 - nz * f.strafeDir * 1.1) * push;
+                steerZ += (nz * 2.5 + nx * f.strafeDir * 1.1) * push;
+              }
+            }
+
+            // Apply smooth velocity momentum and neuro-venom slow modifier
+            const slowMult = f.slowTimer > 0 ? 0.55 : 1.0;
+            const retreatBoost = f.retreatTimer > 0 ? 1.22 : 1.0;
+            const maxSpeed = 3.25 * f.spd * slowMult * retreatBoost;
+
+            const steerMag = Math.hypot(steerX, steerZ);
+            if (steerMag > 0.001) {
+              const desiredVx = (steerX / steerMag) * maxSpeed;
+              const desiredVz = (steerZ / steerMag) * maxSpeed;
+              f.vx = THREE.MathUtils.lerp(f.vx, desiredVx, Math.min(1, dt * 6.5));
+              f.vz = THREE.MathUtils.lerp(f.vz, desiredVz, Math.min(1, dt * 6.5));
+            } else {
+              f.vx *= Math.max(0, 1 - dt * 6);
+              f.vz *= Math.max(0, 1 - dt * 6);
+            }
+
+            f.homeX += f.vx * dt;
+            f.homeZ += f.vz * dt;
+
+            // Keep all units inside the Arena Ring (no unit can ever kite out of bounds)
+            const rFromCenter = Math.hypot(f.homeX, f.homeZ);
+            if (rFromCenter > arenaRingRadius - 0.85) {
+              const scaleBack = (arenaRingRadius - 0.85) / rFromCenter;
+              f.homeX *= scaleBack;
+              f.homeZ *= scaleBack;
+              f.strafeDir *= -1; // Reverse orbit direction when brushing the ring wall
+            }
+
+            // Tick attack timer (faster ready rate when actively flanking, but pauses if line-of-sight is blocked by shelter)
+            const blockedByRock = isLineOfSightBlocked(f.mesh.position.x, f.mesh.position.z, target.mesh.position.x, target.mesh.position.z);
+            if (distToEnemy < 2.45 && !blockedByRock) {
+              f.timer -= dt;
+            } else {
+              f.timer -= dt * 0.35;
+            }
+
+            if (f.timer <= 0 && distToEnemy < 2.45 && !blockedByRock) {
+              f.timer = f.cooldown * (0.82 + Math.random() * 0.36);
               initiateMoveSequence(f, target);
             }
           }
 
-          // Visuals update (Locomotion & Action Animation)
+          // Visuals update (Locomotion, Grounded Flight Hover & Strike Dive)
           const ud = f.mesh.userData;
+          let strikeDiveFactor = 0;
+
           if (f.activeAction) {
             const act = f.activeAction;
             act.progress += dt / act.duration;
             const p = Math.min(1, act.progress);
-            const strike = p >= 0.18 ? Math.sin(((p - 0.18) / 0.82) * Math.PI) : 0;
+            const strike = p >= 0.15 ? Math.sin(((p - 0.15) / 0.85) * Math.PI) : 0;
+            strikeDiveFactor = strike;
             
             const defTarget = entities.find(e => e.id === act.defenderId);
             const tgX = defTarget ? defTarget.mesh.position.x : f.homeX + 1;
             const tgZ = defTarget ? defTarget.mesh.position.z : f.homeZ;
 
-            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.65);
-            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.65);
+            f.mesh.position.x = THREE.MathUtils.lerp(act.startPos.x, tgX, strike * 0.72);
+            f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, tgZ, strike * 0.72);
 
-            if (p >= 0.5 && !act.impactTriggered) {
+            if (p >= 0.48 && !act.impactTriggered) {
               act.impactTriggered = true;
               if (defTarget && !defTarget.dead) resolveMoveImpact(f, defTarget, act.move, act.isPower);
             }
             if (p >= 1) f.activeAction = null;
           } else {
-            f.mesh.position.x = THREE.MathUtils.lerp(f.mesh.position.x, f.homeX, Math.min(1, dt * 8));
-            f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, Math.min(1, dt * 8));
+            f.mesh.position.x = THREE.MathUtils.lerp(f.mesh.position.x, f.homeX, Math.min(1, dt * 10));
+            f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, Math.min(1, dt * 10));
           }
 
+          // Grounded altitude calculation: Flyers hover slightly above terrain (0.18m-0.30m) and swoop down to ground level on strikes
           const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
-          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + f.victimState.liftY, Math.min(1, dt * 10));
-          ud.bodyGroup.rotation.z = f.victimState.tiltZ;
+          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.05 : 0;
+          const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.85);
+          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + hoverOffset + f.victimState.liftY, Math.min(1, dt * 12));
+
+          // Ground locator ring stays anchored directly on the terrain surface
+          ud.ring.position.y = -(hoverOffset + f.victimState.liftY) + 0.02;
+
+          // Natural body banking & pitch into velocity vectors
+          const speedMag = Math.hypot(f.vx, f.vz);
+          const forwardTilt = f.flightAlt > 0 ? -Math.min(0.28, speedMag * 0.06) : 0;
+          ud.bodyGroup.rotation.z = f.victimState.tiltZ + forwardTilt;
+          ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(ud.bodyGroup.rotation.x, (f.strafeDir * speedMag * 0.045), Math.min(1, dt * 8));
 
           if (target && !f.activeAction) {
-            const lookYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
-            f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, lookYaw, Math.min(1, dt * 6));
+            // King Crabs face the enemy while scuttling sideways; other units blend look direction between movement & target
+            const targetYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
+            const moveYaw = speedMag > 0.4 ? Math.atan2(-f.vz, f.vx) : targetYaw;
+            const desiredYaw = (f.key === 'king_crab' || !f.takingCover) ? targetYaw : moveYaw;
+            f.mesh.rotation.y = THREE.MathUtils.lerp(f.mesh.rotation.y, desiredYaw, Math.min(1, dt * 7));
           }
 
           if (f.hitFlash > 0) {
             f.hitFlash -= dt; ud.mat.color.setHex(0xffffff);
           } else if (f.guardTimer > 0) {
             ud.mat.color.setHex(0x10b981);
+          } else if (f.slowTimer > 0) {
+            ud.mat.color.setHex(0xf97316);
           } else {
             ud.mat.color.setHex(f.color);
           }
 
           // Wing & Leg procedural animation
-          const moveSpeed = Math.abs(f.mesh.position.x - f.homeX) + Math.abs(f.mesh.position.z - f.homeZ);
           ud.legs.forEach(l => {
-            l.mesh.rotation.z = Math.sin(elapsed * 8 + l.phase) * Math.min(0.18, 0.05 + moveSpeed * 4);
+            l.mesh.rotation.z = Math.sin(elapsed * 10 + l.phase) * Math.min(0.24, 0.05 + speedMag * 0.06);
           });
           ud.wings.forEach(w => {
-            w.mesh.rotation.x = w.side * (0.8 + Math.sin(elapsed * 55) * 0.7);
+            const wingSpeed = f.key === 'emperor_dragonfly' ? 42 : 58;
+            w.mesh.rotation.x = w.side * (0.8 + Math.sin(elapsed * wingSpeed + (w.phase || 0)) * 0.7);
           });
         }
 
