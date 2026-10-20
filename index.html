@@ -310,56 +310,71 @@
       <div id="roster-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
     </div>
 
-    <div id="combat-log" class="w-full max-w-lg h-11 mb-2 px-3 py-1 rounded-lg bg-slate-950/60 backdrop-blur-sm border border-slate-800/60 overflow-y-auto text-[10px] leading-tight text-center space-y-0.5 text-slate-400 pointer-events-none"></div>
-
-    <div class="w-full max-w-2xl flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
-      <div class="flex flex-wrap items-center gap-1.5 bg-slate-950/90 backdrop-blur-md p-1 rounded-full border border-slate-800 shadow-lg">
-        <button id="btn-cmd-strike" class="px-2.5 py-1 rounded-full bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[10px] font-bold transition active:scale-95 cursor-pointer">
-          ⚡ [1] ARMY RUSH
-        </button>
-        <button id="btn-cmd-guard" class="px-2.5 py-1 rounded-full bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[10px] font-bold transition active:scale-95 cursor-pointer">
-          🛡️ [2] MASS GUARD
-        </button>
-        <button id="btn-cmd-overdrive" class="px-2.5 py-1 rounded-full bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-bold transition active:scale-95 cursor-pointer opacity-60">
-          ★ [3] OVERDRIVE SYNC
-        </button>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button id="btn-spawn-hazard" class="px-2.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 text-[10px] font-bold transition active:scale-95 cursor-pointer shadow-lg">
-          ✨ ZONE
-        </button>
-        <button id="btn-sandbox-toggle" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-amber-500/50 hover:border-amber-400 shadow-lg shadow-amber-950/30 transition active:scale-95 cursor-pointer text-amber-300 text-[11px] font-bold">
-          🛠️ SANDBOX
-        </button>
-      </div>
+    <div class="w-full max-w-2xl flex items-center justify-end gap-2 pointer-events-auto">
+      <button id="btn-sandbox-toggle" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-amber-500/50 hover:border-amber-400 shadow-lg shadow-amber-950/30 transition active:scale-95 cursor-pointer text-amber-300 text-[11px] font-bold">
+        🛠️ SANDBOX
+      </button>
     </div>
   </div>
 
-  <div id="sandbox-panel" class="drawer-closed fixed bottom-[15vh] right-3 sm:right-6 z-30 w-80 sm:w-96 max-h-[76vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-xl shadow-2xl p-4 text-xs">
-    <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800">
+  <div id="sandbox-panel" class="drawer-closed fixed bottom-[13vh] right-3 sm:right-6 z-30 w-80 sm:w-96 max-h-[82vh] overflow-y-auto bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-xl shadow-2xl p-3.5 text-xs">
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
       <div class="flex items-center gap-1.5 text-amber-400 font-extrabold tracking-wider uppercase">
-        <span>🛠️</span><span>EXO // SANDBOX</span>
+        <span>🛠️</span><span>EXO // SANDBOX TOOLKIT</span>
       </div>
-      <button id="btn-close-sandbox" class="text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] cursor-pointer">✕</button>
+      <div class="flex items-center gap-1.5">
+        <button id="btn-sandbox-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[9px] font-extrabold uppercase tracking-wider cursor-pointer transition active:scale-95">
+          🎲 RANDOMIZER
+        </button>
+        <button id="btn-close-sandbox" class="text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] cursor-pointer">✕</button>
+      </div>
     </div>
 
-    <div class="bg-slate-900/95 border border-amber-500/35 rounded-lg p-2.5 mb-3 space-y-2">
+    <!-- PERSISTENT TOP TELEMETRY & COMBAT LOG POPUP WINDOW -->
+    <div class="bg-slate-900/95 border border-slate-700/80 rounded-lg p-2 mb-2.5 shadow-inner">
+      <div class="flex items-center justify-between text-[8px] text-cyan-400 font-extrabold uppercase tracking-widest mb-1 border-b border-slate-800/80 pb-0.5">
+        <span>📡 LIVE TELEMETRY FEED</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+      </div>
+      <div id="combat-log" class="w-full h-14 px-1.5 py-0.5 overflow-y-auto text-[9px] leading-tight space-y-0.5 text-slate-300 font-mono"></div>
+    </div>
+
+    <!-- TACTICAL COMMANDS & ZONE DECK (MOVED TO SANDBOX) -->
+    <div class="bg-slate-900/90 border border-cyan-500/30 rounded-lg p-2 mb-2.5 space-y-1.5">
+      <div class="text-[9px] font-extrabold text-cyan-300 uppercase tracking-wider">⚡ TACTICAL COMMAND DECK</div>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button id="btn-cmd-strike" class="px-2 py-1 rounded bg-cyan-950/90 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+          ⚡ [1] ARMY RUSH
+        </button>
+        <button id="btn-cmd-guard" class="px-2 py-1 rounded bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+          🛡️ [2] MASS GUARD
+        </button>
+        <button id="btn-cmd-overdrive" class="px-2 py-1 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-bold transition active:scale-95 cursor-pointer opacity-60 truncate">
+          ★ [3] OVERDRIVE SYNC
+        </button>
+        <button id="btn-spawn-hazard" class="px-2 py-1 rounded bg-slate-950 hover:bg-slate-800 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 text-[9px] font-bold transition active:scale-95 cursor-pointer truncate">
+          ✨ DEPLOY ZONE
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-slate-900/95 border border-amber-500/35 rounded-lg p-2.5 mb-2.5 space-y-2">
       <div class="flex items-center justify-between">
         <span class="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">🎮 MATCH RULES</span>
       </div>
-      <div class="pt-1 flex flex-col gap-2">
+      <div class="pt-0.5 flex flex-col gap-1.5">
         <div>
           <div class="flex justify-between text-[10px] text-slate-400 mb-1">
             <span>ARMY SIZE (UNITS PER TEAM)</span>
             <span id="lbl-army-size" class="text-emerald-300 font-bold">5</span>
           </div>
-          <input type="range" id="range-army-size" min="1" max="50" step="1" value="5" class="w-full accent-emerald-400 cursor-pointer">
+          <input type="range" id="range-army-size" min="1" max="100" step="1" value="5" class="w-full accent-emerald-400 cursor-pointer">
         </div>
       </div>
     </div>
 
     <!-- UNIFIED WORLD & LAB SANDBOX CONTROLS -->
-    <div class="space-y-3 text-slate-300">
+    <div class="space-y-2.5 text-slate-300">
       <div class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider border-b border-slate-800 pb-1">🌐 WORLD & LEVEL TOPOLOGY</div>
       <div>
         <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>ARENA TOPOLOGY BIOME</span></div>
@@ -387,7 +402,7 @@
         </div>
       </div>
 
-      <div class="text-[10px] font-extrabold text-fuchsia-400 uppercase tracking-wider border-b border-slate-800 pb-1 pt-2">🧬 CREATURE LAB OVERRIDES</div>
+      <div class="text-[10px] font-extrabold text-fuchsia-400 uppercase tracking-wider border-b border-slate-800 pb-1 pt-1">🧬 CREATURE LAB OVERRIDES</div>
       <div class="flex items-center justify-between bg-slate-900/90 p-1.5 rounded border border-slate-800">
         <span class="text-[10px] text-slate-400 font-semibold">EDIT TARGET:</span>
         <div class="flex gap-1">
@@ -395,14 +410,28 @@
           <button id="btn-target-p2" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-transparent text-[10px] font-bold cursor-pointer">HOSTILE (02)</button>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-2.5">
-        <div>
-          <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>SCALE</span><span id="lbl-c-scale" class="text-cyan-300 font-bold">0.125</span></div>
-          <input type="range" id="range-c-scale" min="0.06" max="0.45" step="0.015" value="0.125" class="w-full accent-cyan-400 cursor-pointer">
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/50 p-1.5 rounded border border-slate-800/70">
+        <div class="flex flex-col items-start">
+          <div class="flex items-center gap-1 text-[8px] text-slate-400 mb-1">
+            <span>SCALE:</span><span id="lbl-c-scale" class="text-cyan-300 font-bold">MEDIUM</span>
+          </div>
+          <!-- 75% Shrunk Micro Preset Buttons for Scale (Slow / Medium / Fast) -->
+          <div class="inline-flex gap-0.5">
+            <button data-scale-tier="slow" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">SLOW</button>
+            <button data-scale-tier="medium" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">MEDIUM</button>
+            <button data-scale-tier="fast" class="btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">FAST</button>
+          </div>
         </div>
-        <div>
-          <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>SPEED</span><span id="lbl-c-spd" class="text-cyan-300 font-bold">1.0X</span></div>
-          <input type="range" id="range-c-spd" min="0.4" max="2.5" step="0.1" value="1.0" class="w-full accent-cyan-400 cursor-pointer">
+        <div class="flex flex-col items-start">
+          <div class="flex items-center gap-1 text-[8px] text-slate-400 mb-1">
+            <span>SPEED:</span><span id="lbl-c-spd" class="text-cyan-300 font-bold">MEDIUM</span>
+          </div>
+          <!-- 75% Shrunk Micro Preset Buttons for Speed (Slow / Medium / Fast) -->
+          <div class="inline-flex gap-0.5">
+            <button data-spd-tier="slow" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">SLOW</button>
+            <button data-spd-tier="medium" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">MEDIUM</button>
+            <button data-spd-tier="fast" class="btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition">FAST</button>
+          </div>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80">
@@ -833,9 +862,20 @@
     let activeDmgPopups = 0;
     const MAX_POPUPS = 25;
 
+    const SCALE_TIERS = {
+      slow:   { label: 'SLOW',   val: 0.085 },
+      medium: { label: 'MEDIUM', val: 0.125 },
+      fast:   { label: 'FAST',   val: 0.220 }
+    };
+    const SPEED_TIERS = {
+      slow:   { label: 'SLOW',   val: 0.65 },
+      medium: { label: 'MEDIUM', val: 1.00 },
+      fast:   { label: 'FAST',   val: 1.75 }
+    };
+
     const slotOverrides = {
-      1: { scale: 0.125, spdMult: 1.0 },
-      2: { scale: 0.125, spdMult: 1.0 }
+      1: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium' },
+      2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium' }
     };
 
     // +15% Global Combat Aggression Multiplier
@@ -863,12 +903,19 @@
         mesh.userData.mat.color.setHex(0xf43f5e);
       }
 
-      const spacing = 1.3;
+      // Dynamically compress formation spacing when deploying massive 50-100 unit swarms so all units fit inside the arena ring
+      const spacing = armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3);
       const row = Math.floor(idx / totalCols);
       const col = idx % totalCols;
       
-      const homeX = (side === 1 ? -6.2 : 6.2) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.4;
-      const homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.4;
+      let homeX = (side === 1 ? -5.8 : 5.8) + (row * spacing * (side === 1 ? -1 : 1)) + (Math.random() - 0.5) * 0.35;
+      let homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.35;
+      const rDist = Math.hypot(homeX, homeZ);
+      if (rDist > arenaRingRadius - 1.2) {
+        const clampRatio = (arenaRingRadius - 1.2) / rDist;
+        homeX *= clampRatio;
+        homeZ *= clampRatio;
+      }
       const homeY = getTerrainHeight(homeX, homeZ);
       
       mesh.position.set(homeX, homeY, homeZ);
@@ -1624,9 +1671,9 @@
       const btnOd = document.getElementById('btn-cmd-overdrive');
       if (btnOd) {
         if (p1ReadyOd > 0 && battleState === 'FIGHTING') {
-          btnOd.className = "px-2.5 py-1 rounded-full bg-fuchsia-600 hover:bg-fuchsia-500 border border-fuchsia-300 text-white text-[10px] font-extrabold transition active:scale-95 cursor-pointer animate-pulse shadow-md shadow-fuchsia-500/40";
+          btnOd.className = "px-2 py-1 rounded bg-fuchsia-600 hover:bg-fuchsia-500 border border-fuchsia-300 text-white text-[9px] font-extrabold transition active:scale-95 cursor-pointer animate-pulse shadow-md shadow-fuchsia-500/40 truncate";
         } else {
-          btnOd.className = "px-2.5 py-1 rounded-full bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-bold transition active:scale-95 cursor-pointer opacity-60";
+          btnOd.className = "px-2 py-1 rounded bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-500/40 text-fuchsia-300 text-[9px] font-bold transition active:scale-95 cursor-pointer opacity-60 truncate";
         }
       }
 
@@ -1819,10 +1866,29 @@
 
     function syncLabControlsUI() {
       const ov = slotOverrides[activeEditTarget];
-      document.getElementById('range-c-scale').value = ov.scale;
-      document.getElementById('lbl-c-scale').textContent = ov.scale.toFixed(3);
-      document.getElementById('range-c-spd').value = ov.spdMult;
-      document.getElementById('lbl-c-spd').textContent = `${ov.spdMult.toFixed(1)}X`;
+      const sCfg = SCALE_TIERS[ov.scaleTier] || SCALE_TIERS.medium;
+      const spdCfg = SPEED_TIERS[ov.spdTier] || SPEED_TIERS.medium;
+
+      document.getElementById('lbl-c-scale').textContent = sCfg.label;
+      document.getElementById('lbl-c-spd').textContent = spdCfg.label;
+
+      document.querySelectorAll('.btn-scale-preset').forEach(btn => {
+        const active = btn.dataset.scaleTier === ov.scaleTier;
+        btn.className = `btn-scale-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition ${
+          active
+            ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+        }`;
+      });
+
+      document.querySelectorAll('.btn-spd-preset').forEach(btn => {
+        const active = btn.dataset.spdTier === ov.spdTier;
+        btn.className = `btn-spd-preset px-1 py-0.5 text-[7px] leading-none rounded border cursor-pointer transition ${
+          active
+            ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+        }`;
+      });
 
       const btn1 = document.getElementById('btn-target-p1');
       const btn2 = document.getElementById('btn-target-p2');
@@ -2170,18 +2236,74 @@
         activeEditTarget = 2;
         syncLabControlsUI();
       });
-      document.getElementById('range-c-scale').addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        slotOverrides[activeEditTarget].scale = val;
-        document.getElementById('lbl-c-scale').textContent = val.toFixed(3);
-        applyCreatureOverridesToArmy(activeEditTarget);
+
+      document.querySelectorAll('.btn-scale-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tier = btn.dataset.scaleTier;
+          const cfg = SCALE_TIERS[tier];
+          if (!cfg) return;
+          slotOverrides[activeEditTarget].scaleTier = tier;
+          slotOverrides[activeEditTarget].scale = cfg.val;
+          syncLabControlsUI();
+          applyCreatureOverridesToArmy(activeEditTarget);
+        });
       });
-      document.getElementById('range-c-spd').addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        slotOverrides[activeEditTarget].spdMult = val;
-        document.getElementById('lbl-c-spd').textContent = `${val.toFixed(1)}X`;
-        applyCreatureOverridesToArmy(activeEditTarget);
+
+      document.querySelectorAll('.btn-spd-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tier = btn.dataset.spdTier;
+          const cfg = SPEED_TIERS[tier];
+          if (!cfg) return;
+          slotOverrides[activeEditTarget].spdTier = tier;
+          slotOverrides[activeEditTarget].spdMult = cfg.val;
+          syncLabControlsUI();
+          applyCreatureOverridesToArmy(activeEditTarget);
+        });
       });
+
+      // Sandbox Toolkit Randomizer Button
+      document.getElementById('btn-sandbox-randomizer').addEventListener('click', () => {
+        const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium'];
+        worldTopology = biomes[Math.floor(Math.random() * biomes.length)];
+        document.getElementById('select-topology').value = worldTopology;
+
+        mapObstacleCount = Math.floor(Math.random() * 17) * 2;
+        document.getElementById('range-obs-count').value = mapObstacleCount;
+        document.getElementById('lbl-obs-count').textContent = mapObstacleCount;
+
+        mapElevationScale = parseFloat((Math.floor(Math.random() * 16) * 0.2).toFixed(1));
+        document.getElementById('range-terrain-elev').value = mapElevationScale;
+        document.getElementById('lbl-terrain-elev').textContent = `${mapElevationScale.toFixed(1)}X`;
+
+        armySize = Math.floor(Math.random() * 100) + 1;
+        document.getElementById('range-army-size').value = armySize;
+        document.getElementById('lbl-army-size').textContent = armySize;
+
+        const cKeys = Object.keys(CREATURES);
+        selectedP1 = cKeys[Math.floor(Math.random() * cKeys.length)];
+        selectedP2 = cKeys[Math.floor(Math.random() * cKeys.length)];
+        enemySelectionRule = 'manual';
+        document.getElementById('cs-enemy-mode').value = 'manual';
+
+        const tierKeys = ['slow', 'medium', 'fast'];
+        for (const s of [1, 2]) {
+          const rScale = tierKeys[Math.floor(Math.random() * tierKeys.length)];
+          const rSpd = tierKeys[Math.floor(Math.random() * tierKeys.length)];
+          slotOverrides[s].scaleTier = rScale;
+          slotOverrides[s].scale = SCALE_TIERS[rScale].val;
+          slotOverrides[s].spdTier = rSpd;
+          slotOverrides[s].spdMult = SPEED_TIERS[rSpd].val;
+        }
+        syncLabControlsUI();
+
+        mapSeed = Math.random() * 100;
+        rebuildWorldTopology();
+        spawnArmies();
+        battleState = 'FIGHTING';
+        syncMatchControlUI();
+        appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name} on ${worldTopology.toUpperCase()}!`, "text-amber-300 font-extrabold");
+      });
+
       document.getElementById('btn-sandbox-heal').addEventListener('click', () => {
         let healed = 0;
         entities.forEach(f => {
@@ -2386,6 +2508,22 @@
         const applyZoneTick = zoneHealTimer >= 1.0;
         if (applyZoneTick) zoneHealTimer = 0;
 
+        // Spatial Grid Hash for O(1) neighbor separation at 100v100 (200 total units)
+        const spatialGrid = new Map();
+        const cellSize = 1.6;
+        for (const e of entities) {
+          if (e.dead) continue;
+          const cx = Math.floor(e.homeX / cellSize);
+          const cz = Math.floor(e.homeZ / cellSize);
+          const key = `${cx},${cz}`;
+          let cell = spatialGrid.get(key);
+          if (!cell) {
+            cell = [];
+            spatialGrid.set(key, cell);
+          }
+          cell.push(e);
+        }
+
         for (let i = entities.length - 1; i >= 0; i--) {
           const f = entities[i];
           if (f.dead) {
@@ -2519,21 +2657,29 @@
               }
             }
 
-            // Balanced Hitbox Separation: Allies space out comfortably; Enemies close in until their hitboxes almost touch
-            for (const other of entities) {
-              if (other !== f && !other.dead) {
-                const adx = f.homeX - other.homeX;
-                const adz = f.homeZ - other.homeZ;
-                const adist = Math.hypot(adx, adz);
-                const minSep = other.side === f.side
-                  ? (f.hitboxRadius + other.hitboxRadius) * 1.55
-                  : (f.hitboxRadius + other.hitboxRadius) * 0.96; // Almost touching without overlapping
-                if (adist > 0.001 && adist < minSep) {
-                  const push = (minSep - adist) / minSep;
-                  const nx = adx / adist;
-                  const nz = adz / adist;
-                  steerX += (nx * 1.85 - nz * 0.45 * f.strafeDir) * push;
-                  steerZ += (nz * 1.85 + nx * 0.45 * f.strafeDir) * push;
+            // Spatial-Hashed Hitbox Separation: Keeps 100v100 battles running at 60 FPS without O(N^2) lag
+            const fcx = Math.floor(f.homeX / cellSize);
+            const fcz = Math.floor(f.homeZ / cellSize);
+            for (let gx = -1; gx <= 1; gx++) {
+              for (let gz = -1; gz <= 1; gz++) {
+                const cell = spatialGrid.get(`${fcx + gx},${fcz + gz}`);
+                if (!cell) continue;
+                for (const other of cell) {
+                  if (other !== f && !other.dead) {
+                    const adx = f.homeX - other.homeX;
+                    const adz = f.homeZ - other.homeZ;
+                    const adist = Math.hypot(adx, adz);
+                    const minSep = other.side === f.side
+                      ? (f.hitboxRadius + other.hitboxRadius) * 1.55
+                      : (f.hitboxRadius + other.hitboxRadius) * 0.96;
+                    if (adist > 0.001 && adist < minSep) {
+                      const push = (minSep - adist) / minSep;
+                      const nx = adx / adist;
+                      const nz = adz / adist;
+                      steerX += (nx * 1.85 - nz * 0.45 * f.strafeDir) * push;
+                      steerZ += (nz * 1.85 + nx * 0.45 * f.strafeDir) * push;
+                    }
+                  }
                 }
               }
             }
