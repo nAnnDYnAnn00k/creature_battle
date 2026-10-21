@@ -245,7 +245,7 @@
 
       <!-- Second Row: Randomizer, 4 Match Control Buttons & Sandbox Toolkit Button (Uniform Size & Alignment) -->
       <div class="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/90 backdrop-blur-md border border-slate-800/90 px-2.5 py-1.5 rounded-full shadow-lg text-[10px]">
-        <button id="btn-main-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-extrabold uppercase tracking-wider transition active:scale-95 cursor-pointer whitespace-nowrap">
+        <button id="btn-main-randomizer" title="Randomize Biome, Map Size, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-extrabold uppercase tracking-wider transition active:scale-95 cursor-pointer whitespace-nowrap">
           <span>🎲</span><span>RANDOMIZER</span>
         </button>
         <button id="btn-match-start" title="Start or Resume Battle" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-extrabold transition active:scale-95 cursor-pointer whitespace-nowrap">
@@ -309,7 +309,7 @@
         <span>🛠️</span><span>EXO // SANDBOX TOOLKIT</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <button id="btn-sandbox-randomizer" title="Randomize Biome, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center h-6 px-2.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[9px] font-extrabold uppercase tracking-wider cursor-pointer transition active:scale-95">
+        <button id="btn-sandbox-randomizer" title="Randomize Biome, Map Size, Obstacles, Elevation, Army Size & Creature Presets" class="inline-flex items-center justify-center h-6 px-2.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 text-[9px] font-extrabold uppercase tracking-wider cursor-pointer transition active:scale-95">
           🎲 RANDOMIZER
         </button>
         <button id="btn-close-sandbox" class="inline-flex items-center justify-center h-6 px-2.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-[9px] font-extrabold cursor-pointer transition">✕</button>
@@ -380,6 +380,22 @@
           <option value="picnic">Picnic Feast Blanket</option>
         </select>
       </div>
+
+      <!-- PLAYABLE TERRAIN MAP SIZE CONTROLS (SMALL 100%, MEDIUM 200%, LARGE 300%) -->
+      <div class="bg-slate-900/50 p-2 rounded border border-slate-800/70 space-y-1.5">
+        <div class="flex items-center justify-between text-[9px] text-slate-400">
+          <span>PLAYABLE MAP SIZE:</span>
+          <span id="lbl-map-size" class="text-cyan-300 font-extrabold uppercase">LARGE (300%)</span>
+        </div>
+        <div class="grid grid-cols-5 gap-1 w-full">
+          <button id="btn-map-size-dec" title="Decrease Map Size" class="w-full h-6 text-[9px] leading-none rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-cyan-300 font-extrabold inline-flex items-center justify-center cursor-pointer transition active:scale-95">−</button>
+          <button data-map-size="small" class="btn-map-size-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">SMALL</button>
+          <button data-map-size="medium" class="btn-map-size-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">MEDIUM</button>
+          <button data-map-size="large" class="btn-map-size-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">LARGE</button>
+          <button id="btn-map-size-inc" title="Increase Map Size" class="w-full h-6 text-[9px] leading-none rounded border border-slate-700 bg-slate-900 hover:bg-slate-800 text-cyan-300 font-extrabold inline-flex items-center justify-center cursor-pointer transition active:scale-95">+</button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-2.5">
         <div>
           <div class="flex justify-between text-[10px] text-slate-400 mb-1">
@@ -450,34 +466,46 @@
         </div>
       </div>
 
-      <!-- CREATURE COLOR SCHEMES (NATIVE NATURAL PATTERN + 6 PALETTES) -->
+      <!-- CREATURE COLOR SCHEMES (4 SELECTABLE OPTIONS: NATIVE + 3 CLASS-SPECIFIC SCHEMES) -->
       <div class="bg-slate-900/50 p-2 rounded border border-slate-800/70 space-y-1.5">
         <div class="flex items-center justify-between text-[8px] text-slate-400">
-          <span>COLOR SCHEME:</span>
+          <span>COLOR SCHEME (4 PER CLASS):</span>
           <span id="lbl-c-color" class="text-cyan-300 font-bold uppercase">NATIVE PATTERN</span>
         </div>
         <div class="grid grid-cols-4 gap-1 w-full">
-          <button data-color-scheme="native" class="btn-color-preset col-span-2 w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Species Native Natural Biological Pattern">🌿 NATIVE</button>
-          <button data-color-scheme="cyber_cyan" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Cyber Cyan">CYAN</button>
-          <button data-color-scheme="crimson_flare" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Crimson Flare">CRIMSON</button>
-          <button data-color-scheme="venom_emerald" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Venom Emerald">EMERALD</button>
-          <button data-color-scheme="solar_gold" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Solar Gold">GOLD</button>
-          <button data-color-scheme="nebula_violet" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Nebula Violet">VIOLET</button>
-          <button data-color-scheme="obsidian_frost" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Arctic Frost">FROST</button>
+          <button data-color-scheme="native" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Species Native Natural Biological Pattern">🌿 NATIVE</button>
+          <button data-color-scheme="alt_1" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">ALT 1</button>
+          <button data-color-scheme="alt_2" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">ALT 2</button>
+          <button data-color-scheme="alt_3" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition">ALT 3</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const COLOR_SCHEMES = {
-      native:         { label: 'NATIVE PATTERN' },
-      cyber_cyan:     { label: 'CYBER CYAN',     primary: 0x22d3ee, secondary: 0x0891b2, accent: 0xa5f3fc, wing: 0x67e8f9, cel: 0x083344 },
-      crimson_flare:  { label: 'CRIMSON FLARE',  primary: 0xf43f5e, secondary: 0xbe123c, accent: 0xfda4af, wing: 0xfb7185, cel: 0x4c0519 },
-      venom_emerald:  { label: 'VENOM EMERALD',  primary: 0x10b981, secondary: 0x047857, accent: 0x6ee7b7, wing: 0x34d399, cel: 0x022c22 },
-      solar_gold:     { label: 'SOLAR GOLD',     primary: 0xfacc15, secondary: 0xd97706, accent: 0xfef08a, wing: 0xfde047, cel: 0x422006 },
-      nebula_violet:  { label: 'NEBULA VIOLET',  primary: 0xc084fc, secondary: 0x7e22ce, accent: 0xf5d0fe, wing: 0xe879f9, cel: 0x2e1065 },
-      obsidian_frost: { label: 'ARCTIC FROST',   primary: 0xe2e8f0, secondary: 0x64748b, accent: 0x38bdf8, wing: 0xffffff, cel: 0x0f172a }
+    // 4 Selectable Color Schemes per Creature Class: 'native' + 3 class-specific schemes ('alt_1', 'alt_2', 'alt_3')
+    const CLASS_COLOR_SCHEMES = {
+      CRUSTACEAN: {
+        native: { shortLabel: '🌿 NATIVE', label: 'NATIVE PATTERN' },
+        alt_1:  { shortLabel: 'ABYSSAL',   label: 'ABYSSAL CYAN',    primary: 0x22d3ee, secondary: 0x0891b2, accent: 0xa5f3fc, wing: 0x67e8f9, cel: 0x083344 },
+        alt_2:  { shortLabel: 'THERMAL',   label: 'THERMAL CRIMSON', primary: 0xf43f5e, secondary: 0xbe123c, accent: 0xfda4af, wing: 0xfb7185, cel: 0x4c0519 },
+        alt_3:  { shortLabel: 'GLACIAL',   label: 'GLACIAL FROST',   primary: 0xe2e8f0, secondary: 0x64748b, accent: 0x38bdf8, wing: 0xffffff, cel: 0x0f172a }
+      },
+      INSECT: {
+        native: { shortLabel: '🌿 NATIVE', label: 'NATIVE PATTERN' },
+        alt_1:  { shortLabel: 'VENOM',     label: 'VENOM EMERALD',   primary: 0x10b981, secondary: 0x047857, accent: 0x6ee7b7, wing: 0x34d399, cel: 0x022c22 },
+        alt_2:  { shortLabel: 'SOLAR',     label: 'SOLAR GOLD',      primary: 0xfacc15, secondary: 0xd97706, accent: 0xfef08a, wing: 0xfde047, cel: 0x422006 },
+        alt_3:  { shortLabel: 'NEBULA',    label: 'NEBULA VIOLET',   primary: 0xc084fc, secondary: 0x7e22ce, accent: 0xf5d0fe, wing: 0xe879f9, cel: 0x2e1065 }
+      }
+    };
+    const COLOR_SCHEME_KEYS = ['native', 'alt_1', 'alt_2', 'alt_3'];
+
+    // No-Bloat Playable Map Size Presets (Small = 100%, Medium = 200%, Large = 300% playable terrain size)
+    const MAP_SIZE_ORDER = ['small', 'medium', 'large'];
+    const MAP_SIZES = {
+      small:  { label: 'SMALL (100%)',  mult: 1.0, ringRadius: 24.5, planeSize: 84,  segments: 64 },
+      medium: { label: 'MEDIUM (200%)', mult: 2.0, ringRadius: 49.0, planeSize: 168, segments: 76 },
+      large:  { label: 'LARGE (300%)',  mult: 3.0, ringRadius: 73.5, planeSize: 252, segments: 88 }
     };
 
     const CREATURES = {
@@ -594,6 +622,12 @@
       return mesh;
     }
 
+    function getSchemeConfigForCreature(creatureKey, schemeKey = 'native') {
+      const cfg = CREATURES[creatureKey] || CREATURES.king_crab;
+      const classMap = CLASS_COLOR_SCHEMES[cfg.faction] || CLASS_COLOR_SCHEMES.CRUSTACEAN;
+      return classMap[schemeKey] || classMap.native;
+    }
+
     function resolvePaletteForCreature(key, schemeKey = 'native', isMirrorHostile = false) {
       const cfg = CREATURES[key];
       if (!schemeKey || schemeKey === 'native') {
@@ -602,7 +636,8 @@
         }
         return cfg.nativePalette || { primary: cfg.color, secondary: cfg.color, accent: 0xffffff, wing: 0xffffff, cel: 0x0f172a };
       }
-      return COLOR_SCHEMES[schemeKey] || COLOR_SCHEMES.cyber_cyan;
+      const classSchemes = CLASS_COLOR_SCHEMES[cfg.faction] || CLASS_COLOR_SCHEMES.CRUSTACEAN;
+      return classSchemes[schemeKey] || classSchemes.alt_1;
     }
 
     function buildCreatureMesh(key, hexColor, opacity = 0.95, customScale = 0.125, schemeKey = 'native', isMirrorHostile = false) {
@@ -824,7 +859,7 @@
 
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 500);
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 900);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -837,7 +872,12 @@
     let worldTopology = 'terrain';
     let mapElevationScale = 1.2;
     let mapObstacleCount = 8;
-    const arenaRingRadius = 24.5;
+
+    // Default to 'large' (300% playable terrain map size) with Small/Medium/Large switching
+    let mapSizeTier = 'large';
+    let mapScaleMult = MAP_SIZES[mapSizeTier].mult;
+    let arenaRingRadius = MAP_SIZES[mapSizeTier].ringRadius;
+
     let arenaObstacles = [];
     let tacticalZones = [];
 
@@ -847,9 +887,10 @@
       if (worldTopology === 'grid') {
         return Math.sin(dist * 0.6 - mapSeed) * 0.12 * mapElevationScale;
       } else if (worldTopology === 'canyon') {
-        const bridgeFactor = Math.exp(-(z * z) / 14.0);
+        const bridgeWidth = 14.0 * mapScaleMult;
+        const bridgeFactor = Math.exp(-(z * z) / bridgeWidth);
         const ridge = Math.sin(x * 0.25) * 0.85 * (1 - bridgeFactor);
-        const trench = Math.cos(Math.min(Math.PI, dist * 0.16)) * -0.55 * (1 - bridgeFactor);
+        const trench = Math.cos(Math.min(Math.PI, (dist / mapScaleMult) * 0.16)) * -0.55 * (1 - bridgeFactor);
         return (ridge + trench) * mapElevationScale;
       } else if (worldTopology === 'forest') {
         const roots = Math.sin(x * 0.35 + mapSeed) * Math.cos(z * 0.35 - mapSeed) * 0.48;
@@ -857,7 +898,9 @@
         return (roots + knolls) * mapElevationScale;
       } else if (worldTopology === 'fire_ant') {
         // Volcanic central colony mound with surrounding tunnel rings
-        const caldera = Math.exp(-(dist * dist) / 55.0) * 2.1 - Math.exp(-(dist * dist) / 7.5) * 2.7;
+        const calderaSpread = 55.0 * mapScaleMult;
+        const pitSpread = 7.5 * mapScaleMult;
+        const caldera = Math.exp(-(dist * dist) / calderaSpread) * 2.1 - Math.exp(-(dist * dist) / pitSpread) * 2.7;
         const ripples = Math.sin(dist * 0.75 - mapSeed) * 0.22;
         return (caldera + ripples) * mapElevationScale;
       } else if (worldTopology === 'terrarium') {
@@ -867,8 +910,9 @@
         return (dish + substrate) * mapElevationScale;
       } else if (worldTopology === 'picnic') {
         // Woven picnic blanket folds + raised serving platter plateaus
+        const platterR = 7.2 * Math.sqrt(mapScaleMult);
         const blanketFolds = (Math.sin(x * 0.42 + mapSeed) * 0.22 + Math.cos(z * 0.42 - mapSeed) * 0.22);
-        const centerPlatter = dist < 7.2 ? 0.42 : (Math.abs(dist - 7.4) < 0.55 ? 0.62 : 0);
+        const centerPlatter = dist < platterR ? 0.42 : (Math.abs(dist - (platterR + 0.2)) < 0.55 ? 0.62 : 0);
         return (blanketFolds + centerPlatter) * mapElevationScale;
       }
       const wave1 = Math.sin(x * 0.22 + mapSeed) * Math.cos(z * 0.22 + mapSeed) * 0.75;
@@ -943,6 +987,10 @@
     }
 
     function rebuildWorldTopology() {
+      const sizeCfg = MAP_SIZES[mapSizeTier] || MAP_SIZES.large;
+      mapScaleMult = sizeCfg.mult;
+      arenaRingRadius = sizeCfg.ringRadius;
+
       while (worldGroup.children.length > 0) {
         const child = worldGroup.children[0];
         disposeHierarchyMaterials(child);
@@ -953,7 +1001,7 @@
       }
       arenaObstacles = []; tacticalZones = [];
 
-      const groundGeo = new THREE.PlaneGeometry(84, 84, 64, 64);
+      const groundGeo = new THREE.PlaneGeometry(sizeCfg.planeSize, sizeCfg.planeSize, sizeCfg.segments, sizeCfg.segments);
       groundGeo.rotateX(-Math.PI / 2);
       const pos = groundGeo.attributes.position;
 
@@ -1013,37 +1061,42 @@
 
       // Picnic Feast secondary white gingham weave & central ceramic plate rim
       if (worldTopology === 'picnic') {
+        const platterR = 7.2 * Math.sqrt(mapScaleMult);
         const plateRim = new THREE.Mesh(
-          getGeometry('RingGeometry', 7.0, 7.65, 48),
+          getGeometry('RingGeometry', platterR - 0.2, platterR + 0.45, 48),
           new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
         );
         plateRim.rotation.x = Math.PI / 2;
-        plateRim.position.y = getTerrainHeight(7.3, 0) + 0.05;
+        plateRim.position.y = getTerrainHeight(platterR + 0.1, 0) + 0.05;
         worldGroup.add(plateRim);
       }
 
+      const ringSegs = 96;
       const ringPoints = [];
-      for (let i = 0; i <= 64; i++) {
-        const t = (i / 64) * Math.PI * 2;
-        ringPoints.push(new THREE.Vector3(Math.cos(t) * arenaRingRadius, getTerrainHeight(Math.cos(t) * arenaRingRadius, Math.sin(t) * arenaRingRadius) + 0.1, Math.sin(t) * arenaRingRadius));
+      for (let i = 0; i <= ringSegs; i++) {
+        const t = (i / ringSegs) * Math.PI * 2;
+        const rx = Math.cos(t) * arenaRingRadius;
+        const rz = Math.sin(t) * arenaRingRadius;
+        ringPoints.push(new THREE.Vector3(rx, getTerrainHeight(rx, rz) + 0.1, rz));
       }
       worldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPoints), new THREE.LineBasicMaterial({ color: ringColor, opacity: 0.65 })));
 
       // Giant Bio-Terrarium outer glass enclosure & heat lamp dome
       if (worldTopology === 'terrarium') {
         const enclosure = new THREE.Mesh(
-          getGeometry('CylinderGeometry', arenaRingRadius + 1.2, arenaRingRadius + 1.2, 16, 16, 1, true),
+          getGeometry('CylinderGeometry', arenaRingRadius + 1.2, arenaRingRadius + 1.2, 16 * Math.sqrt(mapScaleMult), 24, 1, true),
           new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.16 })
         );
-        enclosure.position.y = 7.5;
+        enclosure.position.y = 7.5 * Math.sqrt(mapScaleMult);
         worldGroup.add(enclosure);
       }
 
       for (let i = 0; i < mapObstacleCount; i++) {
         const angle = (i / Math.max(1, mapObstacleCount)) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
-        const dist = 3.2 + Math.random() * (arenaRingRadius - 5.8);
+        const minObsClear = 3.2 * Math.sqrt(mapScaleMult);
+        const dist = minObsClear + Math.random() * Math.max(2.0, arenaRingRadius - minObsClear - 3.5);
         const x = Math.cos(angle) * dist; const z = Math.sin(angle) * dist;
-        const r = 0.65 + Math.random() * 1.15;
+        const r = (0.65 + Math.random() * 1.15) * (0.85 + 0.15 * mapScaleMult);
         const centerGroundY = getTerrainHeight(x, z);
         const anchoredBaseY = getAnchoredObstacleBaseY(x, z, r);
         const collarLocalY = centerGroundY - anchoredBaseY;
@@ -1341,9 +1394,9 @@
       { id: 'close',     label: 'CLOSE',     radius: 9.0,   pitch: 0.35 },
       { id: 'near',      label: 'NEAR',      radius: 15.0,  pitch: 0.42 },
       { id: 'medium',    label: 'MEDIUM',    radius: 24.0,  pitch: 0.48 },
-      { id: 'far',       label: 'FAR',       radius: 42.0,  pitch: 0.58 },
-      { id: 'birds_eye', label: 'BIRDS EYE', radius: 78.0,  pitch: 0.92 },
-      { id: 'god_view',  label: 'GOD VIEW',  radius: 144.0, pitch: 1.28 }
+      { id: 'far',       label: 'FAR',       radius: 46.0,  pitch: 0.58 },
+      { id: 'birds_eye', label: 'BIRDS EYE', radius: 95.0,  pitch: 0.92 },
+      { id: 'god_view',  label: 'GOD VIEW',  radius: 210.0, pitch: 1.28 }
     ];
     const MIN_CAM_RADIUS = ZOOM_LEVELS[0].radius;
     const MAX_CAM_RADIUS = ZOOM_LEVELS[ZOOM_LEVELS.length - 1].radius;
@@ -1455,6 +1508,7 @@
       const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale, ov.colorScheme, isMirrorHostile);
 
       const dirSign = side === 1 ? -1 : 1;
+      const spawnDistFactor = 1 + (mapScaleMult - 1) * 0.35;
       let homeX = 0;
       let homeZ = 0;
       let flankSign = idx % 2 === 0 ? 1 : -1;
@@ -1463,8 +1517,8 @@
         const lineCols = Math.max(2, Math.ceil(armySize * 0.65));
         const r = Math.floor(idx / lineCols);
         const c = idx % lineCols;
-        const zSpacing = armySize > 40 ? 0.62 : 0.82;
-        homeX = (side === 1 ? -4.8 : 4.8) + r * 0.85 * dirSign + (Math.random() - 0.5) * 0.12;
+        const zSpacing = (armySize > 40 ? 0.62 : 0.82) * Math.sqrt(spawnDistFactor);
+        homeX = (side === 1 ? -4.8 : 4.8) * spawnDistFactor + r * 0.85 * dirSign + (Math.random() - 0.5) * 0.12;
         homeZ = (c - (Math.min(armySize, lineCols) - 1) / 2) * zSpacing;
       } else if (ov.formation === 'pincer') {
         flankSign = idx < armySize / 2 ? -1 : 1;
@@ -1472,14 +1526,14 @@
         const wingCols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, armySize / 2))));
         const r = Math.floor(wingIdx / wingCols);
         const c = wingIdx % wingCols;
-        const spacing = armySize > 50 ? 0.85 : 1.05;
-        homeX = (side === 1 ? -6.2 : 6.2) + r * spacing * dirSign;
-        homeZ = flankSign * (5.2 + c * spacing * 0.78) + (Math.random() - 0.5) * 0.25;
+        const spacing = (armySize > 50 ? 0.85 : 1.05) * Math.sqrt(spawnDistFactor);
+        homeX = (side === 1 ? -6.2 : 6.2) * spawnDistFactor + r * spacing * dirSign;
+        homeZ = flankSign * (5.2 * spawnDistFactor + c * spacing * 0.78) + (Math.random() - 0.5) * 0.25;
       } else {
-        const spacing = armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3);
+        const spacing = (armySize > 50 ? 0.92 : (armySize > 25 ? 1.12 : 1.3)) * Math.sqrt(spawnDistFactor);
         const row = Math.floor(idx / totalCols);
         const col = idx % totalCols;
-        homeX = (side === 1 ? -5.8 : 5.8) + (row * spacing * dirSign) + (Math.random() - 0.5) * 0.35;
+        homeX = (side === 1 ? -5.8 : 5.8) * spawnDistFactor + (row * spacing * dirSign) + (Math.random() - 0.5) * 0.35;
         homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.35;
       }
 
@@ -1574,6 +1628,7 @@
       updateRoundTimerUI();
       updateArmyHUD();
       highlightSelectedCards();
+      syncLabControlsUI();
     }
 
     function updateRoundTimerUI() {
@@ -1767,9 +1822,10 @@
       if (arenaObstacles.length === 0 || !enemy) return null;
       let bestObs = null;
       let bestScore = Infinity;
+      const searchRange = 11.5 * Math.sqrt(mapScaleMult);
       for (const obs of arenaObstacles) {
         const dToUnit = Math.hypot(obs.x - f.homeX, obs.z - f.homeZ);
-        if (dToUnit < 11.5) {
+        if (dToUnit < searchRange) {
           const score = dToUnit - obs.radius * 0.5;
           if (score < bestScore) {
             bestScore = score;
@@ -2108,7 +2164,7 @@
             ud.extras[0].rotation.y = s(hp * Math.PI * 4) * 0.55 * pulse;
             ud.extras[0].rotation.x = c(hp * Math.PI * 4) * 0.35 * pulse;
           } else if (f.habitIndex === 1) {
-            // 2. Wing Thermoregulation Shimmer: High-speedlow-amplitude wing vibration glide
+            // 2. Wing Thermoregulation Shimmer: High-speed low-amplitude wing vibration glide
             ud.wings.forEach(w => {
               w.mesh.rotation.x = w.side * (1.15 + s(elapsed * 110 + (w.phase || 0)) * 0.18);
             });
@@ -2449,20 +2505,50 @@
       });
     }
 
+    function syncMapSizeUI() {
+      const cfg = MAP_SIZES[mapSizeTier] || MAP_SIZES.large;
+      const lbl = document.getElementById('lbl-map-size');
+      if (lbl) lbl.textContent = cfg.label;
+
+      document.querySelectorAll('.btn-map-size-preset').forEach(btn => {
+        const active = btn.dataset.mapSize === mapSizeTier;
+        btn.className = `btn-map-size-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
+          active
+            ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+        }`;
+      });
+    }
+
+    function setMapSizeTier(newTier) {
+      if (!MAP_SIZES[newTier] || newTier === mapSizeTier) return;
+      mapSizeTier = newTier;
+      syncMapSizeUI();
+      rebuildWorldTopology();
+      if (battleState === 'STANDBY' || battleState === 'ENDED') {
+        spawnArmies();
+      }
+      appendLog(`🌐 Playable Map Size set to ${MAP_SIZES[newTier].label}`, "text-cyan-300 font-bold");
+    }
+
     function syncLabControlsUI() {
       const ov = slotOverrides[activeEditTarget];
+      const targetCreatureKey = activeEditTarget === 1 ? selectedP1 : selectedP2;
+      const targetFaction = (CREATURES[targetCreatureKey] || CREATURES.king_crab).faction;
+      const classSchemeMap = CLASS_COLOR_SCHEMES[targetFaction] || CLASS_COLOR_SCHEMES.CRUSTACEAN;
+
       const sCfg = SCALE_TIERS[ov.scaleTier] || SCALE_TIERS.medium;
       const spdCfg = SPEED_TIERS[ov.spdTier] || SPEED_TIERS.medium;
       const formCfg = FORMATIONS[ov.formation] || FORMATIONS.swarm;
       const stanceCfg = STANCES[ov.stance] || STANCES.balanced;
-      const colorCfg = COLOR_SCHEMES[ov.colorScheme] || COLOR_SCHEMES.native;
+      const colorCfg = classSchemeMap[ov.colorScheme] || classSchemeMap.native;
 
       document.getElementById('lbl-c-scale').textContent = sCfg.label;
       document.getElementById('lbl-c-spd').textContent = spdCfg.label;
       document.getElementById('lbl-c-formation').textContent = formCfg.label;
       document.getElementById('lbl-c-stance').textContent = stanceCfg.label;
       const lblColor = document.getElementById('lbl-c-color');
-      if (lblColor) lblColor.textContent = colorCfg.label;
+      if (lblColor) lblColor.textContent = `${targetFaction} // ${colorCfg.label}`;
 
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         const active = btn.dataset.scaleTier === ov.scaleTier;
@@ -2500,10 +2586,14 @@
         }`;
       });
 
+      // Dynamically label the 4 color scheme buttons for the active creature class
       document.querySelectorAll('.btn-color-preset').forEach(btn => {
-        const active = btn.dataset.colorScheme === ov.colorScheme;
-        const spanCls = btn.dataset.colorScheme === 'native' ? 'col-span-2 ' : '';
-        btn.className = `btn-color-preset ${spanCls}w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
+        const schemeKey = btn.dataset.colorScheme;
+        const sc = classSchemeMap[schemeKey] || classSchemeMap.native;
+        btn.textContent = sc.shortLabel;
+        btn.title = `${targetFaction}: ${sc.label}`;
+        const active = schemeKey === ov.colorScheme;
+        btn.className = `btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
           active
             ? 'bg-fuchsia-500/30 text-fuchsia-200 border-fuchsia-400 font-extrabold'
             : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
@@ -2585,6 +2675,7 @@
           }
           loadCharSelectPreviewModel(k);
           highlightSelectedCards();
+          syncLabControlsUI();
         });
         csRosterGrid.appendChild(csCard);
       });
@@ -2831,7 +2922,23 @@
       document.getElementById('btn-pm-rematch').addEventListener('click', () => startBattle());
       document.getElementById('btn-pm-select').addEventListener('click', () => openCharSelectModal(1));
 
+      syncMapSizeUI();
       syncLabControlsUI();
+
+      // Map Size Decrease (-), Increase (+), and Small / Medium / Large Preset Buttons
+      document.getElementById('btn-map-size-dec').addEventListener('click', () => {
+        const idx = MAP_SIZE_ORDER.indexOf(mapSizeTier);
+        if (idx > 0) setMapSizeTier(MAP_SIZE_ORDER[idx - 1]);
+      });
+      document.getElementById('btn-map-size-inc').addEventListener('click', () => {
+        const idx = MAP_SIZE_ORDER.indexOf(mapSizeTier);
+        if (idx < MAP_SIZE_ORDER.length - 1) setMapSizeTier(MAP_SIZE_ORDER[idx + 1]);
+      });
+      document.querySelectorAll('.btn-map-size-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setMapSizeTier(btn.dataset.mapSize);
+        });
+      });
 
       document.getElementById('select-topology').addEventListener('change', (e) => {
         worldTopology = e.target.value;
@@ -2909,19 +3016,23 @@
       document.querySelectorAll('.btn-color-preset').forEach(btn => {
         btn.addEventListener('click', () => {
           const scheme = btn.dataset.colorScheme;
-          if (!COLOR_SCHEMES[scheme]) return;
+          if (!COLOR_SCHEME_KEYS.includes(scheme)) return;
           slotOverrides[activeEditTarget].colorScheme = scheme;
           syncLabControlsUI();
           applyCreatureOverridesToArmy(activeEditTarget);
-          appendLog(`🎨 ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Color Scheme set to ${COLOR_SCHEMES[scheme].label}`, "text-fuchsia-300 font-bold");
+          const cKey = activeEditTarget === 1 ? selectedP1 : selectedP2;
+          const scCfg = getSchemeConfigForCreature(cKey, scheme);
+          appendLog(`🎨 ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Color Scheme set to ${scCfg.label}`, "text-fuchsia-300 font-bold");
         });
       });
 
-      // Shared Randomizer Logic for both Main UI and Sandbox Toolkit Randomizer Buttons
       const triggerRandomizerAll = () => {
         const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium', 'picnic'];
         worldTopology = biomes[Math.floor(Math.random() * biomes.length)];
         document.getElementById('select-topology').value = worldTopology;
+
+        mapSizeTier = MAP_SIZE_ORDER[Math.floor(Math.random() * MAP_SIZE_ORDER.length)];
+        syncMapSizeUI();
 
         mapObstacleCount = Math.floor(Math.random() * 17) * 2;
         document.getElementById('range-obs-count').value = mapObstacleCount;
@@ -2944,7 +3055,6 @@
         const tierKeys = ['slow', 'medium', 'fast'];
         const formKeys = ['swarm', 'phalanx', 'pincer'];
         const stanceKeys = ['balanced', 'phalanx_guard', 'berserk'];
-        const colorKeys = Object.keys(COLOR_SCHEMES);
         for (const s of [1, 2]) {
           const rScale = tierKeys[Math.floor(Math.random() * tierKeys.length)];
           const rSpd = tierKeys[Math.floor(Math.random() * tierKeys.length)];
@@ -2954,7 +3064,7 @@
           slotOverrides[s].spdMult = SPEED_TIERS[rSpd].val;
           slotOverrides[s].formation = formKeys[Math.floor(Math.random() * formKeys.length)];
           slotOverrides[s].stance = stanceKeys[Math.floor(Math.random() * stanceKeys.length)];
-          slotOverrides[s].colorScheme = Math.random() < 0.45 ? 'native' : colorKeys[Math.floor(Math.random() * colorKeys.length)];
+          slotOverrides[s].colorScheme = Math.random() < 0.45 ? 'native' : COLOR_SCHEME_KEYS[Math.floor(Math.random() * COLOR_SCHEME_KEYS.length)];
         }
         syncLabControlsUI();
 
@@ -2963,7 +3073,7 @@
         spawnArmies();
         battleState = 'FIGHTING';
         syncMatchControlUI();
-        appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name} on ${worldTopology.toUpperCase()}!`, "text-amber-300 font-extrabold");
+        appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name} on ${worldTopology.toUpperCase()} (${MAP_SIZES[mapSizeTier].label})!`, "text-amber-300 font-extrabold");
       };
 
       document.getElementById('btn-sandbox-randomizer').addEventListener('click', triggerRandomizerAll);
@@ -2994,7 +3104,7 @@
 
       document.getElementById('btn-spawn-hazard').addEventListener('click', () => {
         const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * 6;
+        const dist = Math.random() * 6 * Math.sqrt(mapScaleMult);
         const zx = Math.cos(angle) * dist;
         const zz = Math.sin(angle) * dist;
         const zy = getTerrainHeight(zx, zz);
@@ -3161,7 +3271,6 @@
         matchElapsedTime += dt;
         updateRoundTimerUI();
 
-        // Full 2-Minute (120s) Round Timer Decision without 30s interruption
         if (matchElapsedTime >= ROUND_DURATION) {
           resolveRoundTimeLimit();
         }
@@ -3190,7 +3299,6 @@
           const f = entities[i];
           if (f.dead) {
             f.deathTimer += dt;
-            // Disintegrate corpse after 2 seconds
             if (f.deathTimer >= 2.0) {
               disposeHierarchyMaterials(f.mesh);
               scene.remove(f.mesh);
@@ -3242,11 +3350,9 @@
             const hGradX = (getTerrainHeight(f.homeX + 0.6, f.homeZ) - hHere) / 0.6;
             const hGradZ = (getTerrainHeight(f.homeX, f.homeZ + 0.6) - hHere) / 0.6;
 
-            // Balanced physical contact distance based on both units' hitbox radii (nearly touching without overlapping)
             const idealContactDist = f.hitboxRadius + target.hitboxRadius + 0.04;
             const strikeTriggerRange = idealContactDist + 0.62;
 
-            // +15% Aggression & Tactical Stance behavior (Berserk units never retreat or hide)
             const isLowHp = f.hp < f.maxHp * 0.28;
             const isCoolingDown = f.timer > f.cooldown * 0.72;
             const wantsToKiteOrHide = f.stance !== 'berserk' && (f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0));
@@ -3258,7 +3364,7 @@
               let soughtZone = null;
               if (isLowHp && tacticalZones.length > 0) {
                 for (const z of tacticalZones) {
-                  if (Math.hypot(z.x - f.homeX, z.z - f.homeZ) < 14.0) {
+                  if (Math.hypot(z.x - f.homeX, z.z - f.homeZ) < 14.0 * Math.sqrt(mapScaleMult)) {
                     soughtZone = z;
                     break;
                   }
@@ -3319,7 +3425,6 @@
                 steerZ = dirZ * approach + perpZ * 0.65;
               }
 
-              // Apply Squad Formation & Stance steering modifiers
               if (f.formation === 'pincer' && distToEnemy > 1.8) {
                 const flankPerpX = -dirZ * f.flankSign;
                 const flankPerpZ = dirX * f.flankSign;
@@ -3334,7 +3439,6 @@
               }
             }
 
-            // Spatial-Hashed Hitbox Separation: Keeps 100v100 battles running at 60 FPS without O(N^2) lag
             const fcx = Math.floor(f.homeX / cellSize);
             const fcz = Math.floor(f.homeZ / cellSize);
             for (let gx = -1; gx <= 1; gx++) {
@@ -3391,7 +3495,6 @@
               f.vz *= Math.max(0, 1 - dt * 6);
             }
 
-            // Unnatural Movement Suppression: Hard-clamp horizontal velocity so no unit ever launches erratically
             const vMag = Math.hypot(f.vx, f.vz);
             const maxAllowedVel = maxSpeed * 1.30;
             if (vMag > maxAllowedVel) {
@@ -3402,7 +3505,6 @@
             f.homeX += f.vx * dt;
             f.homeZ += f.vz * dt;
 
-            // Enforce hard-stop obstacle & arena boundary collisions (with over-the-top vaulting support)
             const allowOverTop = !wantsToKiteOrHide && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0);
             enforceHardStopAndTerrainBounds(f, allowOverTop);
 
@@ -3431,12 +3533,11 @@
             act.progress += dt / act.duration;
             const p = Math.min(1, act.progress);
 
-            // Sustained Physical Clash Curve: Rapidly closes in (0.0 -> 0.22), holds physical mandibles-to-carapace contact (0.22 -> 0.68), then disengages (0.68 -> 1.0)
             let clashHold = 0;
             if (p < 0.22) {
               clashHold = Math.sin((p / 0.22) * (Math.PI * 0.5));
             } else if (p < 0.68) {
-              clashHold = 1.0; // Sustained close-contact grapple/clash window
+              clashHold = 1.0;
             } else {
               clashHold = Math.cos(((p - 0.68) / 0.32) * (Math.PI * 0.5));
             }
@@ -3447,7 +3548,6 @@
               const dxToDef = defTarget.mesh.position.x - act.startPos.x;
               const dzToDef = defTarget.mesh.position.z - act.startPos.z;
               const distToDef = Math.hypot(dxToDef, dzToDef) || 0.001;
-              // Stop right at the combined hitbox surface so models almost touch without clipping inside each other
               const touchShellDist = (f.hitboxRadius + defTarget.hitboxRadius) * 0.88;
               const contactX = defTarget.mesh.position.x - (dxToDef / distToDef) * touchShellDist;
               const contactZ = defTarget.mesh.position.z - (dzToDef / distToDef) * touchShellDist;
@@ -3456,7 +3556,6 @@
               f.mesh.position.z = THREE.MathUtils.lerp(act.startPos.z, contactZ, clashHold);
             }
 
-            // Animate claws/mandibles snapping during the sustained contact window
             ud.claws.forEach((cl, idx) => {
               const sDir = idx === 0 ? -1 : 1;
               cl.position.x = cl.userData.basePos.x + clashHold * 0.45;
@@ -3473,7 +3572,6 @@
             f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, Math.min(1, dt * 10));
           }
 
-          // Strict post-movement collision & boundary check (prevents any lunge or knockback from clipping through obstacles)
           enforceHardStopAndTerrainBounds(f, true);
 
           const surfaceY = getEffectiveSurfaceHeight(f.mesh.position.x, f.mesh.position.z, f);
@@ -3545,7 +3643,6 @@
           }
         }
 
-        // Animate 3D Wireframe Death Skulls (75% smaller, stays whole, and laughs as it fades out with the dying creature)
         for (let i = deathSkulls.length - 1; i >= 0; i--) {
           const sk = deathSkulls[i];
           sk.elapsed += dt;
@@ -3556,12 +3653,10 @@
             sk.mats.forEach(m => m.dispose());
             deathSkulls.splice(i, 1);
           } else {
-            // Grow to 25% of previous size (max ~0.2825 scale) then stay intact
             const growT = Math.min(1, p / 0.35);
             const easeOut = 1 - Math.pow(1 - growT, 3);
             const baseScale = 0.02 + easeOut * 0.2625;
 
-            // Laughing animation: rapid mandible chattering + head tilt/bobbing
             const laughWave = Math.abs(Math.sin(sk.elapsed * 22.0));
             const s = baseScale * (1 + laughWave * 0.08);
             sk.group.scale.set(s, s, s);
@@ -3571,7 +3666,6 @@
               sk.jaw.rotation.x = laughWave * 0.38;
             }
 
-            // Pulse the glowing red eye halos as the skull laughs
             if (sk.eyeLGlow && sk.eyeRGlow) {
               const eyePulse = 1.0 + laughWave * 0.42;
               sk.eyeLGlow.scale.set(eyePulse, eyePulse, eyePulse);
@@ -3579,17 +3673,13 @@
             }
 
             sk.group.position.y += dt * 0.28 + Math.sin(sk.elapsed * 22.0) * 0.003;
-
-            // Orient the outer group's +Z axis (where eyes, nose, and jaw are built) directly at the user's camera in full 3D
             sk.group.lookAt(camera.position);
 
-            // Apply laughing head tilt and bobbing in local space so it works from any camera angle
             if (sk.head) {
               sk.head.rotation.x = -0.12 - laughWave * 0.16;
               sk.head.rotation.z = Math.sin(sk.elapsed * 11.0) * 0.10;
             }
 
-            // Smoothly fade out alongside the disintegrating creature model
             const alpha = p < 0.45 ? 1.0 : Math.max(0, 1 - (p - 0.45) / 0.55);
             sk.mats[0].opacity = alpha * 0.94;
             sk.mats[1].opacity = alpha;
@@ -3628,8 +3718,7 @@
           camera.lookAt(camLookTarget);
         }
       } else if (camMode === 'free') {
-        // True Free-Look Camera Roaming with WASD/Arrows & Terrain Floor Clamping
-        const flySpeed = 16.0 * rawDt;
+        const flySpeed = 16.0 * Math.sqrt(mapScaleMult) * rawDt;
         const fwdX = Math.sin(freeCamYaw) * Math.cos(freeCamPitch);
         const fwdY = Math.sin(freeCamPitch);
         const fwdZ = Math.cos(freeCamYaw) * Math.cos(freeCamPitch);
@@ -3657,7 +3746,6 @@
         if (moveKeys.e) freeCamPos.y += flySpeed;
         if (moveKeys.q) freeCamPos.y -= flySpeed;
 
-        // Clamp Free Camera so it can never clip under the actual 3D game map
         const minMapFloor = getTerrainHeight(freeCamPos.x, freeCamPos.z) + 0.65;
         if (freeCamPos.y < minMapFloor) freeCamPos.y = minMapFloor;
 
