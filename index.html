@@ -2460,6 +2460,44 @@
       rosterGrid.innerHTML = '';
       csRosterGrid.innerHTML = '';
 
+    const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      window.addEventListener('mousedown', (e) => {
+        if (isUIElement(e.target)) return;
+        
+        // Click-to-Deploy feature for Arcade mode
+        if (currentMatchMode === 'arcade' && battleState === 'STANDBY' && e.button === 0) {
+          mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+          raycaster.setFromCamera(mouse, camera);
+          
+          // Target the ground mesh
+          const intersects = raycaster.intersectObjects(worldGroup.children.filter(c => c.isMesh && c.geometry.type === 'PlaneGeometry'));
+          
+          if (intersects.length > 0) {
+            const hit = intersects[0].point;
+            let movedCount = 0;
+            
+            entities.forEach(f => {
+              if (f.side === 1 && !f.dead) {
+                // Group the units tightly around the clicked coordinate
+                f.homeX = hit.x + (Math.random() - 0.5) * 3.5;
+                f.homeZ = hit.z + (Math.random() - 0.5) * 3.5;
+                f.mesh.position.x = f.homeX;
+                f.mesh.position.z = f.homeZ;
+                movedCount++;
+              }
+            });
+            
+            if (movedCount > 0) {
+               appendLog("📍 ALLY FORCE manually deployed to sector coordinates.", "text-cyan-300 font-bold");
+               spawnHitSparks(hit, 0x22d3ee, 15);
+            }
+          }
+        }
+      });
+      
       Object.keys(CREATURES).forEach(k => {
         const c = CREATURES[k];
         const card = document.createElement('button');
@@ -2554,6 +2592,36 @@
           appendLog("🔒 Cannot switch game mode mid-battle! Click ⏹️ END BATTLE first.", "text-amber-300");
           return;
         }
+        
+        currentMatchMode = newMode;
+        gameMode = newMode;
+        
+        document.getElementById('btn-hud-mode').textContent = `MODE: ${currentMatchMode.toUpperCase()}`;
+        
+        document.querySelectorAll('.btn-mode-select').forEach(btn => {
+          btn.className = btn.id === `btn-mode-${newMode}` 
+            ? "btn-mode-select w-full h-7 px-2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/50 text-[9px] font-extrabold cursor-pointer transition active:scale-95"
+            : "btn-mode-select w-full h-7 px-2 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-extrabold cursor-pointer transition active:scale-95";
+        });
+
+        // Reset base ring size before any new mode starts
+        arenaRingRadius = MAP_SIZES[mapSizeTier].ringRadius;
+
+        if (newMode === 'arcade') {
+          openCharSelectModal(1);
+          return; // FIX: Stop here so the battle doesn't auto-start under the modal
+        } else if (newMode === 'gauntlet') {
+          gauntletWave = 1;
+          appendLog("🌊 MODE: HIVE GAUNTLET selected! The perimeter will shrink over time.", "text-fuchsia-300 font-bold");
+        } else if (newMode === 'domination') {
+          appendLog("⭐ MODE: BIO-NEXUS DOMINATION selected!", "text-amber-300 font-bold");
+        } else {
+          appendLog("🛠️ MODE: SANDBOX selected!", "text-cyan-300 font-bold");
+        }
+        
+        rebuildWorldTopology();
+        startBattle();
+      }
         
         // FIX: Sync both variables
         currentMatchMode = newMode;
@@ -3104,6 +3172,22 @@
         matchElapsedTime += dt;
         updateRoundTimerUI();
 
+      if (currentMatchMode === 'gauntlet') {
+          // Shrink the arena radius steadily over time, halting at a minimum size
+          const minRadius = 12.0 * Math.sqrt(mapScaleMult);
+          if (arenaRingRadius > minRadius) {
+            arenaRingRadius -= dt * 0.15; 
+            
+            // Visually scale the ring boundary down
+            worldGroup.children.forEach(child => {
+              if (child.isLine && child.material.color.getHex() === 0x22d3ee) {
+                const scaleRatio = arenaRingRadius / MAP_SIZES[mapSizeTier].ringRadius;
+                child.scale.set(scaleRatio, 1, scaleRatio);
+              }
+            });
+          }
+        }
+        
         if (currentMatchMode !== 'domination' && currentMatchMode !== 'gauntlet' && matchElapsedTime >= ROUND_DURATION) {
           resolveRoundTimeLimit();
         }
