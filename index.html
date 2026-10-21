@@ -88,7 +88,7 @@
       <div id="pm-badge" class="inline-block text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 mb-2">MATCH CONCLUDED</div>
       <h2 id="pm-winner-title" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">KING CRAB WINS</h2>
       <p id="pm-subtitle" class="text-xs text-slate-400 mt-1">Hostile bio-wireframes neutralized.</p>
-      <div class="grid grid-cols-2 gap-2.5 mt-5">
+      <div id="modal-action-grid" class="grid grid-cols-2 gap-2.5 mt-5">
         <button id="btn-pm-rematch" class="py-2.5 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/50 font-extrabold text-xs tracking-wider uppercase cursor-pointer transition active:scale-95">
           ↻ REMATCH
         </button>
@@ -222,8 +222,8 @@
           <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="winner-text" class="font-extrabold tracking-wider text-emerald-400 uppercase whitespace-nowrap">COMBAT ACTIVE</span>
         </div>
-        <span id="round-timer" class="inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700" title="2-Minute Full Round Countdown">02:00</span>
-        <button id="btn-hud-mode" class="inline-flex items-center justify-center h-6 w-28 px-2 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-extrabold whitespace-nowrap">
+        <span id="round-timer" class="inline-flex items-center justify-center h-6 w-16 font-mono font-extrabold text-cyan-300 rounded-full bg-slate-900 border border-slate-700" title="Full Round Countdown">02:00</span>
+        <button id="btn-hud-mode" class="inline-flex items-center justify-center h-6 w-32 px-2 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 transition cursor-pointer font-extrabold whitespace-nowrap">
           MODE: SANDBOX
         </button>
         <button id="btn-open-char-select" class="inline-flex items-center justify-center gap-1 h-6 w-28 px-2 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer font-extrabold whitespace-nowrap">
@@ -325,7 +325,7 @@
       <div id="combat-log" class="w-full h-14 px-1.5 py-0.5 overflow-y-auto text-[9px] leading-tight space-y-0.5 text-slate-300 font-mono"></div>
     </div>
 
-    <!-- TACTICAL COMMANDS & ZONE DECK (INCLUDES HEAL ARMY & MAX CHARGE, UNIFORM BUTTON SIZING) -->
+    <!-- TACTICAL COMMANDS & ZONE DECK -->
     <div class="bg-slate-900/90 border border-cyan-500/30 rounded-lg p-2 mb-2.5 space-y-1.5">
       <div class="text-[9px] font-extrabold text-cyan-300 uppercase tracking-wider">⚡ TACTICAL COMMAND DECK</div>
       <div class="grid grid-cols-2 gap-1.5">
@@ -466,7 +466,7 @@
         </div>
       </div>
 
-      <!-- CREATURE COLOR SCHEMES (4 SELECTABLE OPTIONS: NATIVE + 3 CLASS-SPECIFIC SCHEMES) -->
+      <!-- CREATURE COLOR SCHEMES (4 SELECTABLE OPTIONS PER CLASS) -->
       <div class="bg-slate-900/50 p-2 rounded border border-slate-800/70 space-y-1.5">
         <div class="flex items-center justify-between text-[8px] text-slate-400">
           <span>COLOR SCHEME (4 PER CLASS):</span>
@@ -483,7 +483,6 @@
   </div>
 
   <script>
-    // 4 Selectable Color Schemes per Creature Class: 'native' + 3 class-specific schemes ('alt_1', 'alt_2', 'alt_3')
     const CLASS_COLOR_SCHEMES = {
       CRUSTACEAN: {
         native: { shortLabel: '🌿 NATIVE', label: 'NATIVE PATTERN' },
@@ -500,7 +499,6 @@
     };
     const COLOR_SCHEME_KEYS = ['native', 'alt_1', 'alt_2', 'alt_3'];
 
-    // No-Bloat Playable Map Size Presets (Small = 100%, Medium = 200%, Large = 300% playable terrain size)
     const MAP_SIZE_ORDER = ['small', 'medium', 'large'];
     const MAP_SIZES = {
       small:  { label: 'SMALL (100%)',  mult: 1.0, ringRadius: 24.5, planeSize: 84,  segments: 64 },
@@ -607,7 +605,6 @@
       return mesh;
     }
 
-    // Lightweight Cel-Shaded + Wireframe Part Builder (zero shader bloat)
     function makeCelWirePart(type, args, wireMat, celMat, pos = [0,0,0], rot = [0,0,0], scale = [1,1,1]) {
       const geo = getGeometry(type, ...args);
       const mesh = new THREE.Mesh(geo, wireMat);
@@ -620,12 +617,6 @@
         mesh.add(core);
       }
       return mesh;
-    }
-
-    function getSchemeConfigForCreature(creatureKey, schemeKey = 'native') {
-      const cfg = CREATURES[creatureKey] || CREATURES.king_crab;
-      const classMap = CLASS_COLOR_SCHEMES[cfg.faction] || CLASS_COLOR_SCHEMES.CRUSTACEAN;
-      return classMap[schemeKey] || classMap.native;
     }
 
     function resolvePaletteForCreature(key, schemeKey = 'native', isMirrorHostile = false) {
@@ -647,7 +638,6 @@
       root.add(bodyGroup);
 
       const pal = resolvePaletteForCreature(key, schemeKey, isMirrorHostile);
-
       const mat = new THREE.MeshBasicMaterial({ color: pal.primary, wireframe: true, transparent: true, opacity: opacity });
       const secMat = new THREE.MeshBasicMaterial({ color: pal.secondary, wireframe: true, transparent: true, opacity: opacity * 0.92 });
       const accMat = new THREE.MeshBasicMaterial({ color: pal.accent, wireframe: true, transparent: true, opacity: opacity * 0.95 });
@@ -661,7 +651,6 @@
         polygonOffsetUnits: 1
       });
 
-      // Subtle ground-level immersion shadow/glow disc anchored to terrain under unit
       const shadowMat = new THREE.MeshBasicMaterial({ color: pal.primary, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
       const groundShadow = new THREE.Mesh(getGeometry('CircleGeometry', 0.22, 16), shadowMat);
       groundShadow.rotation.x = -Math.PI / 2;
@@ -788,17 +777,13 @@
       if (ud.shadowMat) ud.shadowMat.color.setHex(pal.primary);
     }
 
-    // Procedural 3D Solid-White + Wireframe Skull (75% smaller) with Glowing Red Eyes
     const deathSkulls = [];
     function spawnDeathSkull3D(worldPos) {
       const skullRoot = new THREE.Group();
       skullRoot.position.set(worldPos.x, worldPos.y + 0.24, worldPos.z);
-
-      // Inner head Group allows local laughing pitch/roll after skullRoot.lookAt(camera.position)
       const head = new THREE.Group();
       skullRoot.add(head);
 
-      // Solid white bone fill + crisp white wireframe overlay
       const solidWhiteMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -808,10 +793,8 @@
         polygonOffsetUnits: 1
       });
       const wireWhiteMat = new THREE.MeshBasicMaterial({ color: 0xe2e8f0, wireframe: true, transparent: true, opacity: 1.0 });
-      // Glowing red eyes (solid core + outer crimson wireframe aura)
       const eyeCoreMat = new THREE.MeshBasicMaterial({ color: 0xff1122, transparent: true, opacity: 1.0 });
       const eyeGlowMat = new THREE.MeshBasicMaterial({ color: 0xff4455, wireframe: true, transparent: true, opacity: 0.95 });
-      // Dark nasal cavity for contrast against solid white skull
       const nasalMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.95 });
 
       const makeDualBonePart = (type, args, pos, rot = [0, 0, 0], scale = [1, 1, 1]) => {
@@ -825,35 +808,25 @@
         return partGroup;
       };
 
-      // Cranium dome, cheekbone ridge, and laughing lower jaw (all solid white + wireframe)
       const cranium = makeDualBonePart('IcosahedronGeometry', [0.22, 1], [0, 0.10, 0], [0, 0, 0], [0.95, 1.08, 1.05]);
       const cheek = makeDualBonePart('BoxGeometry', [0.30, 0.10, 0.22], [0, -0.02, 0.04]);
       const jaw = makeDualBonePart('BoxGeometry', [0.18, 0.13, 0.18], [0, -0.15, 0.05]);
       jaw.userData.baseY = -0.15;
 
-      // Glowing red eye sockets (solid red core + pulsing wireframe halo)
       const eyeLCore = makeWirePart('OctahedronGeometry', [0.062, 1], eyeCoreMat, [-0.085, 0.05, 0.195]);
       const eyeLGlow = makeWirePart('OctahedronGeometry', [0.082, 0], eyeGlowMat, [-0.085, 0.05, 0.195]);
       const eyeRCore = makeWirePart('OctahedronGeometry', [0.062, 1], eyeCoreMat, [0.085, 0.05, 0.195]);
       const eyeRGlow = makeWirePart('OctahedronGeometry', [0.082, 0], eyeGlowMat, [0.085, 0.05, 0.195]);
-
-      // Nasal cavity
       const nose = makeWirePart('ConeGeometry', [0.04, 0.08, 3], nasalMat, [0, -0.03, 0.215], [0.2, 0, 0]);
 
       head.add(cranium, cheek, jaw, eyeLCore, eyeLGlow, eyeRCore, eyeRGlow, nose);
-
       skullRoot.scale.set(0.0125, 0.0125, 0.0125);
       scene.add(skullRoot);
 
       deathSkulls.push({
-        group: skullRoot,
-        head,
-        jaw,
-        eyeLGlow,
-        eyeRGlow,
+        group: skullRoot, head, jaw, eyeLGlow, eyeRGlow,
         mats: [solidWhiteMat, wireWhiteMat, eyeCoreMat, eyeGlowMat, nasalMat],
-        elapsed: 0,
-        duration: 2.0
+        elapsed: 0, duration: 2.0
       });
     }
 
@@ -872,14 +845,17 @@
     let worldTopology = 'terrain';
     let mapElevationScale = 1.2;
     let mapObstacleCount = 8;
-
-    // Default to 'large' (300% playable terrain map size) with Small/Medium/Large switching
     let mapSizeTier = 'large';
     let mapScaleMult = MAP_SIZES[mapSizeTier].mult;
     let arenaRingRadius = MAP_SIZES[mapSizeTier].ringRadius;
 
     let arenaObstacles = [];
     let tacticalZones = [];
+
+    let currentMatchMode = 'sandbox'; // 'sandbox' | 'arcade' | 'gauntlet' | 'domination'
+    let gauntletWave = 1;
+    let dominationControlP1 = 50.0; // percentage 0 to 100
+    let bioNexusRing = null;
 
     function getTerrainHeight(x, z) {
       if (mapElevationScale <= 0.01) return 0;
@@ -897,19 +873,16 @@
         const knolls = Math.cos(dist * 0.28) * 0.32;
         return (roots + knolls) * mapElevationScale;
       } else if (worldTopology === 'fire_ant') {
-        // Volcanic central colony mound with surrounding tunnel rings
         const calderaSpread = 55.0 * mapScaleMult;
         const pitSpread = 7.5 * mapScaleMult;
         const caldera = Math.exp(-(dist * dist) / calderaSpread) * 2.1 - Math.exp(-(dist * dist) / pitSpread) * 2.7;
         const ripples = Math.sin(dist * 0.75 - mapSeed) * 0.22;
         return (caldera + ripples) * mapElevationScale;
       } else if (worldTopology === 'terrarium') {
-        // Terraced substrate bed with raised outer glass bed rim
         const dish = Math.pow(Math.min(1.2, dist / arenaRingRadius), 2) * 0.95;
         const substrate = Math.sin(x * 0.18 + mapSeed) * Math.sin(z * 0.18) * 0.32;
         return (dish + substrate) * mapElevationScale;
       } else if (worldTopology === 'picnic') {
-        // Woven picnic blanket folds + raised serving platter plateaus
         const platterR = 7.2 * Math.sqrt(mapScaleMult);
         const blanketFolds = (Math.sin(x * 0.42 + mapSeed) * 0.22 + Math.cos(z * 0.42 - mapSeed) * 0.22);
         const centerPlatter = dist < platterR ? 0.42 : (Math.abs(dist - (platterR + 0.2)) < 0.55 ? 0.62 : 0);
@@ -929,45 +902,29 @@
       });
     }
 
-    // Sample minimum terrain height across an obstacle's footprint so it never floats on slopes
     function getAnchoredObstacleBaseY(x, z, r) {
       const hCenter = getTerrainHeight(x, z);
       const hN = getTerrainHeight(x, z - r * 0.85);
       const hS = getTerrainHeight(x, z + r * 0.85);
       const hE = getTerrainHeight(x + r * 0.85, z);
       const hW = getTerrainHeight(x - r * 0.85, z);
-      // Partial embedding (-0.16) into the lowest local ground point guarantees zero floating
       return Math.min(hCenter, hN, hS, hE, hW) - 0.16;
     }
 
-    // Helper to build a cel-shaded + wireframe terrain obstacle mesh
     function makeCelObstacleMesh(geo, wireColor, celColor, wireOpacity = 0.82, celOpacity = 0.48) {
       const group = new THREE.Group();
       const celMesh = new THREE.Mesh(
         geo,
-        new THREE.MeshBasicMaterial({
-          color: celColor,
-          transparent: true,
-          opacity: celOpacity,
-          polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1
-        })
+        new THREE.MeshBasicMaterial({ color: celColor, transparent: true, opacity: celOpacity, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 })
       );
       const wireMesh = new THREE.Mesh(
         geo,
-        new THREE.MeshBasicMaterial({
-          color: wireColor,
-          wireframe: true,
-          transparent: true,
-          opacity: wireOpacity
-        })
+        new THREE.MeshBasicMaterial({ color: wireColor, wireframe: true, transparent: true, opacity: wireOpacity })
       );
       group.add(celMesh, wireMesh);
       return group;
     }
 
-    // Ground-level immersion collar shaded at the terrain-to-obstacle interface
     function addGroundImmersionCollar(parentGroup, localY, radius, colorHex) {
       const innerCollar = new THREE.Mesh(
         getGeometry('CircleGeometry', radius * 1.18, 20),
@@ -999,7 +956,7 @@
         }
         worldGroup.remove(child);
       }
-      arenaObstacles = []; tacticalZones = [];
+      arenaObstacles = []; tacticalZones = []; bioNexusRing = null;
 
       const groundGeo = new THREE.PlaneGeometry(sizeCfg.planeSize, sizeCfg.planeSize, sizeCfg.segments, sizeCfg.segments);
       groundGeo.rotateX(-Math.PI / 2);
@@ -1025,7 +982,6 @@
         lowCelHex.setHex(0x280612); midCelHex.setHex(0x4c0519); highCelHex.setHex(0x881337);
       }
 
-      // Compute quantized 3-band Cel-Shaded Vertex Colors for the terrain surface
       const colors = new Float32Array(pos.count * 3);
       for (let i = 0; i < pos.count; i++) {
         const vx = pos.getX(i);
@@ -1033,7 +989,6 @@
         const vy = getTerrainHeight(vx, vz);
         pos.setY(i, vy);
 
-        // Stepped cel-shading bands based on elevation & radial distance
         let bandColor = midCelHex;
         if (vy < -0.15) bandColor = lowCelHex;
         else if (vy > 0.35) bandColor = highCelHex;
@@ -1044,7 +999,6 @@
       groundGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
       groundGeo.computeVertexNormals();
 
-      // Solid Cel-Shaded Base Terrain Mesh (prevents visual see-through bloat & grounds the level)
       const celGroundMat = new THREE.MeshBasicMaterial({
         vertexColors: true,
         transparent: true,
@@ -1055,11 +1009,9 @@
       });
       worldGroup.add(new THREE.Mesh(groundGeo, celGroundMat));
 
-      // Crisp Wireframe Overlay Mesh
       const groundMat = new THREE.MeshBasicMaterial({ color: groundColor, wireframe: true, transparent: true, opacity: 0.45 });
       worldGroup.add(new THREE.Mesh(groundGeo, groundMat));
 
-      // Picnic Feast secondary white gingham weave & central ceramic plate rim
       if (worldTopology === 'picnic') {
         const platterR = 7.2 * Math.sqrt(mapScaleMult);
         const plateRim = new THREE.Mesh(
@@ -1081,7 +1033,6 @@
       }
       worldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPoints), new THREE.LineBasicMaterial({ color: ringColor, opacity: 0.65 })));
 
-      // Giant Bio-Terrarium outer glass enclosure & heat lamp dome
       if (worldTopology === 'terrarium') {
         const enclosure = new THREE.Mesh(
           getGeometry('CylinderGeometry', arenaRingRadius + 1.2, arenaRingRadius + 1.2, 16 * Math.sqrt(mapScaleMult), 24, 1, true),
@@ -1104,15 +1055,9 @@
         if (worldTopology === 'forest') {
           const treeGroup = new THREE.Group();
           const trunkH = r * 2.8;
-          const trunk = makeCelObstacleMesh(
-            getGeometry('CylinderGeometry', r * 0.30, r * 0.48, trunkH, 6),
-            0xa16207, 0x2e1905, 0.85, 0.62
-          );
+          const trunk = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.30, r * 0.48, trunkH, 6), 0xa16207, 0x2e1905, 0.85, 0.62);
           trunk.position.y = trunkH * 0.5;
-          const canopy = makeCelObstacleMesh(
-            getGeometry('ConeGeometry', r * 1.45, r * 2.8, 6),
-            0x22c55e, 0x063318, 0.78, 0.52
-          );
+          const canopy = makeCelObstacleMesh(getGeometry('ConeGeometry', r * 1.45, r * 2.8, 6), 0x22c55e, 0x063318, 0.78, 0.52);
           canopy.position.y = trunkH + r * 0.85;
           treeGroup.add(trunk, canopy);
           addGroundImmersionCollar(treeGroup, collarLocalY, r * 0.65, 0x4ade80);
@@ -1122,10 +1067,7 @@
         } else if (worldTopology === 'fire_ant') {
           const moundGroup = new THREE.Group();
           const moundH = r * 2.1;
-          const mound = makeCelObstacleMesh(
-            getGeometry('ConeGeometry', r * 1.25, moundH, 7),
-            0xf97316, 0x431407, 0.82, 0.58
-          );
+          const mound = makeCelObstacleMesh(getGeometry('ConeGeometry', r * 1.25, moundH, 7), 0xf97316, 0x431407, 0.82, 0.58);
           mound.position.y = moundH * 0.5;
           moundGroup.add(mound);
           addGroundImmersionCollar(moundGroup, collarLocalY, r * 1.2, 0xf97316);
@@ -1135,10 +1077,7 @@
         } else if (worldTopology === 'terrarium') {
           const crystalGroup = new THREE.Group();
           const crystalH = r * 1.9;
-          const crystal = makeCelObstacleMesh(
-            getGeometry('CylinderGeometry', r * 0.52, r * 0.95, crystalH, 6),
-            0x2dd4bf, 0x042f2e, 0.85, 0.55
-          );
+          const crystal = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.52, r * 0.95, crystalH, 6), 0x2dd4bf, 0x042f2e, 0.85, 0.55);
           crystal.position.y = crystalH * 0.5;
           crystalGroup.add(crystal);
           addGroundImmersionCollar(crystalGroup, collarLocalY, r * 0.98, 0x2dd4bf);
@@ -1147,7 +1086,6 @@
           worldGroup.add(crystalGroup);
           arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: r * 0.95, height: crystalH * 0.82, climbable: true, mesh: crystalGroup });
         } else if (worldTopology === 'picnic') {
-          // Procedural Picnic Food & Feast Items: 0=Watermelon Wedge, 1=Cupcake, 2=Soda Can, 3=Picnic Basket, 4=Apple
           const foodGroup = new THREE.Group();
           const itemType = i % 5;
           let hitRad = r;
@@ -1155,106 +1093,53 @@
           let isClimbable = true;
 
           if (itemType === 0) {
-            // Watermelon Slice (Grounded flat on its rind base so it never floats)
-            const rind = makeCelObstacleMesh(
-              getGeometry('CylinderGeometry', r * 1.18, r * 1.18, r * 0.52, 8, 1, false, 0, Math.PI),
-              0x22c55e, 0x064e3b, 0.88, 0.58
-            );
+            const rind = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 1.18, r * 1.18, r * 0.52, 8, 1, false, 0, Math.PI), 0x22c55e, 0x064e3b, 0.88, 0.58);
             rind.rotation.z = -Math.PI / 2;
             rind.position.y = r * 0.92;
-            const flesh = makeCelObstacleMesh(
-              getGeometry('CylinderGeometry', r * 0.98, r * 0.98, r * 0.56, 8, 1, false, 0, Math.PI),
-              0xf43f5e, 0x4c0519, 0.88, 0.58
-            );
+            const flesh = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.98, r * 0.98, r * 0.56, 8, 1, false, 0, Math.PI), 0xf43f5e, 0x4c0519, 0.88, 0.58);
             flesh.rotation.z = -Math.PI / 2;
             flesh.position.y = r * 0.94;
             foodGroup.add(rind, flesh);
-            hitRad = r * 1.08;
-            obsHeight = r * 1.1;
+            hitRad = r * 1.08; obsHeight = r * 1.1;
           } else if (itemType === 1) {
-            // Frosted Cupcake with Cherry on Top
-            const cup = makeCelObstacleMesh(
-              getGeometry('CylinderGeometry', r * 0.85, r * 0.68, r * 0.95, 7),
-              0xf59e0b, 0x451a03, 0.85, 0.58
-            );
+            const cup = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.85, r * 0.68, r * 0.95, 7), 0xf59e0b, 0x451a03, 0.85, 0.58);
             cup.position.y = r * 0.48;
-            const frosting = makeCelObstacleMesh(
-              getGeometry('SphereGeometry', r * 0.82, 7, 5),
-              0xf472b6, 0x500724, 0.85, 0.55
-            );
+            const frosting = makeCelObstacleMesh(getGeometry('SphereGeometry', r * 0.82, 7, 5), 0xf472b6, 0x500724, 0.85, 0.55);
             frosting.position.y = r * 1.02;
-            const cherry = makeCelObstacleMesh(
-              getGeometry('OctahedronGeometry', r * 0.22, 0),
-              0xef4444, 0x7f1d1d, 0.95, 0.65
-            );
+            const cherry = makeCelObstacleMesh(getGeometry('OctahedronGeometry', r * 0.22, 0), 0xef4444, 0x7f1d1d, 0.95, 0.65);
             cherry.position.y = r * 1.78;
             foodGroup.add(cup, frosting, cherry);
-            hitRad = r * 0.90;
-            obsHeight = r * 1.55;
+            hitRad = r * 0.90; obsHeight = r * 1.55;
           } else if (itemType === 2) {
-            // Soda Can + Bent Drinking Straw (Tall Hard-Stop Pillar)
-            const can = makeCelObstacleMesh(
-              getGeometry('CylinderGeometry', r * 0.68, r * 0.68, r * 1.95, 8),
-              0xef4444, 0x450a0a, 0.85, 0.60
-            );
+            const can = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.68, r * 0.68, r * 1.95, 8), 0xef4444, 0x450a0a, 0.85, 0.60);
             can.position.y = r * 0.97;
-            const rim = makeCelObstacleMesh(
-              getGeometry('CylinderGeometry', r * 0.64, r * 0.68, r * 0.16, 8),
-              0xe2e8f0, 0x334155, 0.92, 0.65
-            );
+            const rim = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.64, r * 0.68, r * 0.16, 8), 0xe2e8f0, 0x334155, 0.92, 0.65);
             rim.position.y = r * 1.96;
-            const straw = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 0.08, r * 0.08, r * 1.1, 4),
-              new THREE.MeshBasicMaterial({ color: 0xfef08a, wireframe: true, transparent: true, opacity: 0.9 })
-            );
+            const straw = new THREE.Mesh(getGeometry('CylinderGeometry', r * 0.08, r * 0.08, r * 1.1, 4), new THREE.MeshBasicMaterial({ color: 0xfef08a, wireframe: true, transparent: true, opacity: 0.9 }));
             straw.position.set(r * 0.18, r * 2.32, 0);
             straw.rotation.z = -0.28;
             foodGroup.add(can, rim, straw);
-            hitRad = r * 0.74;
-            obsHeight = r * 2.0;
-            isClimbable = false;
+            hitRad = r * 0.74; obsHeight = r * 2.0; isClimbable = false;
           } else if (itemType === 3) {
-            // Woven Picnic Basket + Handle
-            const basket = makeCelObstacleMesh(
-              getGeometry('BoxGeometry', r * 1.65, r * 1.15, r * 1.15),
-              0xd97706, 0x3b1704, 0.85, 0.60
-            );
+            const basket = makeCelObstacleMesh(getGeometry('BoxGeometry', r * 1.65, r * 1.15, r * 1.15), 0xd97706, 0x3b1704, 0.85, 0.60);
             basket.position.y = r * 0.57;
-            const lid = makeCelObstacleMesh(
-              getGeometry('BoxGeometry', r * 1.75, r * 0.18, r * 1.25),
-              0xfbbf24, 0x451a03, 0.88, 0.62
-            );
+            const lid = makeCelObstacleMesh(getGeometry('BoxGeometry', r * 1.75, r * 0.18, r * 1.25), 0xfbbf24, 0x451a03, 0.88, 0.62);
             lid.position.y = r * 1.16;
-            const handle = new THREE.Mesh(
-              getGeometry('BoxGeometry', r * 0.20, r * 0.65, r * 1.20),
-              new THREE.MeshBasicMaterial({ color: 0x92400e, wireframe: true, transparent: true, opacity: 0.85 })
-            );
+            const handle = new THREE.Mesh(getGeometry('BoxGeometry', r * 0.20, r * 0.65, r * 1.20), new THREE.MeshBasicMaterial({ color: 0x92400e, wireframe: true, transparent: true, opacity: 0.85 }));
             handle.position.y = r * 1.50;
             foodGroup.add(basket, lid, handle);
-            hitRad = r * 1.12;
-            obsHeight = r * 1.28;
+            hitRad = r * 1.12; obsHeight = r * 1.28;
           } else {
-            // Giant Crisp Apple + Stem & Leaf
-            const apple = makeCelObstacleMesh(
-              getGeometry('SphereGeometry', r * 0.92, 7, 6),
-              0xdc2626, 0x450a0a, 0.85, 0.58
-            );
+            const apple = makeCelObstacleMesh(getGeometry('SphereGeometry', r * 0.92, 7, 6), 0xdc2626, 0x450a0a, 0.85, 0.58);
             apple.scale.set(1.05, 0.92, 1.05);
             apple.position.y = r * 0.78;
-            const stem = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 0.06, r * 0.04, r * 0.45, 4),
-              new THREE.MeshBasicMaterial({ color: 0xa16207, wireframe: true, transparent: true, opacity: 0.9 })
-            );
+            const stem = new THREE.Mesh(getGeometry('CylinderGeometry', r * 0.06, r * 0.04, r * 0.45, 4), new THREE.MeshBasicMaterial({ color: 0xa16207, wireframe: true, transparent: true, opacity: 0.9 }));
             stem.position.y = r * 1.68;
-            const leaf = new THREE.Mesh(
-              getGeometry('ConeGeometry', r * 0.22, r * 0.50, 3),
-              new THREE.MeshBasicMaterial({ color: 0x4ade80, wireframe: true, transparent: true, opacity: 0.9 })
-            );
+            const leaf = new THREE.Mesh(getGeometry('ConeGeometry', r * 0.22, r * 0.50, 3), new THREE.MeshBasicMaterial({ color: 0x4ade80, wireframe: true, transparent: true, opacity: 0.9 }));
             leaf.position.set(r * 0.20, r * 1.72, 0);
             leaf.rotation.z = -1.1;
             foodGroup.add(apple, stem, leaf);
-            hitRad = r * 0.95;
-            obsHeight = r * 1.45;
+            hitRad = r * 0.95; obsHeight = r * 1.45;
           }
 
           addGroundImmersionCollar(foodGroup, collarLocalY, hitRad, 0xfef08a);
@@ -1263,13 +1148,9 @@
           worldGroup.add(foodGroup);
           arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: hitRad, height: obsHeight, climbable: isClimbable, mesh: foodGroup });
         } else {
-          // Flat-bottomed frustum rock monoliths so they sit flush and embedded into any ridge slope
           const rockGroup = new THREE.Group();
           const rockH = r * 1.55;
-          const rock = makeCelObstacleMesh(
-            getGeometry('CylinderGeometry', r * 0.58, r * 1.05, rockH, 7),
-            0x14b8a6, 0x042f2e, 0.82, 0.55
-          );
+          const rock = makeCelObstacleMesh(getGeometry('CylinderGeometry', r * 0.58, r * 1.05, rockH, 7), 0x14b8a6, 0x042f2e, 0.82, 0.55);
           rock.position.y = rockH * 0.5;
           rockGroup.add(rock);
           addGroundImmersionCollar(rockGroup, collarLocalY, r * 1.05, 0x22d3ee);
@@ -1280,7 +1161,19 @@
         }
       }
 
-      // Re-anchor any active units immediately if terrain was rebuilt mid-session
+      // Spawn active Bio-Nexus Objective Ring in Domination Mode
+      if (currentMatchMode === 'domination') {
+        const nexusRadius = 5.2 * Math.sqrt(mapScaleMult);
+        const nexusMesh = new THREE.Mesh(
+          getGeometry('RingGeometry', nexusRadius - 0.35, nexusRadius, 36),
+          new THREE.MeshBasicMaterial({ color: 0xf59e0b, wireframe: true, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+        );
+        nexusMesh.rotation.x = Math.PI / 2;
+        nexusMesh.position.set(0, getTerrainHeight(0, 0) + 0.08, 0);
+        worldGroup.add(nexusMesh);
+        bioNexusRing = { x: 0, z: 0, radius: nexusRadius, mesh: nexusMesh };
+      }
+
       if (entities && entities.length > 0) {
         entities.forEach(f => {
           if (!f.dead) {
@@ -1291,14 +1184,12 @@
       }
     }
 
-    // Returns the true physical surface elevation at (x, z), including over-the-top obstacle dome height when vaulting
     function getEffectiveSurfaceHeight(x, z, f = null) {
       let baseH = getTerrainHeight(x, z);
       for (const obs of arenaObstacles) {
         const d = Math.hypot(x - obs.x, z - obs.z);
         const outerR = obs.radius + (f ? f.hitboxRadius : 0.2);
         if (d < outerR && obs.climbable) {
-          // Smoothly dome over the top of climbable terrain obstacles so units never clip under or through them
           const normD = d / outerR;
           const domeFactor = Math.max(0, Math.cos(normD * Math.PI * 0.5));
           const obsTopY = obs.y + obs.height * domeFactor;
@@ -1308,7 +1199,6 @@
       return baseH;
     }
 
-    // Impenetrable Hard-Stop Collision & Arena Boundary Enforcement (eliminates all no-clipping)
     function enforceHardStopAndTerrainBounds(f, allowVault = false) {
       const pad = f.hitboxRadius + 0.08;
       f.vaultingObstacle = false;
@@ -1318,8 +1208,6 @@
         const dxHome = f.homeX - obs.x;
         const dzHome = f.homeZ - obs.z;
         const distHome = Math.hypot(dxHome, dzHome);
-
-        // Allow over-the-top movement only on climbable obstacles when actively charging/lunging or aerial
         const canVaultThis = allowVault && obs.climbable && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0 || f.activeAction);
 
         if (distHome < minDist) {
@@ -1330,7 +1218,6 @@
             const nz = distHome > 0.0001 ? dzHome / distHome : 0;
             f.homeX = obs.x + nx * minDist;
             f.homeZ = obs.z + nz * minDist;
-            // Cancel inward velocity component against the hard-stop barrier
             const vDot = f.vx * nx + f.vz * nz;
             if (vDot < 0) {
               f.vx -= vDot * nx;
@@ -1339,7 +1226,6 @@
           }
         }
 
-        // Also enforce hard stop on the rendered 3D mesh position (e.g. during lunge animations)
         const dxMesh = f.mesh.position.x - obs.x;
         const dzMesh = f.mesh.position.z - obs.z;
         const distMesh = Math.hypot(dxMesh, dzMesh);
@@ -1355,7 +1241,6 @@
         }
       }
 
-      // Hard-Stop Outer Arena Perimeter Ring
       const maxRing = arenaRingRadius - f.hitboxRadius - 0.45;
       const rHome = Math.hypot(f.homeX, f.homeZ);
       if (rHome > maxRing) {
@@ -1380,12 +1265,10 @@
     let enemySelectionRule = 'random';
     
     let entities = [];
-    // States: 'FIGHTING' | 'PAUSED' | 'STANDBY' | 'ENDED'
     let battleState = 'FIGHTING';
     let simSpeed = 1;
     let autoLoop = true;
 
-    // Full 2-Minute Round Timer (120s)
     const ROUND_DURATION = 120.0;
     let matchElapsedTime = 0;
 
@@ -1411,7 +1294,6 @@
     const _tempVecA = new THREE.Vector3();
     const _tempVecB = new THREE.Vector3();
 
-    // True Free-Look Camera State (WASD/Arrows + Drag Look + Right-Click/Two-Finger Pan, Clamped above ground)
     const freeCamPos = new THREE.Vector3(0, 12, 24);
     let freeCamYaw = 0;
     let freeCamPitch = -0.35;
@@ -1478,7 +1360,6 @@
       2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced', colorScheme: 'native' }
     };
 
-    // +15% Global Combat Aggression Multiplier
     const AGGRESSION_BOOST = 1.15;
 
     function applyCreatureOverridesToArmy(side) {
@@ -1538,7 +1419,6 @@
       }
 
       const hitRad = (cfg.hitboxRadius || 0.21) * (ov.scale / 0.125);
-      // Ensure spawn coordinates never overlap any terrain obstacle
       for (const obs of arenaObstacles) {
         const dx = homeX - obs.x;
         const dz = homeZ - obs.z;
@@ -1619,21 +1499,68 @@
       deathSkulls.length = 0;
       document.getElementById('fx-layer').innerHTML = '';
 
-      const cols = Math.max(1, Math.ceil(Math.sqrt(armySize)));
-      for (let i = 0; i < armySize; i++) {
-        entities.push(createFighterState(selectedP1, 1, i, cols));
-        entities.push(createFighterState(selectedP2, 2, i, cols));
+      if (currentMatchMode === 'gauntlet') {
+        const cols = Math.max(1, Math.ceil(Math.sqrt(armySize)));
+        for (let i = 0; i < armySize; i++) {
+          entities.push(createFighterState(selectedP1, 1, i, cols));
+        }
+        spawnGauntletWaveEnemies();
+      } else {
+        const cols = Math.max(1, Math.ceil(Math.sqrt(armySize)));
+        for (let i = 0; i < armySize; i++) {
+          entities.push(createFighterState(selectedP1, 1, i, cols));
+          entities.push(createFighterState(selectedP2, 2, i, cols));
+        }
       }
+
       matchElapsedTime = 0;
+      dominationControlP1 = 50.0;
       updateRoundTimerUI();
       updateArmyHUD();
       highlightSelectedCards();
       syncLabControlsUI();
     }
 
+    function spawnGauntletWaveEnemies() {
+      const keys = Object.keys(CREATURES);
+      const enemyKey = keys[(gauntletWave - 1) % keys.length];
+      const waveCount = Math.min(60, armySize + (gauntletWave - 1) * 3);
+      const cols = Math.max(1, Math.ceil(Math.sqrt(waveCount)));
+
+      const isBossWave = gauntletWave % 5 === 0;
+      if (isBossWave) {
+        appendLog(`⚠️ WAVE ${gauntletWave} // APEX LEVIATHAN BOSS WAVE SPAWNED!`, "text-amber-300 font-extrabold");
+      } else {
+        appendLog(`🌊 GAUNTLET WAVE ${gauntletWave} ENGAGED: Hostile Swarm incoming!`, "text-cyan-300 font-bold");
+      }
+
+      for (let i = 0; i < waveCount; i++) {
+        const f = createFighterState(enemyKey, 2, i, cols);
+        if (isBossWave) {
+          f.maxHp = Math.round(f.maxHp * 2.5);
+          f.hp = f.maxHp;
+          f.atk = Math.round(f.atk * 1.5);
+          f.mesh.scale.multiplyScalar(1.35);
+        }
+        entities.push(f);
+      }
+    }
+
     function updateRoundTimerUI() {
       const timerEl = document.getElementById('round-timer');
       if (!timerEl) return;
+
+      if (currentMatchMode === 'domination') {
+        timerEl.textContent = `NEXUS:${Math.round(dominationControlP1)}%`;
+        timerEl.className = "inline-flex items-center justify-center h-6 w-24 font-mono font-extrabold text-amber-300 rounded-full bg-slate-900 border border-amber-500/50";
+        return;
+      }
+      if (currentMatchMode === 'gauntlet') {
+        timerEl.textContent = `WAVE:${gauntletWave}`;
+        timerEl.className = "inline-flex items-center justify-center h-6 w-20 font-mono font-extrabold text-fuchsia-300 rounded-full bg-slate-900 border border-fuchsia-500/50";
+        return;
+      }
+
       const remaining = Math.max(0, Math.ceil(ROUND_DURATION - matchElapsedTime));
       const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
       const secs = String(remaining % 60).padStart(2, '0');
@@ -1664,14 +1591,14 @@
       const winnerName = p1Won ? `${c1.name} Swarm` : `${c2.name} Swarm`;
       const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
 
-      appendLog(`⏱️ 02:00 TIME LIMIT! ${winnerStr} (${winnerName}) wins on remaining HP!`, "text-amber-300 font-extrabold");
+      appendLog(`⏱️ TIME LIMIT! ${winnerStr} (${winnerName}) wins on remaining HP!`, "text-amber-300 font-extrabold");
       document.getElementById('winner-text').textContent = `TIME UP // ${winnerStr} WINS`;
       syncMatchControlUI();
 
       if (gameMode === 'arcade') {
         const pmModal = document.getElementById('post-match-modal');
         document.getElementById('pm-winner-title').textContent = `${winnerName.toUpperCase()} WINS`;
-        document.getElementById('pm-subtitle').textContent = `2:00 Time Limit decision (${p1Won ? p1Hp : p2Hp} total HP remaining).`;
+        document.getElementById('pm-subtitle').textContent = `Time Limit decision (${p1Won ? p1Hp : p2Hp} total HP remaining).`;
         pmModal.classList.remove('hidden');
       } else if (autoLoop) {
         if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
@@ -1694,7 +1621,7 @@
 
       if (battleState === 'FIGHTING') {
         dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-        banner.textContent = "COMBAT ACTIVE";
+        banner.textContent = currentMatchMode === 'domination' ? "DOMINATION ACTIVE" : (currentMatchMode === 'gauntlet' ? `GAUNTLET // WAVE ${gauntletWave}` : "COMBAT ACTIVE");
         banner.className = "font-extrabold tracking-wider text-emerald-400 uppercase px-1";
         if (pauseLbl) pauseLbl.textContent = "PAUSE BATTLE";
       } else if (battleState === 'PAUSED') {
@@ -1713,7 +1640,6 @@
       }
     }
 
-    // 1) Start Battle
     function startBattle() {
       if (autoRestartTimeout) {
         clearTimeout(autoRestartTimeout);
@@ -1731,66 +1657,57 @@
       if (battleState === 'STANDBY' && entities.length > 0) {
         battleState = 'FIGHTING';
         syncMatchControlUI();
-        appendLog(`▶️ Battle Engaged: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}!`, "text-emerald-400 font-bold");
+        appendLog(`▶️ Battle Engaged!`, "text-emerald-400 font-bold");
         return;
       }
 
-      if (enemySelectionRule === 'random') {
+      if (enemySelectionRule === 'random' && currentMatchMode !== 'gauntlet') {
         const keys = Object.keys(CREATURES);
         selectedP2 = keys[Math.floor(Math.random() * keys.length)];
       }
       spawnArmies();
       battleState = 'FIGHTING';
       syncMatchControlUI();
-      appendLog(`▶️ ${armySize}v${armySize}: ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name}`, "text-emerald-400 font-semibold");
+      appendLog(`▶️ Mode: ${currentMatchMode.toUpperCase()} engaged!`, "text-emerald-400 font-semibold");
     }
 
-    // 2) Pause Battle
     function pauseBattle() {
       if (battleState === 'FIGHTING') {
         battleState = 'PAUSED';
         syncMatchControlUI();
-        appendLog("⏸️ Battle Paused — Inspect wireframes or issue commands.", "text-amber-300 font-bold");
+        appendLog("⏸️ Battle Paused.", "text-amber-300 font-bold");
       } else if (battleState === 'PAUSED') {
         battleState = 'FIGHTING';
         syncMatchControlUI();
         appendLog("▶️ Battle Resumed!", "text-emerald-300 font-bold");
-      } else {
-        appendLog("ℹ️ Start a battle first before pausing.", "text-slate-400");
       }
     }
 
-    // 3) End Battle
     function endBattleCommand() {
       if (autoRestartTimeout) {
         clearTimeout(autoRestartTimeout);
         autoRestartTimeout = null;
       }
-      if (battleState === 'ENDED') {
-        appendLog("ℹ️ Battle is already concluded. Army selection is unlocked.", "text-slate-400");
-        return;
-      }
+      if (battleState === 'ENDED') return;
       battleState = 'ENDED';
       entities.forEach(f => { f.activeAction = null; f.vx = 0; f.vz = 0; });
-      const banner = document.getElementById('winner-text');
-      banner.textContent = "BATTLE TERMINATED";
-      banner.className = "font-extrabold tracking-wider text-rose-400 uppercase px-1";
+      document.getElementById('winner-text').textContent = "BATTLE TERMINATED";
       syncMatchControlUI();
       updateArmyHUD();
-      appendLog("⏹️ Battle Ended by Commander — Army selection unlocked!", "text-rose-300 font-bold");
+      appendLog("⏹️ Battle Terminated by Commander.", "text-rose-300 font-bold");
     }
 
-    // 4) Reset Battle
     function resetBattleCommand() {
       if (autoRestartTimeout) {
         clearTimeout(autoRestartTimeout);
         autoRestartTimeout = null;
       }
       document.getElementById('post-match-modal').classList.add('hidden');
+      gauntletWave = 1;
       spawnArmies();
       battleState = 'STANDBY';
       syncMatchControlUI();
-      appendLog("🔄 Battle Reset to Standby Formation — Click ▶️ START BATTLE or swap armies!", "text-cyan-300 font-bold");
+      appendLog("🔄 Battle Reset to Standby.", "text-cyan-300 font-bold");
     }
 
     function getBestEnemyTarget(f) {
@@ -1838,15 +1755,9 @@
       let awayX = bestObs.x - enemy.mesh.position.x;
       let awayZ = bestObs.z - enemy.mesh.position.z;
       const len = Math.hypot(awayX, awayZ) || 1;
-      awayX /= len;
-      awayZ /= len;
-
+      awayX /= len; awayZ /= len;
       const shelterDist = bestObs.radius + 1.05;
-      return {
-        x: bestObs.x + awayX * shelterDist,
-        z: bestObs.z + awayZ * shelterDist,
-        obs: bestObs
-      };
+      return { x: bestObs.x + awayX * shelterDist, z: bestObs.z + awayZ * shelterDist, obs: bestObs };
     }
 
     function isLineOfSightBlocked(ax, az, bx, bz) {
@@ -1859,9 +1770,7 @@
         const projX = ax + t * segX;
         const projZ = az + t * segZ;
         const distToRay = Math.hypot(obs.x - projX, obs.z - projZ);
-        if (distToRay < obs.radius * 0.85) {
-          return obs;
-        }
+        if (distToRay < obs.radius * 0.85) return obs;
       }
       return null;
     }
@@ -1872,7 +1781,6 @@
       if (isPower) attacker.energy = 0; else attacker.energy = Math.min(3, attacker.energy + 1);
       
       attacker.lastMoveName = move.name;
-      // Extended duration & contact hold window for physical close-quarters clashing
       attacker.activeAction = {
         move, isPower, defenderId: defender.id,
         startPos: attacker.mesh.position.clone(),
@@ -1881,26 +1789,20 @@
     }
 
     function resolveMoveImpact(attacker, defender, move, isPower) {
-      // Balanced 3D Hitbox Verification across ground & aerial classes
       const dx = attacker.mesh.position.x - defender.mesh.position.x;
       const dz = attacker.mesh.position.z - defender.mesh.position.z;
       const dy = (attacker.mesh.position.y - defender.mesh.position.y) * 0.55;
       const dist3D = Math.hypot(dx, dz, dy);
       const maxHitReach = (attacker.hitboxRadius + defender.hitboxRadius) * 1.65 + 0.35;
 
-      if (dist3D > maxHitReach) {
-        return; // Out of physical hitbox reach
-      }
+      if (dist3D > maxHitReach) return;
 
-      // STRATEGIC DEPTH: Type Advantage & Evasion Matrix (Rock-Paper-Scissors)
       let archetypeMult = 1.0;
       let effectiveDef = defender.def;
 
-      // 1. Aerial Strikers have a 22% chance to evade slow ground grapples/rams
       if (defender.archetype === 'aerial_striker' && attacker.flightAlt === 0 && !isPower) {
         const isGrappleOrRam = move.anim === 'horn_toss' || move.anim === 'heavy_ram' || move.anim === 'claw_snap';
         if (isGrappleOrRam && Math.random() < 0.22) {
-          // Agile mid-air dodge jink
           defender.vx += -defender.strafeDir * 4.2;
           defender.vz += defender.strafeDir * 4.2;
           spawnHitSparks(defender.mesh.position, 0xffffff, 3, defender.key);
@@ -1908,26 +1810,20 @@
         }
       }
 
-      // 2. Shell-Breakers (Mantis Shrimp) shatter heavy armor (+30% bonus & ignores 35% DEF vs Armored Tanks / Grapplers)
       if (attacker.archetype === 'shell_breaker' && (defender.archetype === 'armored_tank' || defender.archetype === 'heavy_grappler')) {
         archetypeMult = 1.30;
         effectiveDef *= 0.65;
-      }
-      // 3. Armored Tanks (King Crab) deflect 25% of Aerial Striker stings and deal +20% anti-air swat damage
-      else if (attacker.archetype === 'aerial_striker' && defender.archetype === 'armored_tank') {
+      } else if (attacker.archetype === 'aerial_striker' && defender.archetype === 'armored_tank') {
         archetypeMult = 0.75;
       } else if (attacker.archetype === 'armored_tank' && defender.archetype === 'aerial_striker') {
         archetypeMult = 1.20;
-      }
-      // 4. Heavy Grapplers (Stag Beetle) overpower Shell-Breakers & ground units (+25% bonus)
-      else if (attacker.archetype === 'heavy_grappler' && defender.flightAlt === 0) {
+      } else if (attacker.archetype === 'heavy_grappler' && defender.flightAlt === 0) {
         archetypeMult = 1.25;
       }
 
       const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
       const highGroundMult = elevDiff > 0.18 ? 1.18 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
-      // Enhanced physical cover defense (-35% incoming damage when sheltered behind terrain)
       const coverMult = defender.takingCover ? 0.65 : 1.0;
       const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
       const mitigation = 100 / (100 + effectiveDef * 3.2);
@@ -1937,11 +1833,8 @@
       defender.hp = Math.max(0, defender.hp - dmg);
       defender.hitFlash = isPower ? 0.35 : 0.22;
 
-      if (move.slow) {
-        defender.slowTimer = Math.max(defender.slowTimer, move.slow);
-      }
+      if (move.slow) defender.slowTimer = Math.max(defender.slowTimer, move.slow);
 
-      // Constrained post-strike kiting & knockback impulses (prevents erratic launching)
       if (attacker.kiteStyle === 'tail_backdash' && attacker.stance !== 'berserk') {
         const awayX = attacker.homeX - defender.mesh.position.x;
         const awayZ = attacker.homeZ - defender.mesh.position.z;
@@ -1978,10 +1871,8 @@
         defender.victimState.tiltZ = 0.18;
       }
 
-      // Immediately enforce obstacle hard-stop boundaries after knockback
       enforceHardStopAndTerrainBounds(defender, false);
 
-      // Spawn creature-specific fly-away body part fragments at the contact point
       _tempVecA.set(
         (attacker.mesh.position.x + defender.mesh.position.x) * 0.5,
         (attacker.mesh.position.y + defender.mesh.position.y) * 0.5,
@@ -1998,13 +1889,11 @@
       }
     }
 
-    // 3 Naturalistic Idle & Movement Body Habits per Creature (18 total procedural animations)
     function applyNaturalCreatureBehaviors(f, elapsed, dt, speedMag) {
       const ud = f.mesh.userData;
       const s = Math.sin;
       const c = Math.cos;
 
-      // Cycle through the 3 natural habits for each individual creature between attacks
       if (!f.activeAction) {
         f.habitTimer -= dt;
         if (f.habitTimer <= 0) {
@@ -2021,9 +1910,8 @@
       }
 
       const hp = f.habitDuration > 0 ? Math.min(1, f.habitActiveTime / f.habitDuration) : 0;
-      const pulse = s(hp * Math.PI); // Smooth 0 -> 1 -> 0 envelope for natural habit
+      const pulse = s(hp * Math.PI);
 
-      // Reset claws & extras toward baseline before applying procedural motion
       ud.claws.forEach(cl => {
         cl.position.copy(cl.userData.basePos);
         cl.rotation.copy(cl.userData.baseRot);
@@ -2033,23 +1921,16 @@
         ex.rotation.copy(ex.userData.baseRot);
       });
 
-      let bodyYOffset = 0;
-      let bodyPitchOffset = 0;
-      let bodyRollOffset = 0;
-      let bodyYawOffset = 0;
+      let bodyYOffset = 0, bodyPitchOffset = 0, bodyRollOffset = 0, bodyYawOffset = 0;
 
       if (f.key === 'king_crab') {
-        // Locomotion: Multi-phase benthic sideways leg gait
         ud.legs.forEach(l => {
           const stride = s(elapsed * 9.5 + l.idx * 1.3 + l.side * 0.8) * (0.06 + Math.min(0.24, speedMag * 0.08));
           l.mesh.rotation.z = stride;
           l.mesh.rotation.x = l.baseRotX + c(elapsed * 9.5 + l.idx) * 0.08;
         });
-
-        // 3 Natural Habits: 0 = Chelae Threat Display, 1 = Benthic Carapace Hunker, 2 = Gill Bubble Purge
         if (pulse > 0.01) {
           if (f.habitIndex === 0) {
-            // 1. Chelae Threat Display: Rears both crusher claws high and snaps them
             ud.claws.forEach((cl, i) => {
               const dir = i === 0 ? -1 : 1;
               cl.position.y += pulse * 0.42;
@@ -2057,148 +1938,79 @@
               cl.rotation.y += dir * s(hp * Math.PI * 3) * 0.45;
             });
           } else if (f.habitIndex === 1) {
-            // 2. Benthic Carapace Hunker: Press carapace low into terrain & flare legs wide
             bodyYOffset -= pulse * 0.06;
             ud.legs.forEach(l => { l.mesh.rotation.x = l.baseRotX + l.side * pulse * 0.28; });
           } else {
-            // 3. Gill Bubble Purge: Rapid high-frequency carapace respiratory shudder
             bodyRollOffset += s(hp * Math.PI * 10) * 0.09 * pulse;
-            ud.claws.forEach(cl => { cl.position.x += s(hp * Math.PI * 8) * 0.12 * pulse; });
           }
         }
       } else if (f.key === 'mantis_shrimp') {
-        // Locomotion: Pleopod undulating body wave
         ud.extras.forEach((seg, idx) => {
-          if (idx < 4) {
-            seg.position.y = seg.userData.basePos.y + s(elapsed * 8.0 - idx * 0.9 + f.seed) * 0.09;
-          }
+          if (idx < 4) seg.position.y = seg.userData.basePos.y + s(elapsed * 8.0 - idx * 0.9 + f.seed) * 0.09;
         });
-        ud.legs.forEach(l => {
-          l.mesh.rotation.z = s(elapsed * 12 + l.phase) * (0.08 + Math.min(0.22, speedMag * 0.07));
-        });
-
-        // 3 Natural Habits: 0 = Independent Trinocular Eye Radar, 1 = Raptorial Spring Cocking, 2 = Pleopod Coil
+        ud.legs.forEach(l => { l.mesh.rotation.z = s(elapsed * 12 + l.phase) * (0.08 + Math.min(0.22, speedMag * 0.07)); });
         if (pulse > 0.01) {
           if (f.habitIndex === 0) {
-            // 1. Trinocular Eye Stalk Radar: Independent rotation of compound eye stalks + head scan
             bodyYawOffset += s(hp * Math.PI * 2) * 0.22 * pulse;
             if (ud.extras[4]) ud.extras[4].rotation.y = s(hp * Math.PI * 4) * 0.8;
-            if (ud.extras[5]) ud.extras[5].rotation.x = c(hp * Math.PI * 4) * 0.8;
           } else if (f.habitIndex === 1) {
-            // 2. Raptorial Club Cocking: Draws smashing clubs tightly back against thorax
-            ud.claws.forEach(cl => {
-              cl.position.x -= pulse * 0.35;
-              cl.position.y += pulse * 0.22;
-              cl.rotation.z += pulse * 0.55;
-            });
+            ud.claws.forEach(cl => { cl.position.x -= pulse * 0.35; cl.position.y += pulse * 0.22; });
           } else {
-            // 3. Pleopod Fan Ripple: Rapid S-curve abdominal wave & hover hop
             bodyYOffset += pulse * 0.05;
-            ud.extras.forEach((seg, idx) => {
-              if (idx < 4) seg.position.y += s(hp * Math.PI * 6 - idx * 1.2) * 0.14 * pulse;
-            });
           }
         }
       } else if (f.key === 'stag_beetle') {
-        // Locomotion: Heavy deliberate tripod beetle march
         ud.legs.forEach(l => {
           const tripodPhase = (l.idx % 2 === 0 ? 0 : Math.PI) + (l.side > 0 ? 0.5 : 0);
           l.mesh.rotation.z = s(elapsed * 8.5 + tripodPhase) * (0.06 + Math.min(0.22, speedMag * 0.07));
         });
-
-        // 3 Natural Habits: 0 = Mandible Scrape, 1 = Pronotum Threat Rear-Up, 2 = Tarsi Ground Stamp
         if (pulse > 0.01) {
           if (f.habitIndex === 0) {
-            // 1. Mandible Scrape: Rhythmically shears giant antler mandibles inward and outward
             ud.claws.forEach((horn, i) => {
               const dir = i === 0 ? -1 : 1;
               horn.rotation.y = horn.userData.baseRot.y + dir * s(hp * Math.PI * 4) * 0.38 * pulse;
             });
           } else if (f.habitIndex === 1) {
-            // 2. Pronotum Threat Rear-Up: Pitches entire armored body upward to tower over foes
             bodyPitchOffset += pulse * 0.34;
             bodyYOffset += pulse * 0.05;
           } else {
-            // 3. Tarsi Ground Stamp: Aggressive lateral weight stomp & horn dip
             bodyPitchOffset -= pulse * 0.18;
-            bodyRollOffset += s(hp * Math.PI * 6) * 0.12 * pulse;
           }
         }
       } else if (f.key === 'killer_wasp') {
-        // Locomotion: High-frequency figure-8 wing buzz & trailing legs
-        ud.wings.forEach(w => {
-          w.mesh.rotation.x = w.side * (0.82 + s(elapsed * 62 + f.seed) * 0.72);
-        });
-        ud.legs.forEach(l => {
-          l.mesh.rotation.z = -0.15 + s(elapsed * 10 + l.phase) * 0.08;
-        });
-
-        // 3 Natural Habits: 0 = Abdomen Venom-Pumping, 1 = Foreleg Antenna Grooming, 2 = Predatory Hover Jink
+        ud.wings.forEach(w => { w.mesh.rotation.x = w.side * (0.82 + s(elapsed * 62 + f.seed) * 0.72); });
+        ud.legs.forEach(l => { l.mesh.rotation.z = -0.15 + s(elapsed * 10 + l.phase) * 0.08; });
         if (pulse > 0.01) {
           if (f.habitIndex === 0 && ud.extras[1]) {
-            // 1. Abdomen Venom-Pumping: Rhythmic respiratory/stinger telescoping of metasoma
             ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z + s(hp * Math.PI * 6) * 0.28 * pulse;
           } else if (f.habitIndex === 1 && ud.extras[0]) {
-            // 2. Foreleg Antenna Grooming: Head nods while front legs brush forward
             ud.extras[0].rotation.x = s(hp * Math.PI * 6) * 0.35 * pulse;
-            ud.legs.forEach(l => { if (l.idx === 0) l.mesh.rotation.z = 0.55 * pulse; });
           } else {
-            // 3. Predatory Hover Jink: Sharp lateral micro-dart in mid-air
             bodyRollOffset += s(hp * Math.PI * 4) * 0.26 * pulse;
-            bodyYOffset += s(hp * Math.PI * 2) * 0.04 * pulse;
           }
         }
       } else if (f.key === 'emperor_dragonfly') {
-        // Locomotion: 4-wing out-of-phase counter-stroking
-        ud.wings.forEach(w => {
-          w.mesh.rotation.x = w.side * (0.78 + s(elapsed * 46 + (w.phase || 0)) * 0.68);
-        });
-        ud.legs.forEach(l => {
-          l.mesh.rotation.z = 0.22 + s(elapsed * 8 + l.phase) * 0.06; // Raptorial basket tuck
-        });
-
-        // 3 Natural Habits: 0 = 360 Compound Head Swivel, 1 = Out-of-Phase Wing Shimmer, 2 = Abdomen Trim Rudder
+        ud.wings.forEach(w => { w.mesh.rotation.x = w.side * (0.78 + s(elapsed * 46 + (w.phase || 0)) * 0.68); });
+        ud.legs.forEach(l => { l.mesh.rotation.z = 0.22 + s(elapsed * 8 + l.phase) * 0.06; });
         if (pulse > 0.01) {
           if (f.habitIndex === 0 && ud.extras[0]) {
-            // 1. Compound Head Swivel: Rapidly tilts and pans spherical compound eyes
             ud.extras[0].rotation.y = s(hp * Math.PI * 4) * 0.55 * pulse;
-            ud.extras[0].rotation.x = c(hp * Math.PI * 4) * 0.35 * pulse;
           } else if (f.habitIndex === 1) {
-            // 2. Wing Thermoregulation Shimmer: High-speed low-amplitude wing vibration glide
-            ud.wings.forEach(w => {
-              w.mesh.rotation.x = w.side * (1.15 + s(elapsed * 110 + (w.phase || 0)) * 0.18);
-            });
+            ud.wings.forEach(w => { w.mesh.rotation.x = w.side * (1.15 + s(elapsed * 110 + (w.phase || 0)) * 0.18); });
           } else if (ud.extras[1]) {
-            // 3. Abdomen Counter-Balance Trim: Long tail flexes up and down like a flight rudder
             ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z + s(hp * Math.PI * 3) * 0.24 * pulse;
           }
         }
       } else if (f.key === 'tarantula_hawk') {
-        // Locomotion: Heavy deliberate aposematic wingbeats & trailing spider-grappling hind legs
-        ud.wings.forEach(w => {
-          w.mesh.rotation.x = w.side * (0.85 + s(elapsed * 50 + f.seed) * 0.68);
-        });
-        ud.legs.forEach(l => {
-          l.mesh.rotation.z = s(elapsed * 11 + l.phase) * (0.09 + Math.min(0.2, speedMag * 0.06));
-        });
-
-        // 3 Natural Habits: 0 = Aposematic Wing Flick, 1 = Curled Antenna Ground Probe, 2 = Stinger Prime Arch
+        ud.wings.forEach(w => { w.mesh.rotation.x = w.side * (0.85 + s(elapsed * 50 + f.seed) * 0.68); });
+        ud.legs.forEach(l => { l.mesh.rotation.z = s(elapsed * 11 + l.phase) * (0.09 + Math.min(0.2, speedMag * 0.06)); });
         if (pulse > 0.01) {
           if (f.habitIndex === 0) {
-            // 1. Aposematic Warning Wing Flick: Sharp double-snap of orange wings while stalking
-            ud.wings.forEach(w => {
-              w.mesh.rotation.x = w.side * (0.35 + Math.abs(s(hp * Math.PI * 4)) * 0.95);
-            });
+            ud.wings.forEach(w => { w.mesh.rotation.x = w.side * (0.35 + Math.abs(s(hp * Math.PI * 4)) * 0.95); });
           } else if (f.habitIndex === 1) {
-            // 2. Curled Antenna Chemotaxis Probe: Antennae rapidly tap downward to sense vibrations
             bodyPitchOffset -= pulse * 0.16;
-            ud.claws.forEach((cl, i) => {
-              if (i > 0) cl.rotation.z = cl.userData.baseRot.z - s(hp * Math.PI * 6) * 0.45 * pulse;
-            });
           } else {
-            // 3. Stinger Prime Arch: Curls abdomen & extends stinger tip forward underneath
             if (ud.extras[1]) ud.extras[1].rotation.z = ud.extras[1].userData.baseRot.z - pulse * 0.32;
-            if (ud.claws[0]) ud.claws[0].position.x -= pulse * 0.28;
           }
         }
       }
@@ -2206,35 +2018,28 @@
       return { bodyYOffset, bodyPitchOffset, bodyRollOffset, bodyYawOffset };
     }
 
-    // Creature-specific 75% smaller fly-away part geometries (cached in GeoCache for zero bloat)
     const particles = [];
     function getCreaturePartParticleSpec(creatureKey) {
       const r = Math.random();
       if (creatureKey === 'king_crab') {
-        // Crusher claw tips, benthic leg segments, or carapace plates
         if (r < 0.4) return { type: 'ConeGeometry', args: [0.009, 0.032, 5], scale: [1, 1, 1] };
         if (r < 0.75) return { type: 'CylinderGeometry', args: [0.0025, 0.0015, 0.038, 4], scale: [1, 1, 1] };
         return { type: 'OctahedronGeometry', args: [0.014, 0], scale: [1.1, 0.45, 1.35] };
       } else if (creatureKey === 'mantis_shrimp') {
-        // Raptorial dactyl clubs or pleopod box segments
         if (r < 0.5) return { type: 'OctahedronGeometry', args: [0.011, 1], scale: [1.6, 0.7, 0.7] };
         return { type: 'BoxGeometry', args: [0.018, 0.011, 0.020], scale: [1, 1, 1] };
       } else if (creatureKey === 'stag_beetle') {
-        // Antler horn tips, elytra shell shards, or tarsi legs
         if (r < 0.45) return { type: 'ConeGeometry', args: [0.005, 0.036, 4], scale: [1, 1, 1] };
         if (r < 0.75) return { type: 'SphereGeometry', args: [0.013, 5, 4], scale: [1.45, 0.62, 1.05] };
         return { type: 'CylinderGeometry', args: [0.002, 0.001, 0.028, 3], scale: [1, 1, 1] };
       } else if (creatureKey === 'killer_wasp') {
-        // Wing planes, stinger cones, or head capsules
         if (r < 0.45) return { type: 'PlaneGeometry', args: [0.018, 0.040, 1, 2], scale: [1, 1, 1] };
         if (r < 0.8) return { type: 'ConeGeometry', args: [0.009, 0.032, 5], scale: [1, 1, 1] };
         return { type: 'OctahedronGeometry', args: [0.011, 0], scale: [1, 1, 1] };
       } else if (creatureKey === 'emperor_dragonfly') {
-        // Elongated forewings/hindwings or tail cylinder segments
         if (r < 0.55) return { type: 'PlaneGeometry', args: [0.013, 0.048, 1, 2], scale: [1, 1, 1] };
         return { type: 'CylinderGeometry', args: [0.004, 0.002, 0.045, 5], scale: [1, 1, 1] };
       } else if (creatureKey === 'tarantula_hawk') {
-        // Aposematic wing shards, curled antennae, or stinger barbs
         if (r < 0.4) return { type: 'PlaneGeometry', args: [0.020, 0.044, 1, 2], scale: [1, 1, 1] };
         if (r < 0.75) return { type: 'ConeGeometry', args: [0.006, 0.028, 4], scale: [1, 1, 1] };
         return { type: 'CylinderGeometry', args: [0.002, 0.001, 0.032, 3], scale: [1, 1, 1] };
@@ -2317,33 +2122,69 @@
         }
       }
 
-      document.getElementById('p2-name').textContent = `${c2.name} Swarm`;
-      document.getElementById('p2-faction').textContent = c2.faction;
+      if (currentMatchMode === 'gauntlet') {
+        document.getElementById('p2-name').textContent = `Wave ${gauntletWave} Hostiles`;
+        document.getElementById('p2-faction').textContent = "HIVE";
+      } else {
+        document.getElementById('p2-name').textContent = `${c2.name} Swarm`;
+        document.getElementById('p2-faction').textContent = c2.faction;
+      }
       document.getElementById('p2-hp-text').textContent = `${p2Hp}/${p2Max} (${p2Alive})`;
       document.getElementById('p2-hp-bar').style.width = p2Max > 0 ? `${Math.max(0, (p2Hp / p2Max) * 100)}%` : '0%';
       document.getElementById('p2-pwr-bar').style.width = p2Alive > 0 ? `${(p2Nrg / (p2Alive * 3)) * 100}%` : '0%';
       document.getElementById('p2-move-text').textContent = p2LastMove;
 
       if (battleState === 'FIGHTING' && entities.length > 0) {
-        if (p1Alive === 0 || p2Alive === 0) {
-          battleState = 'ENDED';
-          const p1Won = p1Alive > 0;
-          const winnerName = p1Won ? `${c1.name} Swarm` : `${c2.name} Swarm`;
-          const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
-          appendLog(`🏆 ${winnerStr} (${winnerName}) WINS!`, p1Won ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
-          document.getElementById('winner-text').textContent = `${winnerStr} VICTORIOUS`;
-          syncMatchControlUI();
+        if (currentMatchMode === 'gauntlet') {
+          if (p2Alive === 0) {
+            gauntletWave++;
+            appendLog(`🌟 WAVE ${gauntletWave - 1} CLEARED! Preparing Wave ${gauntletWave}...`, "text-cyan-300 font-extrabold");
+            entities.forEach(f => { if (f.side === 1 && !f.dead) f.hp = Math.min(f.maxHp, f.hp + Math.round(f.maxHp * 0.3)); });
+            spawnGauntletWaveEnemies();
+          } else if (p1Alive === 0) {
+            battleState = 'ENDED';
+            appendLog(`💀 GAUNTLET DEFEATED on Wave ${gauntletWave}!`, "text-rose-400 font-bold");
+            document.getElementById('winner-text').textContent = `GAUNTLET OVER // WAVE ${gauntletWave}`;
+            syncMatchControlUI();
+            if (autoLoop) {
+              if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
+              autoRestartTimeout = setTimeout(() => { if (autoLoop && battleState === 'ENDED') { gauntletWave = 1; startBattle(); } }, 3000);
+            }
+          }
+        } else if (currentMatchMode === 'domination') {
+          if (dominationControlP1 >= 100 || dominationControlP1 <= 0) {
+            battleState = 'ENDED';
+            const p1Won = dominationControlP1 >= 100;
+            const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
+            appendLog(`🏆 ${winnerStr} WINS VIA BIO-NEXUS DOMINATION!`, p1Won ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
+            document.getElementById('winner-text').textContent = `${winnerStr} DOMINATED`;
+            syncMatchControlUI();
+            if (autoLoop) {
+              if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
+              autoRestartTimeout = setTimeout(() => { if (autoLoop && battleState === 'ENDED') startBattle(); }, 3000);
+            }
+          }
+        } else {
+          if (p1Alive === 0 || p2Alive === 0) {
+            battleState = 'ENDED';
+            const p1Won = p1Alive > 0;
+            const winnerName = p1Won ? `${c1.name} Swarm` : `${c2.name} Swarm`;
+            const winnerStr = p1Won ? "ALLY FORCE" : "HOSTILE FORCE";
+            appendLog(`🏆 ${winnerStr} (${winnerName}) WINS!`, p1Won ? "text-cyan-300 font-bold" : "text-rose-300 font-bold");
+            document.getElementById('winner-text').textContent = `${winnerStr} VICTORIOUS`;
+            syncMatchControlUI();
 
-          if (gameMode === 'arcade') {
-            const pmModal = document.getElementById('post-match-modal');
-            document.getElementById('pm-winner-title').textContent = `${winnerName.toUpperCase()} WINS`;
-            document.getElementById('pm-subtitle').textContent = `${p1Won ? p1Alive : p2Alive} bio-wireframe units survived the engagement.`;
-            pmModal.classList.remove('hidden');
-          } else if (autoLoop) {
-            if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
-            autoRestartTimeout = setTimeout(() => {
-              if (autoLoop && battleState === 'ENDED') startBattle();
-            }, 2500);
+            if (gameMode === 'arcade') {
+              const pmModal = document.getElementById('post-match-modal');
+              document.getElementById('pm-winner-title').textContent = `${winnerName.toUpperCase()} WINS`;
+              document.getElementById('pm-subtitle').textContent = `${p1Won ? p1Alive : p2Alive} bio-wireframe units survived.`;
+              pmModal.classList.remove('hidden');
+            } else if (autoLoop) {
+              if (autoRestartTimeout) clearTimeout(autoRestartTimeout);
+              autoRestartTimeout = setTimeout(() => {
+                if (autoLoop && battleState === 'ENDED') startBattle();
+              }, 2500);
+            }
           }
         }
       }
@@ -2492,7 +2333,7 @@
 
       document.getElementById('cs-matchup-p1').textContent = CREATURES[selectedP1].name;
       document.getElementById('cs-matchup-p2').textContent =
-        enemySelectionRule === 'random' ? "🎲 Random" : CREATURES[selectedP2].name;
+        currentMatchMode === 'gauntlet' ? "🌊 Endless Waves" : (enemySelectionRule === 'random' ? "🎲 Random" : CREATURES[selectedP2].name);
 
       document.querySelectorAll('.cs-card').forEach(card => {
         const key = card.dataset.key;
@@ -2553,40 +2394,31 @@
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         const active = btn.dataset.scaleTier === ov.scaleTier;
         btn.className = `btn-scale-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
-          active
-            ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+          active ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
       document.querySelectorAll('.btn-spd-preset').forEach(btn => {
         const active = btn.dataset.spdTier === ov.spdTier;
         btn.className = `btn-spd-preset w-full h-6 text-[8px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
-          active
-            ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+          active ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400 font-extrabold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
       document.querySelectorAll('.btn-formation-preset').forEach(btn => {
         const active = btn.dataset.formation === ov.formation;
         btn.className = `btn-formation-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
-          active
-            ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+          active ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400 font-extrabold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
       document.querySelectorAll('.btn-stance-preset').forEach(btn => {
         const active = btn.dataset.stance === ov.stance;
         btn.className = `btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
-          active
-            ? 'bg-amber-500/30 text-amber-200 border-amber-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+          active ? 'bg-amber-500/30 text-amber-200 border-amber-400 font-extrabold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
-      // Dynamically label the 4 color scheme buttons for the active creature class
       document.querySelectorAll('.btn-color-preset').forEach(btn => {
         const schemeKey = btn.dataset.colorScheme;
         const sc = classSchemeMap[schemeKey] || classSchemeMap.native;
@@ -2594,9 +2426,7 @@
         btn.title = `${targetFaction}: ${sc.label}`;
         const active = schemeKey === ov.colorScheme;
         btn.className = `btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
-          active
-            ? 'bg-fuchsia-500/30 text-fuchsia-200 border-fuchsia-400 font-extrabold'
-            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+          active ? 'bg-fuchsia-500/30 text-fuchsia-200 border-fuchsia-400 font-extrabold' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
 
@@ -2704,15 +2534,31 @@
       document.getElementById('btn-close-drawer').addEventListener('click', closeRosterDrawer);
 
       document.getElementById('btn-open-char-select').addEventListener('click', () => openCharSelectModal(1));
+      
       document.getElementById('btn-hud-mode').addEventListener('click', (e) => {
         if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
           appendLog("🔒 Cannot switch game mode mid-battle! Click ⏹️ END BATTLE first.", "text-amber-300");
           return;
         }
-        gameMode = gameMode === 'sandbox' ? 'arcade' : 'sandbox';
-        e.target.textContent = `MODE: ${gameMode.toUpperCase()}`;
-        if (gameMode === 'arcade') openCharSelectModal(1);
+        if (currentMatchMode === 'sandbox') {
+          currentMatchMode = 'arcade';
+          openCharSelectModal(1);
+        } else if (currentMatchMode === 'arcade') {
+          currentMatchMode = 'gauntlet';
+          gauntletWave = 1;
+          appendLog("🌊 MODE: HIVE GAUNTLET selected!", "text-fuchsia-300 font-bold");
+        } else if (currentMatchMode === 'gauntlet') {
+          currentMatchMode = 'domination';
+          appendLog("⭐ MODE: BIO-NEXUS DOMINATION selected!", "text-amber-300 font-bold");
+        } else {
+          currentMatchMode = 'sandbox';
+          appendLog("🛠️ MODE: SANDBOX selected!", "text-cyan-300 font-bold");
+        }
+        e.target.textContent = `MODE: ${currentMatchMode.toUpperCase()}`;
+        rebuildWorldTopology();
+        startBattle();
       });
+
       document.getElementById('btn-auto').addEventListener('click', (e) => {
         autoLoop = !autoLoop;
         e.target.textContent = `AUTO: ${autoLoop ? 'ON' : 'OFF'}`;
@@ -2749,7 +2595,6 @@
         setZoomLevelByIndex(currentZoomIdx + 1);
       });
 
-      // 4 Dedicated Match Control Buttons
       document.getElementById('btn-match-start').addEventListener('click', startBattle);
       document.getElementById('btn-match-pause').addEventListener('click', pauseBattle);
       document.getElementById('btn-match-end').addEventListener('click', endBattleCommand);
@@ -2762,9 +2607,7 @@
                el.closest('#btn-p1-hud') || el.closest('#btn-p2-hud');
       };
 
-      window.addEventListener('contextmenu', (e) => {
-        if (!isUIElement(e.target)) e.preventDefault();
-      });
+      window.addEventListener('contextmenu', (e) => { if (!isUIElement(e.target)) e.preventDefault(); });
 
       window.addEventListener('mousedown', (e) => {
         if (isUIElement(e.target)) return;
@@ -2774,9 +2617,7 @@
         closeRosterDrawer();
       });
 
-      window.addEventListener('mouseup', () => {
-        isDraggingArena = false;
-      });
+      window.addEventListener('mouseup', () => { isDraggingArena = false; });
 
       window.addEventListener('mousemove', (e) => {
         if (!isDraggingArena) return;
@@ -2785,7 +2626,6 @@
 
         if (camMode === 'free') {
           if (dragButton === 2 || e.shiftKey) {
-            // Right-drag or Shift+Left-drag pans the free camera across the map
             const rightX = Math.cos(freeCamYaw);
             const rightZ = -Math.sin(freeCamYaw);
             const fwdX = Math.sin(freeCamYaw);
@@ -2794,7 +2634,6 @@
             freeCamPos.x -= (rightX * dx - fwdX * dy) * panSpeed;
             freeCamPos.z -= (rightZ * dx - fwdZ * dy) * panSpeed;
           } else {
-            // Left-drag rotates free camera look direction 360 degrees
             freeCamYaw -= dx * 0.0055;
             freeCamPitch = THREE.MathUtils.clamp(freeCamPitch - dy * 0.0055, -1.42, 1.42);
           }
@@ -2809,7 +2648,6 @@
         if (e.target.closest('#roster-drawer') || e.target.closest('#sandbox-panel') || e.target.closest('#char-select-modal')) return;
         e.preventDefault();
         if (camMode === 'free') {
-          // Scroll wheel flies forward/backward along the free camera's look vector
           const step = -Math.sign(e.deltaY) * 2.4;
           freeCamPos.x += Math.sin(freeCamYaw) * Math.cos(freeCamPitch) * step;
           freeCamPos.y += Math.sin(freeCamPitch) * step;
@@ -2838,10 +2676,7 @@
           const dy = e.touches[0].clientY - e.touches[1].clientY;
           initialPinchDist = Math.hypot(dx, dy);
           initialPinchRadius = camRadius;
-          prevTouchMid = {
-            x: (e.touches[0].clientX + e.touches[1].clientX) * 0.5,
-            y: (e.touches[0].clientY + e.touches[1].clientY) * 0.5
-          };
+          prevTouchMid = { x: (e.touches[0].clientX + e.touches[1].clientX) * 0.5, y: (e.touches[0].clientY + e.touches[1].clientY) * 0.5 };
         }
       }, { passive: true });
 
@@ -2894,29 +2729,14 @@
         }
       }, { passive: true });
 
-      document.getElementById('cs-tab-p1').addEventListener('click', () => {
-        csActiveSlot = 1;
-        loadCharSelectPreviewModel(selectedP1);
-        highlightSelectedCards();
-      });
-      document.getElementById('cs-tab-p2').addEventListener('click', () => {
-        csActiveSlot = 2;
-        loadCharSelectPreviewModel(selectedP2);
-        highlightSelectedCards();
-      });
-      document.getElementById('cs-enemy-mode').addEventListener('change', (e) => {
-        enemySelectionRule = e.target.value;
-        highlightSelectedCards();
-      });
-      document.getElementById('btn-lock-in-fight').addEventListener('click', () => {
-        closeCharSelectModal();
-        startBattle();
-      });
+      document.getElementById('cs-tab-p1').addEventListener('click', () => { csActiveSlot = 1; loadCharSelectPreviewModel(selectedP1); highlightSelectedCards(); });
+      document.getElementById('cs-tab-p2').addEventListener('click', () => { csActiveSlot = 2; loadCharSelectPreviewModel(selectedP2); highlightSelectedCards(); });
+      document.getElementById('cs-enemy-mode').addEventListener('change', (e) => { enemySelectionRule = e.target.value; highlightSelectedCards(); });
+      document.getElementById('btn-lock-in-fight').addEventListener('click', () => { closeCharSelectModal(); startBattle(); });
       document.getElementById('btn-cs-switch-sandbox').addEventListener('click', () => {
-        gameMode = 'sandbox';
+        gameMode = 'sandbox'; currentMatchMode = 'sandbox';
         document.getElementById('btn-hud-mode').textContent = 'MODE: SANDBOX';
-        closeCharSelectModal();
-        startBattle();
+        closeCharSelectModal(); startBattle();
       });
 
       document.getElementById('btn-pm-rematch').addEventListener('click', () => startBattle());
@@ -2925,7 +2745,6 @@
       syncMapSizeUI();
       syncLabControlsUI();
 
-      // Map Size Decrease (-), Increase (+), and Small / Medium / Large Preset Buttons
       document.getElementById('btn-map-size-dec').addEventListener('click', () => {
         const idx = MAP_SIZE_ORDER.indexOf(mapSizeTier);
         if (idx > 0) setMapSizeTier(MAP_SIZE_ORDER[idx - 1]);
@@ -2935,15 +2754,10 @@
         if (idx < MAP_SIZE_ORDER.length - 1) setMapSizeTier(MAP_SIZE_ORDER[idx + 1]);
       });
       document.querySelectorAll('.btn-map-size-preset').forEach(btn => {
-        btn.addEventListener('click', () => {
-          setMapSizeTier(btn.dataset.mapSize);
-        });
+        btn.addEventListener('click', () => { setMapSizeTier(btn.dataset.mapSize); });
       });
 
-      document.getElementById('select-topology').addEventListener('change', (e) => {
-        worldTopology = e.target.value;
-        rebuildWorldTopology();
-      });
+      document.getElementById('select-topology').addEventListener('change', (e) => { worldTopology = e.target.value; rebuildWorldTopology(); });
       document.getElementById('range-obs-count').addEventListener('input', (e) => {
         mapObstacleCount = parseInt(e.target.value, 10);
         document.getElementById('lbl-obs-count').textContent = mapObstacleCount;
@@ -2955,14 +2769,8 @@
         rebuildWorldTopology();
       });
 
-      document.getElementById('btn-target-p1').addEventListener('click', () => {
-        activeEditTarget = 1;
-        syncLabControlsUI();
-      });
-      document.getElementById('btn-target-p2').addEventListener('click', () => {
-        activeEditTarget = 2;
-        syncLabControlsUI();
-      });
+      document.getElementById('btn-target-p1').addEventListener('click', () => { activeEditTarget = 1; syncLabControlsUI(); });
+      document.getElementById('btn-target-p2').addEventListener('click', () => { activeEditTarget = 2; syncLabControlsUI(); });
 
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -2995,9 +2803,7 @@
           slotOverrides[activeEditTarget].formation = form;
           syncLabControlsUI();
           applyCreatureOverridesToArmy(activeEditTarget);
-          if (battleState === 'STANDBY' || battleState === 'ENDED') {
-            spawnArmies();
-          }
+          if (battleState === 'STANDBY' || battleState === 'ENDED') spawnArmies();
           appendLog(`📐 ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Formation set to ${FORMATIONS[form].label}`, "text-emerald-300 font-bold");
         });
       });
@@ -3073,7 +2879,7 @@
         spawnArmies();
         battleState = 'FIGHTING';
         syncMatchControlUI();
-        appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} ${CREATURES[selectedP1].name} vs ${CREATURES[selectedP2].name} on ${worldTopology.toUpperCase()} (${MAP_SIZES[mapSizeTier].label})!`, "text-amber-300 font-extrabold");
+        appendLog(`🎲 RANDOMIZER: ${armySize}v${armySize} on ${worldTopology.toUpperCase()} (${MAP_SIZES[mapSizeTier].label})!`, "text-amber-300 font-extrabold");
       };
 
       document.getElementById('btn-sandbox-randomizer').addEventListener('click', triggerRandomizerAll);
@@ -3081,25 +2887,15 @@
 
       document.getElementById('btn-sandbox-heal').addEventListener('click', () => {
         let healed = 0;
-        entities.forEach(f => {
-          if (f.side === activeEditTarget && !f.dead) {
-            f.hp = f.maxHp;
-            healed++;
-          }
-        });
+        entities.forEach(f => { if (f.side === activeEditTarget && !f.dead) { f.hp = f.maxHp; healed++; } });
         updateArmyHUD();
-        appendLog(`⚡ LAB: Restored full HP to ${healed} ${activeEditTarget === 1 ? 'Ally' : 'Hostile'} units!`, "text-cyan-300 font-bold");
+        appendLog(`⚡ LAB: Restored full HP to ${healed} units!`, "text-cyan-300 font-bold");
       });
       document.getElementById('btn-sandbox-instant-power').addEventListener('click', () => {
         let charged = 0;
-        entities.forEach(f => {
-          if (f.side === activeEditTarget && !f.dead) {
-            f.energy = 3;
-            charged++;
-          }
-        });
+        entities.forEach(f => { if (f.side === activeEditTarget && !f.dead) { f.energy = 3; charged++; } });
         updateArmyHUD();
-        appendLog(`★ LAB: Overcharged ${charged} ${activeEditTarget === 1 ? 'Ally' : 'Hostile'} units to MAX Power!`, "text-fuchsia-300 font-bold");
+        appendLog(`★ LAB: Overcharged ${charged} units to MAX Power!`, "text-fuchsia-300 font-bold");
       });
 
       document.getElementById('btn-spawn-hazard').addEventListener('click', () => {
@@ -3116,7 +2912,7 @@
         zMesh.position.set(zx, zy + 0.05, zz);
         worldGroup.add(zMesh);
         tacticalZones.push({ x: zx, z: zz, radius: 1.8, mesh: zMesh });
-        appendLog("✨ Deployed Bio-Regen Zone (+HP to occupying units)!", "text-emerald-300 font-bold");
+        appendLog("✨ Deployed Bio-Regen Zone (+HP)!", "text-emerald-300 font-bold");
       });
 
       window.addEventListener('keydown', (e) => {
@@ -3174,7 +2970,7 @@
       armySize = parseInt(e.target.value, 10);
       document.getElementById('lbl-army-size').textContent = armySize;
       if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
-        appendLog(`📐 Army Size queued to ${armySize}v${armySize} for next Reset/Start.`, "text-emerald-300");
+        appendLog(`📐 Army Size queued to ${armySize}v${armySize}.`, "text-emerald-300");
       } else {
         spawnArmies();
       }
@@ -3186,12 +2982,10 @@
         if(f.side === 1 && !f.dead && !f.activeAction) {
           f.rushCooldown = 3.2; f.timer = 0;
           const t = getClosestEnemy(f);
-          if (t) {
-            f.homeX += (t.mesh.position.x - f.homeX) * 0.45; f.homeZ += (t.mesh.position.z - f.homeZ) * 0.45;
-          }
+          if (t) { f.homeX += (t.mesh.position.x - f.homeX) * 0.45; f.homeZ += (t.mesh.position.z - f.homeZ) * 0.45; }
         }
       });
-      appendLog("⚡ ARMY COMMAND: RUSH STRIKE ISSUED!", "text-cyan-300 font-bold");
+      appendLog("⚡ ARMY COMMAND: RUSH STRIKE!", "text-cyan-300 font-bold");
     });
 
     document.getElementById('btn-cmd-guard').addEventListener('click', () => {
@@ -3201,7 +2995,7 @@
           f.guardTimer = 2.5; f.guardCooldown = 5.0; f.energy = Math.min(3, f.energy + 1);
         }
       });
-      appendLog("🛡️ ARMY COMMAND: MASS BRACE PROTOCOL!", "text-emerald-300 font-bold");
+      appendLog("🛡️ ARMY COMMAND: MASS BRACE!", "text-emerald-300 font-bold");
       updateArmyHUD();
     });
 
@@ -3214,7 +3008,7 @@
           if(t) { initiateMoveSequence(f, t); count++; }
         }
       });
-      if(count > 0) appendLog(`★ ARMY COMMAND: ${count} UNITS TRIGGERED OVERDRIVE!`, "text-fuchsia-300 font-extrabold");
+      if(count > 0) appendLog(`★ OVERDRIVE SYNC: ${count} units unleashed!`, "text-fuchsia-300 font-extrabold");
     });
 
     document.getElementById('btn-sandbox-toggle').addEventListener('click', () => {
@@ -3249,7 +3043,6 @@
         csRenderer.render(csScene, csCamera);
       }
 
-      // Standby & Ended idle breathing/natural habits so creatures look alive before & after battle
       if (battleState === 'STANDBY' || battleState === 'ENDED') {
         for (const f of entities) {
           if (f.dead) continue;
@@ -3271,15 +3064,35 @@
         matchElapsedTime += dt;
         updateRoundTimerUI();
 
-        if (matchElapsedTime >= ROUND_DURATION) {
+        if (currentMatchMode !== 'domination' && currentMatchMode !== 'gauntlet' && matchElapsedTime >= ROUND_DURATION) {
           resolveRoundTimeLimit();
+        }
+
+        // Bio-Nexus Domination Scoring Loop
+        if (currentMatchMode === 'domination' && bioNexusRing) {
+          let p1InRing = 0, p2InRing = 0;
+          for (const f of entities) {
+            if (!f.dead) {
+              const d = Math.hypot(f.mesh.position.x - bioNexusRing.x, f.mesh.position.z - bioNexusRing.z);
+              if (d <= bioNexusRing.radius) {
+                if (f.side === 1) p1InRing++;
+                else p2InRing++;
+              }
+            }
+          }
+          const diff = p1InRing - p2InRing;
+          if (diff !== 0) {
+            dominationControlP1 = THREE.MathUtils.clamp(dominationControlP1 + (diff * dt * 3.2), 0, 100);
+            if (bioNexusRing.mesh && bioNexusRing.mesh.material) {
+              bioNexusRing.mesh.material.color.setHex(dominationControlP1 > 50 ? 0x22d3ee : 0xf43f5e);
+            }
+          }
         }
 
         zoneHealTimer += dt;
         const applyZoneTick = zoneHealTimer >= 1.0;
         if (applyZoneTick) zoneHealTimer = 0;
 
-        // Spatial Grid Hash for O(1) neighbor separation at 100v100 (200 total units)
         const spatialGrid = new Map();
         const cellSize = 1.6;
         for (const e of entities) {
@@ -3288,10 +3101,7 @@
           const cz = Math.floor(e.homeZ / cellSize);
           const key = `${cx},${cz}`;
           let cell = spatialGrid.get(key);
-          if (!cell) {
-            cell = [];
-            spatialGrid.set(key, cell);
-          }
+          if (!cell) { cell = []; spatialGrid.set(key, cell); }
           cell.push(e);
         }
 
@@ -3337,6 +3147,21 @@
           const target = getBestEnemyTarget(f);
           f.takingCover = false;
 
+          // In Domination Mode, units near center are magnetically pulled toward the Bio-Nexus objective
+          if (currentMatchMode === 'domination' && bioNexusRing && !target && !f.activeAction) {
+            const dx = bioNexusRing.x - f.homeX;
+            const dz = bioNexusRing.z - f.homeZ;
+            const dist = Math.hypot(dx, dz);
+            if (dist > bioNexusRing.radius * 0.6) {
+              f.vx = THREE.MathUtils.lerp(f.vx, (dx / dist) * 2.2, dt * 4);
+              f.vz = THREE.MathUtils.lerp(f.vz, (dz / dist) * 2.2, dt * 4);
+              f.homeX += f.vx * dt;
+              f.homeZ += f.vz * dt;
+              enforceHardStopAndTerrainBounds(f, true);
+              continue;
+            }
+          }
+
           if (target && !f.activeAction) {
             const toEnemyX = target.mesh.position.x - f.homeX;
             const toEnemyZ = target.mesh.position.z - f.homeZ;
@@ -3357,42 +3182,25 @@
             const isCoolingDown = f.timer > f.cooldown * 0.72;
             const wantsToKiteOrHide = f.stance !== 'berserk' && (f.retreatTimer > 0 || (isLowHp && f.kiteStyle !== 'bulldozer') || (isCoolingDown && f.flightAlt > 0));
 
-            let steerX = 0;
-            let steerZ = 0;
+            let steerX = 0, steerZ = 0;
 
             if (wantsToKiteOrHide) {
               let soughtZone = null;
               if (isLowHp && tacticalZones.length > 0) {
                 for (const z of tacticalZones) {
-                  if (Math.hypot(z.x - f.homeX, z.z - f.homeZ) < 14.0 * Math.sqrt(mapScaleMult)) {
-                    soughtZone = z;
-                    break;
-                  }
+                  if (Math.hypot(z.x - f.homeX, z.z - f.homeZ) < 14.0 * Math.sqrt(mapScaleMult)) { soughtZone = z; break; }
                 }
               }
-
               const shelter = findObstacleShelterPoint(f, target);
               if (soughtZone) {
-                const zx = soughtZone.x - f.homeX;
-                const zz = soughtZone.z - f.homeZ;
-                const zd = Math.hypot(zx, zz) || 1;
-                steerX = (zx / zd) * 1.4 + perpX * 0.5;
-                steerZ = (zz / zd) * 1.4 + perpZ * 0.5;
+                const zx = soughtZone.x - f.homeX, zz = soughtZone.z - f.homeZ, zd = Math.hypot(zx, zz) || 1;
+                steerX = (zx / zd) * 1.4 + perpX * 0.5; steerZ = (zz / zd) * 1.4 + perpZ * 0.5;
               } else if (shelter) {
-                const sx = shelter.x - f.homeX;
-                const sz = shelter.z - f.homeZ;
-                const sd = Math.hypot(sx, sz) || 1;
-                if (sd < 1.25) {
-                  f.takingCover = true;
-                  steerX = perpX * 1.15 - dirX * 0.25;
-                  steerZ = perpZ * 1.15 - dirZ * 0.25;
-                } else {
-                  steerX = (sx / sd) * 1.45 + perpX * 0.45;
-                  steerZ = (sz / sd) * 1.45 + perpZ * 0.45;
-                }
+                const sx = shelter.x - f.homeX, sz = shelter.z - f.homeZ, sd = Math.hypot(sx, sz) || 1;
+                if (sd < 1.25) { f.takingCover = true; steerX = perpX * 1.15 - dirX * 0.25; steerZ = perpZ * 1.15 - dirZ * 0.25; }
+                else { steerX = (sx / sd) * 1.45 + perpX * 0.45; steerZ = (sz / sd) * 1.45 + perpZ * 0.45; }
               } else {
-                steerX = -dirX * 1.05 + perpX * 0.95;
-                steerZ = -dirZ * 1.05 + perpZ * 0.95;
+                steerX = -dirX * 1.05 + perpX * 0.95; steerZ = -dirZ * 1.05 + perpZ * 0.95;
               }
             } else {
               const blockingObs = isLineOfSightBlocked(f.homeX, f.homeZ, target.mesh.position.x, target.mesh.position.z);
@@ -3401,41 +3209,32 @@
                 const tangX = -(blockingObs.z - f.homeZ) * f.strafeDir;
                 const tangZ = (blockingObs.x - f.homeX) * f.strafeDir;
                 const td = Math.hypot(tangX, tangZ) || 1;
-                steerX = (tangX / td) * 1.55 + dirX * 0.65;
-                steerZ = (tangZ / td) * 1.55 + dirZ * 0.65;
+                steerX = (tangX / td) * 1.55 + dirX * 0.65; steerZ = (tangZ / td) * 1.55 + dirZ * 0.65;
               } else if (f.key === 'king_crab') {
                 const approach = distToEnemy > idealContactDist ? 1.12 : -0.08;
-                steerX = dirX * approach + perpX * 0.75 + hGradX * 0.55;
-                steerZ = dirZ * approach + perpZ * 0.75 + hGradZ * 0.55;
+                steerX = dirX * approach + perpX * 0.75 + hGradX * 0.55; steerZ = dirZ * approach + perpZ * 0.75 + hGradZ * 0.55;
               } else if (f.key === 'emperor_dragonfly') {
                 const wave = Math.sin(elapsed * 3.8 + f.seed);
                 const approach = distToEnemy > idealContactDist ? 1.32 : 0.25;
-                steerX = dirX * approach + perpX * (0.85 * wave);
-                steerZ = dirZ * approach + perpZ * (0.85 * wave);
+                steerX = dirX * approach + perpX * (0.85 * wave); steerZ = dirZ * approach + perpZ * (0.85 * wave);
               } else if (f.key === 'mantis_shrimp') {
                 const burst = distToEnemy < 3.4 ? 1.75 : 1.10;
-                steerX = dirX * burst + perpX * 0.38 - hGradX * 0.4;
-                steerZ = dirZ * burst + perpZ * 0.38 - hGradZ * 0.4;
+                steerX = dirX * burst + perpX * 0.38 - hGradX * 0.4; steerZ = dirZ * burst + perpZ * 0.38 - hGradZ * 0.4;
               } else if (f.key === 'stag_beetle') {
-                steerX = dirX * 1.42 + perpX * 0.22 + hGradX * 0.65;
-                steerZ = dirZ * 1.42 + perpZ * 0.22 + hGradZ * 0.65;
+                steerX = dirX * 1.42 + perpX * 0.22 + hGradX * 0.65; steerZ = dirZ * 1.42 + perpZ * 0.22 + hGradZ * 0.65;
               } else {
                 const approach = distToEnemy > idealContactDist ? 1.28 : -0.08;
-                steerX = dirX * approach + perpX * 0.65;
-                steerZ = dirZ * approach + perpZ * 0.65;
+                steerX = dirX * approach + perpX * 0.65; steerZ = dirZ * approach + perpZ * 0.65;
               }
 
               if (f.formation === 'pincer' && distToEnemy > 1.8) {
-                const flankPerpX = -dirZ * f.flankSign;
-                const flankPerpZ = dirX * f.flankSign;
-                steerX += flankPerpX * 0.95;
-                steerZ += flankPerpZ * 0.95;
+                steerX += -dirZ * f.flankSign * 0.95;
+                steerZ += dirX * f.flankSign * 0.95;
               } else if (f.formation === 'phalanx') {
                 steerX *= 0.85;
               }
               if (f.stance === 'berserk') {
-                steerX += dirX * 0.65;
-                steerZ += dirZ * 0.65;
+                steerX += dirX * 0.65; steerZ += dirZ * 0.65;
               }
             }
 
@@ -3450,15 +3249,11 @@
                     const adx = f.homeX - other.homeX;
                     const adz = f.homeZ - other.homeZ;
                     const adist = Math.hypot(adx, adz);
-                    const minSep = other.side === f.side
-                      ? (f.hitboxRadius + other.hitboxRadius) * 1.55
-                      : (f.hitboxRadius + other.hitboxRadius) * 0.96;
+                    const minSep = other.side === f.side ? (f.hitboxRadius + other.hitboxRadius) * 1.55 : (f.hitboxRadius + other.hitboxRadius) * 0.96;
                     if (adist > 0.001 && adist < minSep) {
                       const push = (minSep - adist) / minSep;
-                      const nx = adx / adist;
-                      const nz = adz / adist;
-                      steerX += (nx * 1.85 - nz * 0.45 * f.strafeDir) * push;
-                      steerZ += (nz * 1.85 + nx * 0.45 * f.strafeDir) * push;
+                      steerX += (adx / adist * 1.85 - adz / adist * 0.45 * f.strafeDir) * push;
+                      steerZ += (adz / adist * 1.85 + adx / adist * 0.45 * f.strafeDir) * push;
                     }
                   }
                 }
@@ -3473,10 +3268,8 @@
               const wantsOverTop = obs.climbable && !wantsToKiteOrHide && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0);
               if (odist > 0.001 && odist < minObsDist && !wantsOverTop) {
                 const push = (minObsDist - odist) / minObsDist;
-                const nx = odx / odist;
-                const nz = odz / odist;
-                steerX += (nx * 2.6 - nz * f.strafeDir * 1.15) * push;
-                steerZ += (nz * 2.6 + nx * f.strafeDir * 1.15) * push;
+                steerX += (odx / odist * 2.6 - odz / odist * f.strafeDir * 1.15) * push;
+                steerZ += (odz / odist * 2.6 + odx / odist * f.strafeDir * 1.15) * push;
               }
             }
 
@@ -3486,10 +3279,8 @@
 
             const steerMag = Math.hypot(steerX, steerZ);
             if (steerMag > 0.001) {
-              const desiredVx = (steerX / steerMag) * maxSpeed;
-              const desiredVz = (steerZ / steerMag) * maxSpeed;
-              f.vx = THREE.MathUtils.lerp(f.vx, desiredVx, Math.min(1, dt * 6.5));
-              f.vz = THREE.MathUtils.lerp(f.vz, desiredVz, Math.min(1, dt * 6.5));
+              f.vx = THREE.MathUtils.lerp(f.vx, (steerX / steerMag) * maxSpeed, Math.min(1, dt * 6.5));
+              f.vz = THREE.MathUtils.lerp(f.vz, (steerZ / steerMag) * maxSpeed, Math.min(1, dt * 6.5));
             } else {
               f.vx *= Math.max(0, 1 - dt * 6);
               f.vz *= Math.max(0, 1 - dt * 6);
@@ -3527,20 +3318,15 @@
           const nat = applyNaturalCreatureBehaviors(f, elapsed, dt, speedMag);
 
           let strikeDiveFactor = 0;
-
           if (f.activeAction) {
             const act = f.activeAction;
             act.progress += dt / act.duration;
             const p = Math.min(1, act.progress);
 
             let clashHold = 0;
-            if (p < 0.22) {
-              clashHold = Math.sin((p / 0.22) * (Math.PI * 0.5));
-            } else if (p < 0.68) {
-              clashHold = 1.0;
-            } else {
-              clashHold = Math.cos(((p - 0.68) / 0.32) * (Math.PI * 0.5));
-            }
+            if (p < 0.22) clashHold = Math.sin((p / 0.22) * (Math.PI * 0.5));
+            else if (p < 0.68) clashHold = 1.0;
+            else clashHold = Math.cos(((p - 0.68) / 0.32) * (Math.PI * 0.5));
             strikeDiveFactor = clashHold;
             
             const defTarget = entities.find(e => e.id === act.defenderId);
@@ -3578,24 +3364,14 @@
           const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.035 : 0;
           const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.92);
           const clampedLiftY = THREE.MathUtils.clamp(f.victimState.liftY, 0, 0.28);
-          const desiredY = THREE.MathUtils.clamp(
-            surfaceY + hoverOffset + clampedLiftY + nat.bodyYOffset,
-            surfaceY,
-            surfaceY + f.flightAlt + 0.32
-          );
+          const desiredY = THREE.MathUtils.clamp(surfaceY + hoverOffset + clampedLiftY + nat.bodyYOffset, surfaceY, surfaceY + f.flightAlt + 0.32);
           f.mesh.position.y = Math.max(surfaceY, THREE.MathUtils.lerp(f.mesh.position.y, desiredY, Math.min(1, dt * 14)));
 
-          if (ud.groundShadow) {
-            ud.groundShadow.position.y = (surfaceY - f.mesh.position.y) + 0.015;
-          }
+          if (ud.groundShadow) ud.groundShadow.position.y = (surfaceY - f.mesh.position.y) + 0.015;
 
           const forwardTilt = f.flightAlt > 0 ? -Math.min(0.22, speedMag * 0.05) : 0;
           ud.bodyGroup.rotation.z = THREE.MathUtils.clamp(f.victimState.tiltZ + forwardTilt + nat.bodyPitchOffset, -0.48, 0.48);
-          ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(
-            ud.bodyGroup.rotation.x,
-            THREE.MathUtils.clamp((f.strafeDir * speedMag * 0.04) + nat.bodyRollOffset, -0.35, 0.35),
-            Math.min(1, dt * 8)
-          );
+          ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(ud.bodyGroup.rotation.x, THREE.MathUtils.clamp((f.strafeDir * speedMag * 0.04) + nat.bodyRollOffset, -0.35, 0.35), Math.min(1, dt * 8));
 
           if (target && !f.activeAction) {
             const targetYaw = Math.atan2(-(target.mesh.position.z - f.mesh.position.z), target.mesh.position.x - f.mesh.position.x);
@@ -3605,8 +3381,7 @@
           }
 
           if (f.hitFlash > 0) {
-            f.hitFlash -= dt;
-            ud.mat.color.setHex(0xffffff);
+            f.hitFlash -= dt; ud.mat.color.setHex(0xffffff);
           } else if (f.guardTimer > 0) {
             ud.mat.color.setHex(0x10b981);
           } else if (f.slowTimer > 0) {
@@ -3617,10 +3392,7 @@
         }
 
         framesTillHUD++;
-        if (framesTillHUD >= 5) {
-          updateArmyHUD();
-          framesTillHUD = 0;
-        }
+        if (framesTillHUD >= 5) { updateArmyHUD(); framesTillHUD = 0; }
       }
 
       if (!isPaused) {
@@ -3628,9 +3400,7 @@
           const p = particles[i];
           p.life -= dt * 2.2;
           if (p.life <= 0) {
-            scene.remove(p.mesh);
-            p.mesh.material.dispose();
-            particles.splice(i, 1);
+            scene.remove(p.mesh); p.mesh.material.dispose(); particles.splice(i, 1);
           } else {
             p.mesh.position.addScaledVector(p.vel, dt);
             p.vel.y -= 9.8 * dt;
@@ -3649,14 +3419,11 @@
           const p = sk.elapsed / sk.duration;
 
           if (p >= 1.0) {
-            scene.remove(sk.group);
-            sk.mats.forEach(m => m.dispose());
-            deathSkulls.splice(i, 1);
+            scene.remove(sk.group); sk.mats.forEach(m => m.dispose()); deathSkulls.splice(i, 1);
           } else {
             const growT = Math.min(1, p / 0.35);
             const easeOut = 1 - Math.pow(1 - growT, 3);
             const baseScale = 0.02 + easeOut * 0.2625;
-
             const laughWave = Math.abs(Math.sin(sk.elapsed * 22.0));
             const s = baseScale * (1 + laughWave * 0.08);
             sk.group.scale.set(s, s, s);
@@ -3665,13 +3432,11 @@
               sk.jaw.position.y = sk.jaw.userData.baseY - laughWave * 0.085;
               sk.jaw.rotation.x = laughWave * 0.38;
             }
-
             if (sk.eyeLGlow && sk.eyeRGlow) {
               const eyePulse = 1.0 + laughWave * 0.42;
               sk.eyeLGlow.scale.set(eyePulse, eyePulse, eyePulse);
               sk.eyeRGlow.scale.set(eyePulse, eyePulse, eyePulse);
             }
-
             sk.group.position.y += dt * 0.28 + Math.sin(sk.elapsed * 22.0) * 0.003;
             sk.group.lookAt(camera.position);
 
@@ -3702,18 +3467,11 @@
           const chaseDist = Math.max(2.2, camRadius * 0.38);
           const chaseHeight = Math.max(1.1, Math.sin(camPitch) * chaseDist + 0.65);
 
-          _tempVecA.set(
-            pos.x + backX * chaseDist,
-            pos.y + chaseHeight,
-            pos.z + backZ * chaseDist
-          );
+          _tempVecA.set(pos.x + backX * chaseDist, pos.y + chaseHeight, pos.z + backZ * chaseDist);
           camera.position.lerp(_tempVecA, Math.min(1, rawDt * 7.5));
 
-          if (enemy) {
-            _tempVecB.set((pos.x + enemy.mesh.position.x) * 0.5, pos.y + 0.35, (pos.z + enemy.mesh.position.z) * 0.5);
-          } else {
-            _tempVecB.set(pos.x - backX * 3, pos.y + 0.35, pos.z - backZ * 3);
-          }
+          if (enemy) _tempVecB.set((pos.x + enemy.mesh.position.x) * 0.5, pos.y + 0.35, (pos.z + enemy.mesh.position.z) * 0.5);
+          else _tempVecB.set(pos.x - backX * 3, pos.y + 0.35, pos.z - backZ * 3);
           camLookTarget.lerp(_tempVecB, Math.min(1, rawDt * 8.0));
           camera.lookAt(camLookTarget);
         }
@@ -3725,24 +3483,10 @@
         const rightX = Math.cos(freeCamYaw);
         const rightZ = -Math.sin(freeCamYaw);
 
-        if (moveKeys.w || moveKeys.up) {
-          freeCamPos.x += fwdX * flySpeed;
-          freeCamPos.y += fwdY * flySpeed;
-          freeCamPos.z += fwdZ * flySpeed;
-        }
-        if (moveKeys.s || moveKeys.down) {
-          freeCamPos.x -= fwdX * flySpeed;
-          freeCamPos.y -= fwdY * flySpeed;
-          freeCamPos.z -= fwdZ * flySpeed;
-        }
-        if (moveKeys.d || moveKeys.right) {
-          freeCamPos.x -= rightX * flySpeed;
-          freeCamPos.z -= rightZ * flySpeed;
-        }
-        if (moveKeys.a || moveKeys.left) {
-          freeCamPos.x += rightX * flySpeed;
-          freeCamPos.z += rightZ * flySpeed;
-        }
+        if (moveKeys.w || moveKeys.up) { freeCamPos.x += fwdX * flySpeed; freeCamPos.y += fwdY * flySpeed; freeCamPos.z += fwdZ * flySpeed; }
+        if (moveKeys.s || moveKeys.down) { freeCamPos.x -= fwdX * flySpeed; freeCamPos.y -= fwdY * flySpeed; freeCamPos.z -= fwdZ * flySpeed; }
+        if (moveKeys.d || moveKeys.right) { freeCamPos.x -= rightX * flySpeed; freeCamPos.z -= rightZ * flySpeed; }
+        if (moveKeys.a || moveKeys.left) { freeCamPos.x += rightX * flySpeed; freeCamPos.z += rightZ * flySpeed; }
         if (moveKeys.e) freeCamPos.y += flySpeed;
         if (moveKeys.q) freeCamPos.y -= flySpeed;
 
@@ -3750,36 +3494,21 @@
         if (freeCamPos.y < minMapFloor) freeCamPos.y = minMapFloor;
 
         camera.position.lerp(freeCamPos, Math.min(1, rawDt * 14.0));
-        camLookTarget.set(
-          camera.position.x + fwdX * 10,
-          camera.position.y + fwdY * 10,
-          camera.position.z + fwdZ * 10
-        );
+        camLookTarget.set(camera.position.x + fwdX * 10, camera.position.y + fwdY * 10, camera.position.z + fwdZ * 10);
         camera.lookAt(camLookTarget);
       } else {
         let sumX = 0, sumY = 0, sumZ = 0, count = 0;
         for (const e of entities) {
-          if (!e.dead) {
-            sumX += e.mesh.position.x;
-            sumY += e.mesh.position.y;
-            sumZ += e.mesh.position.z;
-            count++;
-          }
+          if (!e.dead) { sumX += e.mesh.position.x; sumY += e.mesh.position.y; sumZ += e.mesh.position.z; count++; }
         }
-        if (count > 0) {
-          _tempVecA.set(sumX / count, (sumY / count) + 0.4, sumZ / count);
-        } else {
-          _tempVecA.set(0, 0.5, 0);
-        }
+        if (count > 0) _tempVecA.set(sumX / count, (sumY / count) + 0.4, sumZ / count);
+        else _tempVecA.set(0, 0.5, 0);
         camTarget.lerp(_tempVecA, Math.min(1, rawDt * 4.5));
 
-        if (!isDraggingArena && !isPaused) {
-          camYaw += rawDt * 0.045;
-        }
+        if (!isDraggingArena && !isPaused) camYaw += rawDt * 0.045;
 
         const horizDist = Math.cos(camPitch) * camRadius;
         const vertDist = Math.sin(camPitch) * camRadius;
-
         const desiredX = camTarget.x + Math.sin(camYaw) * horizDist;
         const desiredZ = camTarget.z + Math.cos(camYaw) * horizDist;
         const desiredY = Math.max(getTerrainHeight(desiredX, desiredZ) + 0.5, camTarget.y + vertDist);
