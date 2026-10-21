@@ -449,13 +449,41 @@
           </div>
         </div>
       </div>
+
+      <!-- CREATURE COLOR SCHEMES (NATIVE NATURAL PATTERN + 6 PALETTES) -->
+      <div class="bg-slate-900/50 p-2 rounded border border-slate-800/70 space-y-1.5">
+        <div class="flex items-center justify-between text-[8px] text-slate-400">
+          <span>COLOR SCHEME:</span>
+          <span id="lbl-c-color" class="text-cyan-300 font-bold uppercase">NATIVE PATTERN</span>
+        </div>
+        <div class="grid grid-cols-4 gap-1 w-full">
+          <button data-color-scheme="native" class="btn-color-preset col-span-2 w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Species Native Natural Biological Pattern">🌿 NATIVE</button>
+          <button data-color-scheme="cyber_cyan" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Cyber Cyan">CYAN</button>
+          <button data-color-scheme="crimson_flare" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Crimson Flare">CRIMSON</button>
+          <button data-color-scheme="venom_emerald" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Venom Emerald">EMERALD</button>
+          <button data-color-scheme="solar_gold" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Solar Gold">GOLD</button>
+          <button data-color-scheme="nebula_violet" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Nebula Violet">VIOLET</button>
+          <button data-color-scheme="obsidian_frost" class="btn-color-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition" title="Arctic Frost">FROST</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
+    const COLOR_SCHEMES = {
+      native:         { label: 'NATIVE PATTERN' },
+      cyber_cyan:     { label: 'CYBER CYAN',     primary: 0x22d3ee, secondary: 0x0891b2, accent: 0xa5f3fc, wing: 0x67e8f9, cel: 0x083344 },
+      crimson_flare:  { label: 'CRIMSON FLARE',  primary: 0xf43f5e, secondary: 0xbe123c, accent: 0xfda4af, wing: 0xfb7185, cel: 0x4c0519 },
+      venom_emerald:  { label: 'VENOM EMERALD',  primary: 0x10b981, secondary: 0x047857, accent: 0x6ee7b7, wing: 0x34d399, cel: 0x022c22 },
+      solar_gold:     { label: 'SOLAR GOLD',     primary: 0xfacc15, secondary: 0xd97706, accent: 0xfef08a, wing: 0xfde047, cel: 0x422006 },
+      nebula_violet:  { label: 'NEBULA VIOLET',  primary: 0xc084fc, secondary: 0x7e22ce, accent: 0xf5d0fe, wing: 0xe879f9, cel: 0x2e1065 },
+      obsidian_frost: { label: 'ARCTIC FROST',   primary: 0xe2e8f0, secondary: 0x64748b, accent: 0x38bdf8, wing: 0xffffff, cel: 0x0f172a }
+    };
+
     const CREATURES = {
       king_crab: {
         name: "King Crab", faction: "CRUSTACEAN", archetype: "armored_tank", color: 0x22d3ee,
+        nativePalette: { primary: 0xe11d48, secondary: 0xfbbf24, accent: 0xfef08a, wing: 0xfda4af, cel: 0x4c0519 },
         hp: 130, atk: 18, def: 17, spd: 0.92, crit: 0.08,
         flightAlt: 0.0, hitboxRadius: 0.24, kiteStyle: "side_scuttle",
         behaviors: ["chelae_display", "benthic_hunker", "bubble_purge"],
@@ -468,6 +496,7 @@
       },
       mantis_shrimp: {
         name: "Mantis Shrimp", faction: "CRUSTACEAN", archetype: "shell_breaker", color: 0x38bdf8,
+        nativePalette: { primary: 0x10b981, secondary: 0x3b82f6, accent: 0xf97316, wing: 0xe879f9, cel: 0x064e3b },
         hp: 100, atk: 22, def: 11, spd: 1.18, crit: 0.18,
         flightAlt: 0.0, hitboxRadius: 0.20, kiteStyle: "tail_backdash",
         behaviors: ["eye_radar", "raptorial_cock", "pleopod_ripple"],
@@ -480,6 +509,7 @@
       },
       stag_beetle: {
         name: "Stag Beetle", faction: "INSECT", archetype: "heavy_grappler", color: 0xf43f5e,
+        nativePalette: { primary: 0x991b1b, secondary: 0xd97706, accent: 0xef4444, wing: 0xf59e0b, cel: 0x270909 },
         hp: 125, atk: 18, def: 15, spd: 0.96, crit: 0.10,
         flightAlt: 0.0, hitboxRadius: 0.23, kiteStyle: "bulldozer",
         behaviors: ["mandible_scrape", "thorax_rear", "tarsi_stamp"],
@@ -492,6 +522,7 @@
       },
       killer_wasp: {
         name: "Killer Wasp", faction: "INSECT", archetype: "aerial_striker", color: 0xfacc15,
+        nativePalette: { primary: 0xfacc15, secondary: 0x475569, accent: 0xf97316, wing: 0xfef08a, cel: 0x1e293b },
         hp: 90, atk: 21, def: 8, spd: 1.28, crit: 0.20,
         flightAlt: 0.22, hitboxRadius: 0.19, kiteStyle: "hit_and_kite",
         behaviors: ["abdomen_pump", "antenna_groom", "hover_jink"],
@@ -504,6 +535,7 @@
       },
       emperor_dragonfly: {
         name: "Emperor Dragonfly", faction: "INSECT", archetype: "aerial_striker", color: 0x34d399,
+        nativePalette: { primary: 0x0ea5e9, secondary: 0x10b981, accent: 0x38bdf8, wing: 0xa5f3fc, cel: 0x082f49 },
         hp: 95, atk: 20, def: 9, spd: 1.36, crit: 0.22,
         flightAlt: 0.25, hitboxRadius: 0.21, kiteStyle: "vector_strafe",
         behaviors: ["head_swivel", "wing_shimmer", "abdomen_trim"],
@@ -516,6 +548,7 @@
       },
       tarantula_hawk: {
         name: "Tarantula Hawk", faction: "INSECT", archetype: "aerial_striker", color: 0xf97316,
+        nativePalette: { primary: 0x2563eb, secondary: 0x1e40af, accent: 0xef4444, wing: 0xf97316, cel: 0x172554 },
         hp: 108, atk: 21, def: 12, spd: 1.16, crit: 0.15,
         flightAlt: 0.20, hitboxRadius: 0.21, kiteStyle: "paralysis_kite",
         behaviors: ["wing_flick", "antenna_probe", "stinger_prime"],
@@ -546,103 +579,149 @@
       return mesh;
     }
 
-    function buildCreatureMesh(key, hexColor, opacity = 0.95, customScale = 0.125) {
+    // Lightweight Cel-Shaded + Wireframe Part Builder (zero shader bloat)
+    function makeCelWirePart(type, args, wireMat, celMat, pos = [0,0,0], rot = [0,0,0], scale = [1,1,1]) {
+      const geo = getGeometry(type, ...args);
+      const mesh = new THREE.Mesh(geo, wireMat);
+      mesh.position.set(...pos);
+      mesh.rotation.set(...rot);
+      mesh.scale.set(...scale);
+      if (celMat) {
+        const core = new THREE.Mesh(geo, celMat);
+        core.scale.set(0.92, 0.92, 0.92);
+        mesh.add(core);
+      }
+      return mesh;
+    }
+
+    function resolvePaletteForCreature(key, schemeKey = 'native', isMirrorHostile = false) {
+      const cfg = CREATURES[key];
+      if (!schemeKey || schemeKey === 'native') {
+        if (isMirrorHostile) {
+          return { primary: 0xf43f5e, secondary: 0xbe123c, accent: 0xfda4af, wing: 0xfb7185, cel: 0x4c0519 };
+        }
+        return cfg.nativePalette || { primary: cfg.color, secondary: cfg.color, accent: 0xffffff, wing: 0xffffff, cel: 0x0f172a };
+      }
+      return COLOR_SCHEMES[schemeKey] || COLOR_SCHEMES.cyber_cyan;
+    }
+
+    function buildCreatureMesh(key, hexColor, opacity = 0.95, customScale = 0.125, schemeKey = 'native', isMirrorHostile = false) {
       const root = new THREE.Group();
       const bodyGroup = new THREE.Group();
       bodyGroup.scale.set(customScale, customScale, customScale);
       root.add(bodyGroup);
 
-      const mat = new THREE.MeshBasicMaterial({ color: hexColor, wireframe: true, transparent: true, opacity: opacity });
-      const subMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: opacity * 0.45 });
+      const pal = resolvePaletteForCreature(key, schemeKey, isMirrorHostile);
+
+      const mat = new THREE.MeshBasicMaterial({ color: pal.primary, wireframe: true, transparent: true, opacity: opacity });
+      const secMat = new THREE.MeshBasicMaterial({ color: pal.secondary, wireframe: true, transparent: true, opacity: opacity * 0.92 });
+      const accMat = new THREE.MeshBasicMaterial({ color: pal.accent, wireframe: true, transparent: true, opacity: opacity * 0.95 });
+      const subMat = new THREE.MeshBasicMaterial({ color: pal.wing, wireframe: true, transparent: true, opacity: opacity * 0.58 });
+      const celMat = new THREE.MeshBasicMaterial({
+        color: pal.cel,
+        transparent: true,
+        opacity: 0.52,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+
+      // Subtle ground-level immersion shadow/glow disc anchored to terrain under unit
+      const shadowMat = new THREE.MeshBasicMaterial({ color: pal.primary, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+      const groundShadow = new THREE.Mesh(getGeometry('CircleGeometry', 0.22, 16), shadowMat);
+      groundShadow.rotation.x = -Math.PI / 2;
+      groundShadow.position.y = 0.015;
+      root.add(groundShadow);
 
       const wings = []; const claws = []; const legs = []; const extras = [];
 
       if (key === 'king_crab') {
-        const carapace = makeWirePart('OctahedronGeometry', [1.15, 1], mat, [0, 0.75, 0], [0, 0, 0], [1.1, 0.45, 1.35]);
+        const carapace = makeCelWirePart('OctahedronGeometry', [1.15, 1], mat, celMat, [0, 0.75, 0], [0, 0, 0], [1.1, 0.45, 1.35]);
         bodyGroup.add(carapace); extras.push(carapace);
         for (let s of [-1, 1]) {
           for (let i = 0; i < 4; i++) {
             const z = (i - 1.5) * 0.55;
-            const leg = makeWirePart('CylinderGeometry', [0.06, 0.03, 1.5, 4], mat, [0.15, 0.45, z + s * 0.95], [s * 0.65, 0, 0]);
+            const leg = makeWirePart('CylinderGeometry', [0.06, 0.03, 1.5, 4], secMat, [0.15, 0.45, z + s * 0.95], [s * 0.65, 0, 0]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.65, phase: i + s, side: s, idx: i });
           }
-          const claw = makeWirePart('ConeGeometry', [0.32, 1.15, 5], mat, [0.95, 0.65, s * 0.75], [0, 0, -Math.PI / 2]);
+          const claw = makeCelWirePart('ConeGeometry', [0.32, 1.15, 5], accMat, celMat, [0.95, 0.65, s * 0.75], [0, 0, -Math.PI / 2]);
           bodyGroup.add(claw); claws.push(claw);
         }
       } else if (key === 'mantis_shrimp') {
         for (let i = 0; i < 4; i++) {
-          const seg = makeWirePart('BoxGeometry', [0.65, 0.38, 0.75 - i * 0.05], mat, [-i * 0.48 + 0.4, 0.55 + Math.sin(i * 0.5) * 0.18, 0]);
+          const segMat = i % 2 === 0 ? mat : secMat;
+          const seg = makeCelWirePart('BoxGeometry', [0.65, 0.38, 0.75 - i * 0.05], segMat, celMat, [-i * 0.48 + 0.4, 0.55 + Math.sin(i * 0.5) * 0.18, 0]);
           bodyGroup.add(seg); extras.push(seg);
         }
         for (let s of [-1, 1]) {
           const eye = makeWirePart('OctahedronGeometry', [0.16, 0], subMat, [0.92, 0.88, s * 0.24]);
           bodyGroup.add(eye); extras.push(eye);
-          const club = makeWirePart('OctahedronGeometry', [0.38, 1], mat, [1.05, 0.45, s * 0.48], [0, 0, -0.4], [1.6, 0.7, 0.7]);
+          const club = makeCelWirePart('OctahedronGeometry', [0.38, 1], accMat, celMat, [1.05, 0.45, s * 0.48], [0, 0, -0.4], [1.6, 0.7, 0.7]);
           bodyGroup.add(club); claws.push(club);
           for (let i = 0; i < 3; i++) {
-            const leg = makeWirePart('CylinderGeometry', [0.03, 0.02, 0.75, 3], subMat, [-i * 0.4, 0.28, s * 0.45], [s * 0.4, 0, 0]);
+            const leg = makeWirePart('CylinderGeometry', [0.03, 0.02, 0.75, 3], secMat, [-i * 0.4, 0.28, s * 0.45], [s * 0.4, 0, 0]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.4, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'killer_wasp') {
-        const head = makeWirePart('OctahedronGeometry', [0.34, 0], mat, [0.85, 1.25, 0]);
-        const thorax = makeWirePart('IcosahedronGeometry', [0.42, 0], mat, [0.1, 1.22, 0], [0, 0, 0], [1.2, 0.85, 0.85]);
-        const abdomen = makeWirePart('ConeGeometry', [0.45, 1.45, 6], mat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]);
+        const head = makeCelWirePart('OctahedronGeometry', [0.34, 0], mat, celMat, [0.85, 1.25, 0]);
+        const thorax = makeCelWirePart('IcosahedronGeometry', [0.42, 0], secMat, celMat, [0.1, 1.22, 0], [0, 0, 0], [1.2, 0.85, 0.85]);
+        const abdomen = makeCelWirePart('ConeGeometry', [0.45, 1.45, 6], mat, celMat, [-0.95, 1.05, 0], [0, 0, -Math.PI / 2.3]);
         bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(abdomen);
         extras.push(head, abdomen);
         for (let s of [-1, 1]) {
           const wing = makeWirePart('PlaneGeometry', [0.65, 1.55, 2, 3], subMat, [0.2, 1.55, s * 0.75], [s * 1.15, 0, 0.2]);
           bodyGroup.add(wing); wings.push({ mesh: wing, side: s, phase: 0 });
           for (let i = 0; i < 3; i++) {
-            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.75, 3], mat, [0.3 - i * 0.25, 0.75, s * 0.38], [s * 0.35, 0, 0.2]);
+            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.75, 3], accMat, [0.3 - i * 0.25, 0.75, s * 0.38], [s * 0.35, 0, 0.2]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.35, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'stag_beetle') {
-        const elytra = makeWirePart('SphereGeometry', [0.85, 6, 5], mat, [-0.25, 0.65, 0], [0, 0, 0], [1.45, 0.62, 1.05]);
+        const elytra = makeCelWirePart('SphereGeometry', [0.85, 6, 5], mat, celMat, [-0.25, 0.65, 0], [0, 0, 0], [1.45, 0.62, 1.05]);
         bodyGroup.add(elytra); extras.push(elytra);
         for (let s of [-1, 1]) {
-          const horn = makeWirePart('ConeGeometry', [0.14, 1.35, 4], subMat, [1.35, 0.78, s * 0.32], [0, -s * 0.28, -Math.PI / 2.3]);
+          const horn = makeCelWirePart('ConeGeometry', [0.14, 1.35, 4], accMat, celMat, [1.35, 0.78, s * 0.32], [0, -s * 0.28, -Math.PI / 2.3]);
           bodyGroup.add(horn); claws.push(horn);
           for (let i = -1; i <= 1; i++) {
-            const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 0.9, 3], mat, [i * 0.45, 0.35, s * 0.75], [s * 0.6, 0, 0]);
+            const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 0.9, 3], secMat, [i * 0.45, 0.35, s * 0.75], [s * 0.6, 0, 0]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.6, phase: i, side: s, idx: i + 1 });
           }
         }
       } else if (key === 'emperor_dragonfly') {
-        const head = makeWirePart('SphereGeometry', [0.38, 6, 5], mat, [1.15, 1.28, 0], [0, 0, 0], [0.9, 0.9, 1.35]);
-        const thorax = makeWirePart('OctahedronGeometry', [0.46, 1], mat, [0.45, 1.25, 0], [0, 0, 0], [1.35, 0.85, 0.85]);
-        const tail = makeWirePart('CylinderGeometry', [0.14, 0.07, 2.25, 5], mat, [-0.95, 1.22, 0], [0, 0, Math.PI / 2]);
+        const head = makeCelWirePart('SphereGeometry', [0.38, 6, 5], secMat, celMat, [1.15, 1.28, 0], [0, 0, 0], [0.9, 0.9, 1.35]);
+        const thorax = makeCelWirePart('OctahedronGeometry', [0.46, 1], secMat, celMat, [0.45, 1.25, 0], [0, 0, 0], [1.35, 0.85, 0.85]);
+        const tail = makeCelWirePart('CylinderGeometry', [0.14, 0.07, 2.25, 5], mat, celMat, [-0.95, 1.22, 0], [0, 0, Math.PI / 2]);
         bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(tail);
         extras.push(head, tail);
         for (let s of [-1, 1]) {
           const foreWing = makeWirePart('PlaneGeometry', [0.42, 1.95, 2, 4], subMat, [0.58, 1.52, s * 0.95], [s * 1.22, 0, 0.12]);
-          const hindWing = makeWirePart('PlaneGeometry', [0.50, 1.75, 2, 4], mat, [0.18, 1.48, s * 0.88], [s * 1.22, 0, -0.14]);
+          const hindWing = makeWirePart('PlaneGeometry', [0.50, 1.75, 2, 4], accMat, [0.18, 1.48, s * 0.88], [s * 1.22, 0, -0.14]);
           bodyGroup.add(foreWing);
           bodyGroup.add(hindWing);
           wings.push({ mesh: foreWing, side: s, phase: 0 });
           wings.push({ mesh: hindWing, side: s, phase: Math.PI * 0.65 });
           for (let i = 0; i < 3; i++) {
-            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.7, 3], subMat, [0.65 - i * 0.22, 0.82, s * 0.32], [s * 0.3, 0, 0.35]);
+            const leg = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.7, 3], secMat, [0.65 - i * 0.22, 0.82, s * 0.32], [s * 0.3, 0, 0.35]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.3, phase: i, side: s, idx: i });
           }
         }
       } else if (key === 'tarantula_hawk') {
-        const head = makeWirePart('OctahedronGeometry', [0.36, 0], mat, [0.95, 1.22, 0]);
-        const thorax = makeWirePart('IcosahedronGeometry', [0.50, 1], mat, [0.22, 1.25, 0], [0, 0, 0], [1.35, 0.92, 0.9]);
-        const abdomen = makeWirePart('ConeGeometry', [0.48, 1.65, 6], mat, [-1.05, 1.08, 0], [0, 0, -Math.PI / 2.25]);
+        const head = makeCelWirePart('OctahedronGeometry', [0.36, 0], mat, celMat, [0.95, 1.22, 0]);
+        const thorax = makeCelWirePart('IcosahedronGeometry', [0.50, 1], secMat, celMat, [0.22, 1.25, 0], [0, 0, 0], [1.35, 0.92, 0.9]);
+        const abdomen = makeCelWirePart('ConeGeometry', [0.48, 1.65, 6], mat, celMat, [-1.05, 1.08, 0], [0, 0, -Math.PI / 2.25]);
         bodyGroup.add(head); bodyGroup.add(thorax); bodyGroup.add(abdomen);
         extras.push(head, abdomen);
-        const stinger = makeWirePart('ConeGeometry', [0.08, 0.55, 4], subMat, [-1.92, 0.95, 0], [0, 0, Math.PI / 2]);
+        const stinger = makeWirePart('ConeGeometry', [0.08, 0.55, 4], accMat, [-1.92, 0.95, 0], [0, 0, Math.PI / 2]);
         bodyGroup.add(stinger); claws.push(stinger);
         for (let s of [-1, 1]) {
-          const ant = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.65, 3], subMat, [1.28, 1.38, s * 0.22], [0, -s * 0.35, -0.8]);
+          const ant = makeWirePart('CylinderGeometry', [0.02, 0.01, 0.65, 3], accMat, [1.28, 1.38, s * 0.22], [0, -s * 0.35, -0.8]);
           bodyGroup.add(ant); claws.push(ant);
           const wing = makeWirePart('PlaneGeometry', [0.75, 1.75, 2, 3], subMat, [0.22, 1.62, s * 0.82], [s * 1.12, 0, 0.18]);
           bodyGroup.add(wing); wings.push({ mesh: wing, side: s, phase: 0 });
           for (let i = 0; i < 3; i++) {
             const legLen = i === 2 ? 1.15 : 0.85;
-            const leg = makeWirePart('CylinderGeometry', [0.03, 0.015, legLen, 3], mat, [0.35 - i * 0.32, 0.68, s * 0.46], [s * 0.48, 0, 0.15]);
+            const leg = makeWirePart('CylinderGeometry', [0.03, 0.015, legLen, 3], secMat, [0.35 - i * 0.32, 0.68, s * 0.46], [s * 0.48, 0, 0.15]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.48, phase: i, side: s, idx: i });
           }
         }
@@ -650,8 +729,28 @@
 
       claws.forEach(c => { c.userData.basePos = c.position.clone(); c.userData.baseRot = c.rotation.clone(); });
       extras.forEach(e => { e.userData.basePos = e.position.clone(); e.userData.baseRot = e.rotation.clone(); });
-      root.userData = { bodyGroup, mat, subMat, wings, claws, legs, extras, baseColor: hexColor };
+      root.userData = {
+        bodyGroup, mat, secMat, accMat, subMat, celMat, shadowMat, groundShadow,
+        wings, claws, legs, extras,
+        baseColor: pal.primary,
+        palette: pal
+      };
       return root;
+    }
+
+    function applyPaletteToEntity(f, schemeKey) {
+      const isMirrorHostile = f.side === 2 && selectedP1 === selectedP2 && schemeKey === 'native' && slotOverrides[1].colorScheme === 'native';
+      const pal = resolvePaletteForCreature(f.key, schemeKey, isMirrorHostile);
+      const ud = f.mesh.userData;
+      f.color = pal.primary;
+      ud.baseColor = pal.primary;
+      ud.palette = pal;
+      ud.mat.color.setHex(pal.primary);
+      if (ud.secMat) ud.secMat.color.setHex(pal.secondary);
+      if (ud.accMat) ud.accMat.color.setHex(pal.accent);
+      if (ud.subMat) ud.subMat.color.setHex(pal.wing);
+      if (ud.celMat) ud.celMat.color.setHex(pal.cel);
+      if (ud.shadowMat) ud.shadowMat.color.setHex(pal.primary);
     }
 
     // Procedural 3D Solid-White + Wireframe Skull (75% smaller) with Glowing Red Eyes
@@ -786,6 +885,63 @@
       });
     }
 
+    // Sample minimum terrain height across an obstacle's footprint so it never floats on slopes
+    function getAnchoredObstacleBaseY(x, z, r) {
+      const hCenter = getTerrainHeight(x, z);
+      const hN = getTerrainHeight(x, z - r * 0.85);
+      const hS = getTerrainHeight(x, z + r * 0.85);
+      const hE = getTerrainHeight(x + r * 0.85, z);
+      const hW = getTerrainHeight(x - r * 0.85, z);
+      // Partial embedding (-0.16) into the lowest local ground point guarantees zero floating
+      return Math.min(hCenter, hN, hS, hE, hW) - 0.16;
+    }
+
+    // Helper to build a cel-shaded + wireframe terrain obstacle mesh
+    function makeCelObstacleMesh(geo, wireColor, celColor, wireOpacity = 0.82, celOpacity = 0.48) {
+      const group = new THREE.Group();
+      const celMesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshBasicMaterial({
+          color: celColor,
+          transparent: true,
+          opacity: celOpacity,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        })
+      );
+      const wireMesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshBasicMaterial({
+          color: wireColor,
+          wireframe: true,
+          transparent: true,
+          opacity: wireOpacity
+        })
+      );
+      group.add(celMesh, wireMesh);
+      return group;
+    }
+
+    // Ground-level immersion collar shaded at the terrain-to-obstacle interface
+    function addGroundImmersionCollar(parentGroup, localY, radius, colorHex) {
+      const innerCollar = new THREE.Mesh(
+        getGeometry('CircleGeometry', radius * 1.18, 20),
+        new THREE.MeshBasicMaterial({ color: 0x020617, transparent: true, opacity: 0.58, side: THREE.DoubleSide, depthWrite: false })
+      );
+      innerCollar.rotation.x = -Math.PI / 2;
+      innerCollar.position.y = localY + 0.02;
+
+      const rimCollar = new THREE.Mesh(
+        getGeometry('RingGeometry', radius * 0.96, radius * 1.24, 24),
+        new THREE.MeshBasicMaterial({ color: colorHex, wireframe: true, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+      );
+      rimCollar.rotation.x = Math.PI / 2;
+      rimCollar.position.y = localY + 0.03;
+
+      parentGroup.add(innerCollar, rimCollar);
+    }
+
     function rebuildWorldTopology() {
       while (worldGroup.children.length > 0) {
         const child = worldGroup.children[0];
@@ -800,17 +956,59 @@
       const groundGeo = new THREE.PlaneGeometry(84, 84, 64, 64);
       groundGeo.rotateX(-Math.PI / 2);
       const pos = groundGeo.attributes.position;
-      for (let i = 0; i < pos.count; i++) pos.setY(i, getTerrainHeight(pos.getX(i), pos.getZ(i)));
-      groundGeo.computeVertexNormals();
 
       let groundColor = 0x0e7490;
       let ringColor = 0x22d3ee;
-      if (worldTopology === 'forest') { groundColor = 0x15803d; ringColor = 0x4ade80; }
-      else if (worldTopology === 'fire_ant') { groundColor = 0xb91c1c; ringColor = 0xf97316; }
-      else if (worldTopology === 'terrarium') { groundColor = 0x0f766e; ringColor = 0x38bdf8; }
-      else if (worldTopology === 'picnic') { groundColor = 0xe11d48; ringColor = 0xfef08a; }
+      let lowCelHex = new THREE.Color(0x041019);
+      let midCelHex = new THREE.Color(0x082836);
+      let highCelHex = new THREE.Color(0x0e4f63);
 
-      const groundMat = new THREE.MeshBasicMaterial({ color: groundColor, wireframe: true, transparent: true, opacity: 0.42 });
+      if (worldTopology === 'forest') {
+        groundColor = 0x15803d; ringColor = 0x4ade80;
+        lowCelHex.setHex(0x04170b); midCelHex.setHex(0x092e16); highCelHex.setHex(0x14532d);
+      } else if (worldTopology === 'fire_ant') {
+        groundColor = 0xb91c1c; ringColor = 0xf97316;
+        lowCelHex.setHex(0x1c0606); midCelHex.setHex(0x3b0a0a); highCelHex.setHex(0x6b1414);
+      } else if (worldTopology === 'terrarium') {
+        groundColor = 0x0f766e; ringColor = 0x38bdf8;
+        lowCelHex.setHex(0x041a18); midCelHex.setHex(0x0b3632); highCelHex.setHex(0x115e59);
+      } else if (worldTopology === 'picnic') {
+        groundColor = 0xe11d48; ringColor = 0xfef08a;
+        lowCelHex.setHex(0x280612); midCelHex.setHex(0x4c0519); highCelHex.setHex(0x881337);
+      }
+
+      // Compute quantized 3-band Cel-Shaded Vertex Colors for the terrain surface
+      const colors = new Float32Array(pos.count * 3);
+      for (let i = 0; i < pos.count; i++) {
+        const vx = pos.getX(i);
+        const vz = pos.getZ(i);
+        const vy = getTerrainHeight(vx, vz);
+        pos.setY(i, vy);
+
+        // Stepped cel-shading bands based on elevation & radial distance
+        let bandColor = midCelHex;
+        if (vy < -0.15) bandColor = lowCelHex;
+        else if (vy > 0.35) bandColor = highCelHex;
+        colors[i * 3] = bandColor.r;
+        colors[i * 3 + 1] = bandColor.g;
+        colors[i * 3 + 2] = bandColor.b;
+      }
+      groundGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      groundGeo.computeVertexNormals();
+
+      // Solid Cel-Shaded Base Terrain Mesh (prevents visual see-through bloat & grounds the level)
+      const celGroundMat = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.72,
+        polygonOffset: true,
+        polygonOffsetFactor: 2,
+        polygonOffsetUnits: 2
+      });
+      worldGroup.add(new THREE.Mesh(groundGeo, celGroundMat));
+
+      // Crisp Wireframe Overlay Mesh
+      const groundMat = new THREE.MeshBasicMaterial({ color: groundColor, wireframe: true, transparent: true, opacity: 0.45 });
       worldGroup.add(new THREE.Mesh(groundGeo, groundMat));
 
       // Picnic Feast secondary white gingham weave & central ceramic plate rim
@@ -829,7 +1027,7 @@
         const t = (i / 64) * Math.PI * 2;
         ringPoints.push(new THREE.Vector3(Math.cos(t) * arenaRingRadius, getTerrainHeight(Math.cos(t) * arenaRingRadius, Math.sin(t) * arenaRingRadius) + 0.1, Math.sin(t) * arenaRingRadius));
       }
-      worldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPoints), new THREE.LineBasicMaterial({ color: ringColor, opacity: 0.55 })));
+      worldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPoints), new THREE.LineBasicMaterial({ color: ringColor, opacity: 0.65 })));
 
       // Giant Bio-Terrarium outer glass enclosure & heat lamp dome
       if (worldTopology === 'terrarium') {
@@ -842,159 +1040,283 @@
       }
 
       for (let i = 0; i < mapObstacleCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 3 + Math.random() * (arenaRingRadius - 5);
+        const angle = (i / Math.max(1, mapObstacleCount)) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
+        const dist = 3.2 + Math.random() * (arenaRingRadius - 5.8);
         const x = Math.cos(angle) * dist; const z = Math.sin(angle) * dist;
-        const r = 0.6 + Math.random() * 1.2;
-        const y = getTerrainHeight(x, z);
+        const r = 0.65 + Math.random() * 1.15;
+        const centerGroundY = getTerrainHeight(x, z);
+        const anchoredBaseY = getAnchoredObstacleBaseY(x, z, r);
+        const collarLocalY = centerGroundY - anchoredBaseY;
 
         if (worldTopology === 'forest') {
           const treeGroup = new THREE.Group();
-          const trunkH = r * 2.6;
-          const trunk = new THREE.Mesh(
-            getGeometry('CylinderGeometry', r * 0.28, r * 0.45, trunkH, 5),
-            new THREE.MeshBasicMaterial({ color: 0xa16207, wireframe: true, transparent: true, opacity: 0.75 })
+          const trunkH = r * 2.8;
+          const trunk = makeCelObstacleMesh(
+            getGeometry('CylinderGeometry', r * 0.30, r * 0.48, trunkH, 6),
+            0xa16207, 0x2e1905, 0.85, 0.62
           );
           trunk.position.y = trunkH * 0.5;
-          const canopy = new THREE.Mesh(
+          const canopy = makeCelObstacleMesh(
             getGeometry('ConeGeometry', r * 1.45, r * 2.8, 6),
-            new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true, transparent: true, opacity: 0.65 })
+            0x22c55e, 0x063318, 0.78, 0.52
           );
-          canopy.position.y = trunkH + r * 0.9;
+          canopy.position.y = trunkH + r * 0.85;
           treeGroup.add(trunk, canopy);
-          treeGroup.position.set(x, y, z);
+          addGroundImmersionCollar(treeGroup, collarLocalY, r * 0.65, 0x4ade80);
+          treeGroup.position.set(x, anchoredBaseY, z);
           worldGroup.add(treeGroup);
-          arenaObstacles.push({ x, z, y, radius: r * 0.65, mesh: treeGroup });
+          arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: r * 0.62, height: trunkH + r * 2.1, climbable: false, mesh: treeGroup });
         } else if (worldTopology === 'fire_ant') {
-          const mound = new THREE.Mesh(
-            getGeometry('ConeGeometry', r * 1.25, r * 2.2, 6),
-            new THREE.MeshBasicMaterial({ color: 0xf97316, wireframe: true, transparent: true, opacity: 0.75 })
+          const moundGroup = new THREE.Group();
+          const moundH = r * 2.1;
+          const mound = makeCelObstacleMesh(
+            getGeometry('ConeGeometry', r * 1.25, moundH, 7),
+            0xf97316, 0x431407, 0.82, 0.58
           );
-          mound.position.set(x, y + r * 0.9, z);
-          worldGroup.add(mound);
-          arenaObstacles.push({ x, z, y, radius: r * 1.05, mesh: mound });
+          mound.position.y = moundH * 0.5;
+          moundGroup.add(mound);
+          addGroundImmersionCollar(moundGroup, collarLocalY, r * 1.2, 0xf97316);
+          moundGroup.position.set(x, anchoredBaseY, z);
+          worldGroup.add(moundGroup);
+          arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: r * 1.12, height: moundH * 0.78, climbable: true, mesh: moundGroup });
         } else if (worldTopology === 'terrarium') {
-          const crystal = new THREE.Mesh(
-            getGeometry('OctahedronGeometry', r * 1.05, 0),
-            new THREE.MeshBasicMaterial({ color: 0x2dd4bf, wireframe: true, transparent: true, opacity: 0.75 })
+          const crystalGroup = new THREE.Group();
+          const crystalH = r * 1.9;
+          const crystal = makeCelObstacleMesh(
+            getGeometry('CylinderGeometry', r * 0.52, r * 0.95, crystalH, 6),
+            0x2dd4bf, 0x042f2e, 0.85, 0.55
           );
-          crystal.position.set(x, y + r * 0.65, z);
-          crystal.rotation.set(0.3, angle, 0.2);
-          worldGroup.add(crystal);
-          arenaObstacles.push({ x, z, y, radius: r * 0.95, mesh: crystal });
+          crystal.position.y = crystalH * 0.5;
+          crystalGroup.add(crystal);
+          addGroundImmersionCollar(crystalGroup, collarLocalY, r * 0.98, 0x2dd4bf);
+          crystalGroup.position.set(x, anchoredBaseY, z);
+          crystalGroup.rotation.y = angle;
+          worldGroup.add(crystalGroup);
+          arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: r * 0.95, height: crystalH * 0.82, climbable: true, mesh: crystalGroup });
         } else if (worldTopology === 'picnic') {
           // Procedural Picnic Food & Feast Items: 0=Watermelon Wedge, 1=Cupcake, 2=Soda Can, 3=Picnic Basket, 4=Apple
           const foodGroup = new THREE.Group();
           const itemType = i % 5;
           let hitRad = r;
+          let obsHeight = r * 1.4;
+          let isClimbable = true;
 
           if (itemType === 0) {
-            // Watermelon Slice (Green rind arc + red flesh wedge)
-            const rind = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 1.2, r * 1.2, r * 0.45, 8, 1, false, 0, Math.PI),
-              new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true, transparent: true, opacity: 0.85 })
+            // Watermelon Slice (Grounded flat on its rind base so it never floats)
+            const rind = makeCelObstacleMesh(
+              getGeometry('CylinderGeometry', r * 1.18, r * 1.18, r * 0.52, 8, 1, false, 0, Math.PI),
+              0x22c55e, 0x064e3b, 0.88, 0.58
             );
-            rind.rotation.z = Math.PI / 2;
-            rind.position.y = r * 0.55;
-            const flesh = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 1.02, r * 1.02, r * 0.50, 8, 1, false, 0, Math.PI),
-              new THREE.MeshBasicMaterial({ color: 0xf43f5e, wireframe: true, transparent: true, opacity: 0.85 })
+            rind.rotation.z = -Math.PI / 2;
+            rind.position.y = r * 0.92;
+            const flesh = makeCelObstacleMesh(
+              getGeometry('CylinderGeometry', r * 0.98, r * 0.98, r * 0.56, 8, 1, false, 0, Math.PI),
+              0xf43f5e, 0x4c0519, 0.88, 0.58
             );
-            flesh.rotation.z = Math.PI / 2;
-            flesh.position.y = r * 0.58;
+            flesh.rotation.z = -Math.PI / 2;
+            flesh.position.y = r * 0.94;
             foodGroup.add(rind, flesh);
-            hitRad = r * 1.05;
+            hitRad = r * 1.08;
+            obsHeight = r * 1.1;
           } else if (itemType === 1) {
             // Frosted Cupcake with Cherry on Top
-            const cup = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 0.85, r * 0.62, r * 0.85, 7),
-              new THREE.MeshBasicMaterial({ color: 0xf59e0b, wireframe: true, transparent: true, opacity: 0.8 })
+            const cup = makeCelObstacleMesh(
+              getGeometry('CylinderGeometry', r * 0.85, r * 0.68, r * 0.95, 7),
+              0xf59e0b, 0x451a03, 0.85, 0.58
             );
-            cup.position.y = r * 0.42;
-            const frosting = new THREE.Mesh(
+            cup.position.y = r * 0.48;
+            const frosting = makeCelObstacleMesh(
               getGeometry('SphereGeometry', r * 0.82, 7, 5),
-              new THREE.MeshBasicMaterial({ color: 0xf472b6, wireframe: true, transparent: true, opacity: 0.85 })
+              0xf472b6, 0x500724, 0.85, 0.55
             );
-            frosting.position.y = r * 0.95;
-            const cherry = new THREE.Mesh(
+            frosting.position.y = r * 1.02;
+            const cherry = makeCelObstacleMesh(
               getGeometry('OctahedronGeometry', r * 0.22, 0),
-              new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.95 })
+              0xef4444, 0x7f1d1d, 0.95, 0.65
             );
-            cherry.position.y = r * 1.75;
+            cherry.position.y = r * 1.78;
             foodGroup.add(cup, frosting, cherry);
-            hitRad = r * 0.88;
+            hitRad = r * 0.90;
+            obsHeight = r * 1.55;
           } else if (itemType === 2) {
-            // Soda Can + Bent Drinking Straw
-            const can = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 0.68, r * 0.68, r * 1.85, 8),
-              new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.8 })
+            // Soda Can + Bent Drinking Straw (Tall Hard-Stop Pillar)
+            const can = makeCelObstacleMesh(
+              getGeometry('CylinderGeometry', r * 0.68, r * 0.68, r * 1.95, 8),
+              0xef4444, 0x450a0a, 0.85, 0.60
             );
-            can.position.y = r * 0.92;
-            const rim = new THREE.Mesh(
-              getGeometry('CylinderGeometry', r * 0.64, r * 0.68, r * 0.15, 8),
-              new THREE.MeshBasicMaterial({ color: 0xe2e8f0, wireframe: true, transparent: true, opacity: 0.9 })
+            can.position.y = r * 0.97;
+            const rim = makeCelObstacleMesh(
+              getGeometry('CylinderGeometry', r * 0.64, r * 0.68, r * 0.16, 8),
+              0xe2e8f0, 0x334155, 0.92, 0.65
             );
-            rim.position.y = r * 1.88;
+            rim.position.y = r * 1.96;
             const straw = new THREE.Mesh(
               getGeometry('CylinderGeometry', r * 0.08, r * 0.08, r * 1.1, 4),
               new THREE.MeshBasicMaterial({ color: 0xfef08a, wireframe: true, transparent: true, opacity: 0.9 })
             );
-            straw.position.set(r * 0.18, r * 2.25, 0);
+            straw.position.set(r * 0.18, r * 2.32, 0);
             straw.rotation.z = -0.28;
             foodGroup.add(can, rim, straw);
-            hitRad = r * 0.75;
+            hitRad = r * 0.74;
+            obsHeight = r * 2.0;
+            isClimbable = false;
           } else if (itemType === 3) {
             // Woven Picnic Basket + Handle
-            const basket = new THREE.Mesh(
-              getGeometry('BoxGeometry', r * 1.65, r * 1.05, r * 1.15),
-              new THREE.MeshBasicMaterial({ color: 0xd97706, wireframe: true, transparent: true, opacity: 0.82 })
+            const basket = makeCelObstacleMesh(
+              getGeometry('BoxGeometry', r * 1.65, r * 1.15, r * 1.15),
+              0xd97706, 0x3b1704, 0.85, 0.60
             );
-            basket.position.y = r * 0.52;
-            const lid = new THREE.Mesh(
+            basket.position.y = r * 0.57;
+            const lid = makeCelObstacleMesh(
               getGeometry('BoxGeometry', r * 1.75, r * 0.18, r * 1.25),
-              new THREE.MeshBasicMaterial({ color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0.88 })
+              0xfbbf24, 0x451a03, 0.88, 0.62
             );
-            lid.position.y = r * 1.10;
+            lid.position.y = r * 1.16;
             const handle = new THREE.Mesh(
               getGeometry('BoxGeometry', r * 0.20, r * 0.65, r * 1.20),
               new THREE.MeshBasicMaterial({ color: 0x92400e, wireframe: true, transparent: true, opacity: 0.85 })
             );
-            handle.position.y = r * 1.45;
+            handle.position.y = r * 1.50;
             foodGroup.add(basket, lid, handle);
-            hitRad = r * 1.08;
+            hitRad = r * 1.12;
+            obsHeight = r * 1.28;
           } else {
             // Giant Crisp Apple + Stem & Leaf
-            const apple = new THREE.Mesh(
+            const apple = makeCelObstacleMesh(
               getGeometry('SphereGeometry', r * 0.92, 7, 6),
-              new THREE.MeshBasicMaterial({ color: 0xdc2626, wireframe: true, transparent: true, opacity: 0.82 })
+              0xdc2626, 0x450a0a, 0.85, 0.58
             );
             apple.scale.set(1.05, 0.92, 1.05);
-            apple.position.y = r * 0.82;
+            apple.position.y = r * 0.78;
             const stem = new THREE.Mesh(
               getGeometry('CylinderGeometry', r * 0.06, r * 0.04, r * 0.45, 4),
               new THREE.MeshBasicMaterial({ color: 0xa16207, wireframe: true, transparent: true, opacity: 0.9 })
             );
-            stem.position.y = r * 1.75;
+            stem.position.y = r * 1.68;
             const leaf = new THREE.Mesh(
               getGeometry('ConeGeometry', r * 0.22, r * 0.50, 3),
               new THREE.MeshBasicMaterial({ color: 0x4ade80, wireframe: true, transparent: true, opacity: 0.9 })
             );
-            leaf.position.set(r * 0.20, r * 1.78, 0);
+            leaf.position.set(r * 0.20, r * 1.72, 0);
             leaf.rotation.z = -1.1;
             foodGroup.add(apple, stem, leaf);
             hitRad = r * 0.95;
+            obsHeight = r * 1.45;
           }
 
-          foodGroup.position.set(x, y, z);
+          addGroundImmersionCollar(foodGroup, collarLocalY, hitRad, 0xfef08a);
+          foodGroup.position.set(x, anchoredBaseY, z);
           foodGroup.rotation.y = angle;
           worldGroup.add(foodGroup);
-          arenaObstacles.push({ x, z, y, radius: hitRad, mesh: foodGroup });
+          arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: hitRad, height: obsHeight, climbable: isClimbable, mesh: foodGroup });
         } else {
-          const mesh = new THREE.Mesh(getGeometry('DodecahedronGeometry', r, 0), new THREE.MeshBasicMaterial({ color: 0x14b8a6, wireframe: true, opacity: 0.7 }));
-          mesh.position.set(x, y + r * 0.45, z);
-          worldGroup.add(mesh);
-          arenaObstacles.push({ x, z, y, radius: r, mesh });
+          // Flat-bottomed frustum rock monoliths so they sit flush and embedded into any ridge slope
+          const rockGroup = new THREE.Group();
+          const rockH = r * 1.55;
+          const rock = makeCelObstacleMesh(
+            getGeometry('CylinderGeometry', r * 0.58, r * 1.05, rockH, 7),
+            0x14b8a6, 0x042f2e, 0.82, 0.55
+          );
+          rock.position.y = rockH * 0.5;
+          rockGroup.add(rock);
+          addGroundImmersionCollar(rockGroup, collarLocalY, r * 1.05, 0x22d3ee);
+          rockGroup.position.set(x, anchoredBaseY, z);
+          rockGroup.rotation.y = angle;
+          worldGroup.add(rockGroup);
+          arenaObstacles.push({ x, z, y: centerGroundY, baseY: anchoredBaseY, radius: r * 1.02, height: rockH * 0.82, climbable: true, mesh: rockGroup });
         }
+      }
+
+      // Re-anchor any active units immediately if terrain was rebuilt mid-session
+      if (entities && entities.length > 0) {
+        entities.forEach(f => {
+          if (!f.dead) {
+            enforceHardStopAndTerrainBounds(f, false);
+            f.mesh.position.y = getEffectiveSurfaceHeight(f.mesh.position.x, f.mesh.position.z, f) + f.flightAlt;
+          }
+        });
+      }
+    }
+
+    // Returns the true physical surface elevation at (x, z), including over-the-top obstacle dome height when vaulting
+    function getEffectiveSurfaceHeight(x, z, f = null) {
+      let baseH = getTerrainHeight(x, z);
+      for (const obs of arenaObstacles) {
+        const d = Math.hypot(x - obs.x, z - obs.z);
+        const outerR = obs.radius + (f ? f.hitboxRadius : 0.2);
+        if (d < outerR && obs.climbable) {
+          // Smoothly dome over the top of climbable terrain obstacles so units never clip under or through them
+          const normD = d / outerR;
+          const domeFactor = Math.max(0, Math.cos(normD * Math.PI * 0.5));
+          const obsTopY = obs.y + obs.height * domeFactor;
+          if (obsTopY > baseH) baseH = obsTopY;
+        }
+      }
+      return baseH;
+    }
+
+    // Impenetrable Hard-Stop Collision & Arena Boundary Enforcement (eliminates all no-clipping)
+    function enforceHardStopAndTerrainBounds(f, allowVault = false) {
+      const pad = f.hitboxRadius + 0.08;
+      f.vaultingObstacle = false;
+
+      for (const obs of arenaObstacles) {
+        const minDist = obs.radius + pad;
+        const dxHome = f.homeX - obs.x;
+        const dzHome = f.homeZ - obs.z;
+        const distHome = Math.hypot(dxHome, dzHome);
+
+        // Allow over-the-top movement only on climbable obstacles when actively charging/lunging or aerial
+        const canVaultThis = allowVault && obs.climbable && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0 || f.activeAction);
+
+        if (distHome < minDist) {
+          if (canVaultThis) {
+            f.vaultingObstacle = true;
+          } else {
+            const nx = distHome > 0.0001 ? dxHome / distHome : 1;
+            const nz = distHome > 0.0001 ? dzHome / distHome : 0;
+            f.homeX = obs.x + nx * minDist;
+            f.homeZ = obs.z + nz * minDist;
+            // Cancel inward velocity component against the hard-stop barrier
+            const vDot = f.vx * nx + f.vz * nz;
+            if (vDot < 0) {
+              f.vx -= vDot * nx;
+              f.vz -= vDot * nz;
+            }
+          }
+        }
+
+        // Also enforce hard stop on the rendered 3D mesh position (e.g. during lunge animations)
+        const dxMesh = f.mesh.position.x - obs.x;
+        const dzMesh = f.mesh.position.z - obs.z;
+        const distMesh = Math.hypot(dxMesh, dzMesh);
+        if (distMesh < minDist) {
+          if (canVaultThis) {
+            f.vaultingObstacle = true;
+          } else {
+            const nx = distMesh > 0.0001 ? dxMesh / distMesh : 1;
+            const nz = distMesh > 0.0001 ? dzMesh / distMesh : 0;
+            f.mesh.position.x = obs.x + nx * minDist;
+            f.mesh.position.z = obs.z + nz * minDist;
+          }
+        }
+      }
+
+      // Hard-Stop Outer Arena Perimeter Ring
+      const maxRing = arenaRingRadius - f.hitboxRadius - 0.45;
+      const rHome = Math.hypot(f.homeX, f.homeZ);
+      if (rHome > maxRing) {
+        const s = maxRing / rHome;
+        f.homeX *= s;
+        f.homeZ *= s;
+        f.vx *= -0.35;
+        f.vz *= -0.35;
+      }
+      const rMesh = Math.hypot(f.mesh.position.x, f.mesh.position.z);
+      if (rMesh > maxRing) {
+        const s = maxRing / rMesh;
+        f.mesh.position.x *= s;
+        f.mesh.position.z *= s;
       }
     }
 
@@ -1099,8 +1421,8 @@
     };
 
     const slotOverrides = {
-      1: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced' },
-      2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced' }
+      1: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced', colorScheme: 'native' },
+      2: { scale: 0.125, spdMult: 1.0, scaleTier: 'medium', spdTier: 'medium', formation: 'swarm', stance: 'balanced', colorScheme: 'native' }
     };
 
     // +15% Global Combat Aggression Multiplier
@@ -1120,6 +1442,7 @@
           f.stance = ov.stance;
           f.formation = ov.formation;
           f.cooldown = (2.35 / f.spd) / AGGRESSION_BOOST;
+          applyPaletteToEntity(f, ov.colorScheme);
         }
       });
     }
@@ -1128,11 +1451,8 @@
       const cfg = CREATURES[key];
       const ov = slotOverrides[side];
       const st = STANCES[ov.stance] || STANCES.balanced;
-      const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale);
-      
-      if (side === 2 && selectedP1 === selectedP2) {
-        mesh.userData.mat.color.setHex(0xf43f5e);
-      }
+      const isMirrorHostile = side === 2 && selectedP1 === selectedP2 && ov.colorScheme === 'native' && slotOverrides[1].colorScheme === 'native';
+      const mesh = buildCreatureMesh(key, cfg.color, 0.95, ov.scale, ov.colorScheme, isMirrorHostile);
 
       const dirSign = side === 1 ? -1 : 1;
       let homeX = 0;
@@ -1163,6 +1483,21 @@
         homeZ = (col - (totalCols - 1) / 2) * spacing + (Math.random() - 0.5) * 0.35;
       }
 
+      const hitRad = (cfg.hitboxRadius || 0.21) * (ov.scale / 0.125);
+      // Ensure spawn coordinates never overlap any terrain obstacle
+      for (const obs of arenaObstacles) {
+        const dx = homeX - obs.x;
+        const dz = homeZ - obs.z;
+        const d = Math.hypot(dx, dz);
+        const minClear = obs.radius + hitRad + 0.22;
+        if (d < minClear) {
+          const nx = d > 0.001 ? dx / d : 1;
+          const nz = d > 0.001 ? dz / d : 0;
+          homeX = obs.x + nx * minClear;
+          homeZ = obs.z + nz * minClear;
+        }
+      }
+
       const rDist = Math.hypot(homeX, homeZ);
       if (rDist > arenaRingRadius - 1.2) {
         const clampRatio = (arenaRingRadius - 1.2) / rDist;
@@ -1176,6 +1511,7 @@
       scene.add(mesh);
 
       const finalSpd = cfg.spd * ov.spdMult * st.spdMult;
+      const pal = mesh.userData.palette;
       return {
         id: Math.random().toString(36).substr(2, 9),
         key, side, name: cfg.name, faction: cfg.faction,
@@ -1183,13 +1519,13 @@
         stance: ov.stance,
         formation: ov.formation,
         flankSign,
-        color: (side === 2 && selectedP1 === selectedP2) ? 0xf43f5e : cfg.color,
+        color: pal.primary,
         maxHp: cfg.hp, hp: cfg.hp,
         atk: Math.round(cfg.atk * st.atkMult),
         def: Math.round(cfg.def * st.defMult),
         spd: finalSpd, crit: cfg.crit,
         flightAlt: cfg.flightAlt || 0,
-        hitboxRadius: (cfg.hitboxRadius || 0.21) * (ov.scale / 0.125),
+        hitboxRadius: hitRad,
         kiteStyle: cfg.kiteStyle || 'balanced',
         behaviors: cfg.behaviors || [],
         moves: cfg.moves, powerMove: cfg.powerMove,
@@ -1203,6 +1539,7 @@
         retreatTimer: 0,
         slowTimer: 0,
         takingCover: false,
+        vaultingObstacle: false,
         habitIndex: Math.floor(Math.random() * 3),
         habitTimer: 1.0 + Math.random() * 2.2,
         habitActiveTime: 0,
@@ -1532,9 +1869,10 @@
       }
 
       const elevDiff = attacker.mesh.position.y - defender.mesh.position.y;
-      const highGroundMult = elevDiff > 0.22 ? 1.15 : 1.0;
+      const highGroundMult = elevDiff > 0.18 ? 1.18 : 1.0;
       const guardMult = defender.guardTimer > 0 ? 0.5 : 1.0;
-      const coverMult = defender.takingCover ? 0.75 : 1.0;
+      // Enhanced physical cover defense (-35% incoming damage when sheltered behind terrain)
+      const coverMult = defender.takingCover ? 0.65 : 1.0;
       const isCrit = Math.random() < (isPower ? attacker.crit + 0.2 : attacker.crit);
       const mitigation = 100 / (100 + effectiveDef * 3.2);
       const variance = 0.9 + Math.random() * 0.2;
@@ -1547,12 +1885,13 @@
         defender.slowTimer = Math.max(defender.slowTimer, move.slow);
       }
 
+      // Constrained post-strike kiting & knockback impulses (prevents erratic launching)
       if (attacker.kiteStyle === 'tail_backdash' && attacker.stance !== 'berserk') {
         const awayX = attacker.homeX - defender.mesh.position.x;
         const awayZ = attacker.homeZ - defender.mesh.position.z;
         const d = Math.hypot(awayX, awayZ) || 1;
-        attacker.vx += (awayX / d) * 5.8;
-        attacker.vz += (awayZ / d) * 5.8;
+        attacker.vx += (awayX / d) * 3.6;
+        attacker.vz += (awayZ / d) * 3.6;
         attacker.retreatTimer = 1.05;
       } else if (attacker.flightAlt > 0 && attacker.stance !== 'berserk') {
         attacker.retreatTimer = 1.15;
@@ -1568,20 +1907,23 @@
       const pushDist = Math.hypot(pushDx, pushDz) || 1;
       const defStanceCfg = STANCES[defender.stance] || STANCES.balanced;
       const formationKnockMult = defender.formation === 'phalanx' ? 0.55 : 1.0;
-      const knockMag = (isPower ? 0.95 : 0.38) * defStanceCfg.knockResist * formationKnockMult;
-      defender.vx += (pushDx / pushDist) * knockMag * 3.8;
-      defender.vz += (pushDz / pushDist) * knockMag * 3.8;
+      const knockMag = (isPower ? 0.55 : 0.24) * defStanceCfg.knockResist * formationKnockMult;
+      defender.vx += (pushDx / pushDist) * knockMag * 2.4;
+      defender.vz += (pushDz / pushDist) * knockMag * 2.4;
 
       const anim = move.anim;
       if (anim === 'horn_toss' || anim === 'power_suplex') {
-        defender.victimState.liftY = isPower ? 0.75 : 0.45;
-        defender.victimState.tiltZ = isPower ? Math.PI * 0.85 : 0.65;
+        defender.victimState.liftY = isPower ? 0.24 : 0.14;
+        defender.victimState.tiltZ = isPower ? 0.42 : 0.26;
       } else if (anim === 'power_cavitation' || anim === 'club_punch' || anim === 'wing_backdraft') {
-        defender.victimState.knockX = isPower ? 0.85 : 0.38;
+        defender.victimState.knockX = isPower ? 0.32 : 0.18;
       } else {
-        defender.victimState.knockX = isPower ? 0.5 : 0.24;
-        defender.victimState.tiltZ = 0.28;
+        defender.victimState.knockX = isPower ? 0.24 : 0.14;
+        defender.victimState.tiltZ = 0.18;
       }
+
+      // Immediately enforce obstacle hard-stop boundaries after knockback
+      enforceHardStopAndTerrainBounds(defender, false);
 
       // Spawn creature-specific fly-away body part fragments at the contact point
       _tempVecA.set(
@@ -2002,7 +2344,8 @@
       const cfg = CREATURES[key];
       if (!csPreviewGroup || !cfg) return;
       if (csPreviewMesh) csPreviewGroup.remove(csPreviewMesh);
-      csPreviewMesh = buildCreatureMesh(key, cfg.color, 0.98, 0.42);
+      const ov = slotOverrides[csActiveSlot] || slotOverrides[1];
+      csPreviewMesh = buildCreatureMesh(key, cfg.color, 0.98, 0.42, ov.colorScheme, false);
       csPreviewGroup.add(csPreviewMesh);
 
       document.getElementById('cs-preview-name').textContent = cfg.name;
@@ -2112,11 +2455,14 @@
       const spdCfg = SPEED_TIERS[ov.spdTier] || SPEED_TIERS.medium;
       const formCfg = FORMATIONS[ov.formation] || FORMATIONS.swarm;
       const stanceCfg = STANCES[ov.stance] || STANCES.balanced;
+      const colorCfg = COLOR_SCHEMES[ov.colorScheme] || COLOR_SCHEMES.native;
 
       document.getElementById('lbl-c-scale').textContent = sCfg.label;
       document.getElementById('lbl-c-spd').textContent = spdCfg.label;
       document.getElementById('lbl-c-formation').textContent = formCfg.label;
       document.getElementById('lbl-c-stance').textContent = stanceCfg.label;
+      const lblColor = document.getElementById('lbl-c-color');
+      if (lblColor) lblColor.textContent = colorCfg.label;
 
       document.querySelectorAll('.btn-scale-preset').forEach(btn => {
         const active = btn.dataset.scaleTier === ov.scaleTier;
@@ -2150,6 +2496,16 @@
         btn.className = `btn-stance-preset w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
           active
             ? 'bg-amber-500/30 text-amber-200 border-amber-400 font-extrabold'
+            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
+        }`;
+      });
+
+      document.querySelectorAll('.btn-color-preset').forEach(btn => {
+        const active = btn.dataset.colorScheme === ov.colorScheme;
+        const spanCls = btn.dataset.colorScheme === 'native' ? 'col-span-2 ' : '';
+        btn.className = `btn-color-preset ${spanCls}w-full h-6 text-[7px] leading-none rounded border inline-flex items-center justify-center cursor-pointer transition ${
+          active
+            ? 'bg-fuchsia-500/30 text-fuchsia-200 border-fuchsia-400 font-extrabold'
             : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white font-semibold'
         }`;
       });
@@ -2550,6 +2906,17 @@
         });
       });
 
+      document.querySelectorAll('.btn-color-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const scheme = btn.dataset.colorScheme;
+          if (!COLOR_SCHEMES[scheme]) return;
+          slotOverrides[activeEditTarget].colorScheme = scheme;
+          syncLabControlsUI();
+          applyCreatureOverridesToArmy(activeEditTarget);
+          appendLog(`🎨 ${activeEditTarget === 1 ? 'ALLY' : 'HOSTILE'} Color Scheme set to ${COLOR_SCHEMES[scheme].label}`, "text-fuchsia-300 font-bold");
+        });
+      });
+
       // Shared Randomizer Logic for both Main UI and Sandbox Toolkit Randomizer Buttons
       const triggerRandomizerAll = () => {
         const biomes = ['terrain', 'grid', 'canyon', 'forest', 'fire_ant', 'terrarium', 'picnic'];
@@ -2577,6 +2944,7 @@
         const tierKeys = ['slow', 'medium', 'fast'];
         const formKeys = ['swarm', 'phalanx', 'pincer'];
         const stanceKeys = ['balanced', 'phalanx_guard', 'berserk'];
+        const colorKeys = Object.keys(COLOR_SCHEMES);
         for (const s of [1, 2]) {
           const rScale = tierKeys[Math.floor(Math.random() * tierKeys.length)];
           const rSpd = tierKeys[Math.floor(Math.random() * tierKeys.length)];
@@ -2586,6 +2954,7 @@
           slotOverrides[s].spdMult = SPEED_TIERS[rSpd].val;
           slotOverrides[s].formation = formKeys[Math.floor(Math.random() * formKeys.length)];
           slotOverrides[s].stance = stanceKeys[Math.floor(Math.random() * stanceKeys.length)];
+          slotOverrides[s].colorScheme = Math.random() < 0.45 ? 'native' : colorKeys[Math.floor(Math.random() * colorKeys.length)];
         }
         syncLabControlsUI();
 
@@ -2775,9 +3144,14 @@
         for (const f of entities) {
           if (f.dead) continue;
           const nat = applyNaturalCreatureBehaviors(f, elapsed, rawDt, 0);
-          const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
-          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.04 : 0;
-          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, groundY + f.flightAlt + bobWave + nat.bodyYOffset, Math.min(1, rawDt * 10));
+          enforceHardStopAndTerrainBounds(f, false);
+          const groundY = getEffectiveSurfaceHeight(f.mesh.position.x, f.mesh.position.z, f);
+          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.035 : 0;
+          const targetY = Math.max(groundY, groundY + f.flightAlt + bobWave + nat.bodyYOffset);
+          f.mesh.position.y = THREE.MathUtils.lerp(f.mesh.position.y, targetY, Math.min(1, rawDt * 12));
+          if (f.mesh.userData.groundShadow) {
+            f.mesh.userData.groundShadow.position.y = (groundY - f.mesh.position.y) + 0.015;
+          }
           f.mesh.userData.bodyGroup.rotation.z = nat.bodyPitchOffset;
           f.mesh.userData.bodyGroup.rotation.x = nat.bodyRollOffset;
         }
@@ -2916,12 +3290,13 @@
               }
             } else {
               const blockingObs = isLineOfSightBlocked(f.homeX, f.homeZ, target.mesh.position.x, target.mesh.position.z);
-              if (blockingObs && distToEnemy > 1.2) {
+              const canVaultBlocking = blockingObs && blockingObs.climbable && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0 || distToEnemy < 3.6);
+              if (blockingObs && distToEnemy > 1.2 && !canVaultBlocking) {
                 const tangX = -(blockingObs.z - f.homeZ) * f.strafeDir;
                 const tangZ = (blockingObs.x - f.homeX) * f.strafeDir;
                 const td = Math.hypot(tangX, tangZ) || 1;
-                steerX = (tangX / td) * 1.45 + dirX * 0.75;
-                steerZ = (tangZ / td) * 1.45 + dirZ * 0.75;
+                steerX = (tangX / td) * 1.55 + dirX * 0.65;
+                steerZ = (tangZ / td) * 1.55 + dirZ * 0.65;
               } else if (f.key === 'king_crab') {
                 const approach = distToEnemy > idealContactDist ? 1.12 : -0.08;
                 steerX = dirX * approach + perpX * 0.75 + hGradX * 0.55;
@@ -2990,13 +3365,14 @@
               const odx = f.homeX - obs.x;
               const odz = f.homeZ - obs.z;
               const odist = Math.hypot(odx, odz);
-              const minObsDist = obs.radius + f.hitboxRadius + 0.35;
-              if (odist > 0.001 && odist < minObsDist) {
+              const minObsDist = obs.radius + f.hitboxRadius + 0.32;
+              const wantsOverTop = obs.climbable && !wantsToKiteOrHide && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0);
+              if (odist > 0.001 && odist < minObsDist && !wantsOverTop) {
                 const push = (minObsDist - odist) / minObsDist;
                 const nx = odx / odist;
                 const nz = odz / odist;
-                steerX += (nx * 2.5 - nz * f.strafeDir * 1.1) * push;
-                steerZ += (nz * 2.5 + nx * f.strafeDir * 1.1) * push;
+                steerX += (nx * 2.6 - nz * f.strafeDir * 1.15) * push;
+                steerZ += (nz * 2.6 + nx * f.strafeDir * 1.15) * push;
               }
             }
 
@@ -3015,25 +3391,30 @@
               f.vz *= Math.max(0, 1 - dt * 6);
             }
 
+            // Unnatural Movement Suppression: Hard-clamp horizontal velocity so no unit ever launches erratically
+            const vMag = Math.hypot(f.vx, f.vz);
+            const maxAllowedVel = maxSpeed * 1.30;
+            if (vMag > maxAllowedVel) {
+              f.vx = (f.vx / vMag) * maxAllowedVel;
+              f.vz = (f.vz / vMag) * maxAllowedVel;
+            }
+
             f.homeX += f.vx * dt;
             f.homeZ += f.vz * dt;
 
-            const rFromCenter = Math.hypot(f.homeX, f.homeZ);
-            if (rFromCenter > arenaRingRadius - 0.85) {
-              const scaleBack = (arenaRingRadius - 0.85) / rFromCenter;
-              f.homeX *= scaleBack;
-              f.homeZ *= scaleBack;
-              f.strafeDir *= -1;
-            }
+            // Enforce hard-stop obstacle & arena boundary collisions (with over-the-top vaulting support)
+            const allowOverTop = !wantsToKiteOrHide && (f.flightAlt > 0 || f.stance === 'berserk' || f.rushCooldown > 0);
+            enforceHardStopAndTerrainBounds(f, allowOverTop);
 
             const blockedByRock = isLineOfSightBlocked(f.mesh.position.x, f.mesh.position.z, target.mesh.position.x, target.mesh.position.z);
-            if (distToEnemy <= strikeTriggerRange && !blockedByRock) {
+            const canStrikeOverRock = blockedByRock && blockedByRock.climbable && f.vaultingObstacle;
+            if (distToEnemy <= strikeTriggerRange && (!blockedByRock || canStrikeOverRock)) {
               f.timer -= dt * AGGRESSION_BOOST;
             } else {
               f.timer -= dt * 0.55;
             }
 
-            if (f.timer <= 0 && distToEnemy <= strikeTriggerRange && !blockedByRock) {
+            if (f.timer <= 0 && distToEnemy <= strikeTriggerRange && (!blockedByRock || canStrikeOverRock)) {
               f.timer = f.cooldown * (0.75 + Math.random() * 0.32);
               initiateMoveSequence(f, target);
             }
@@ -3092,20 +3473,29 @@
             f.mesh.position.z = THREE.MathUtils.lerp(f.mesh.position.z, f.homeZ, Math.min(1, dt * 10));
           }
 
-          const groundY = getTerrainHeight(f.mesh.position.x, f.mesh.position.z);
-          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.04 : 0;
-          const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.92);
-          f.mesh.position.y = THREE.MathUtils.lerp(
-            f.mesh.position.y,
-            groundY + hoverOffset + f.victimState.liftY + nat.bodyYOffset,
-            Math.min(1, dt * 12)
-          );
+          // Strict post-movement collision & boundary check (prevents any lunge or knockback from clipping through obstacles)
+          enforceHardStopAndTerrainBounds(f, true);
 
-          const forwardTilt = f.flightAlt > 0 ? -Math.min(0.26, speedMag * 0.06) : 0;
-          ud.bodyGroup.rotation.z = f.victimState.tiltZ + forwardTilt + nat.bodyPitchOffset;
+          const surfaceY = getEffectiveSurfaceHeight(f.mesh.position.x, f.mesh.position.z, f);
+          const bobWave = f.flightAlt > 0 ? Math.sin(elapsed * 6.5 + f.seed) * 0.035 : 0;
+          const hoverOffset = (f.flightAlt + bobWave) * (1 - strikeDiveFactor * 0.92);
+          const clampedLiftY = THREE.MathUtils.clamp(f.victimState.liftY, 0, 0.28);
+          const desiredY = THREE.MathUtils.clamp(
+            surfaceY + hoverOffset + clampedLiftY + nat.bodyYOffset,
+            surfaceY,
+            surfaceY + f.flightAlt + 0.32
+          );
+          f.mesh.position.y = Math.max(surfaceY, THREE.MathUtils.lerp(f.mesh.position.y, desiredY, Math.min(1, dt * 14)));
+
+          if (ud.groundShadow) {
+            ud.groundShadow.position.y = (surfaceY - f.mesh.position.y) + 0.015;
+          }
+
+          const forwardTilt = f.flightAlt > 0 ? -Math.min(0.22, speedMag * 0.05) : 0;
+          ud.bodyGroup.rotation.z = THREE.MathUtils.clamp(f.victimState.tiltZ + forwardTilt + nat.bodyPitchOffset, -0.48, 0.48);
           ud.bodyGroup.rotation.x = THREE.MathUtils.lerp(
             ud.bodyGroup.rotation.x,
-            (f.strafeDir * speedMag * 0.045) + nat.bodyRollOffset,
+            THREE.MathUtils.clamp((f.strafeDir * speedMag * 0.04) + nat.bodyRollOffset, -0.35, 0.35),
             Math.min(1, dt * 8)
           );
 
@@ -3117,7 +3507,8 @@
           }
 
           if (f.hitFlash > 0) {
-            f.hitFlash -= dt; ud.mat.color.setHex(0xffffff);
+            f.hitFlash -= dt;
+            ud.mat.color.setHex(0xffffff);
           } else if (f.guardTimer > 0) {
             ud.mat.color.setHex(0x10b981);
           } else if (f.slowTimer > 0) {
