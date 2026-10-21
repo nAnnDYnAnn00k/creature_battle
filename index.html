@@ -350,6 +350,19 @@
       </div>
     </div>
 
+   <!-- GAME MODES -->
+    <div class="bg-slate-900/95 border border-cyan-500/35 rounded-lg p-2.5 mb-2.5 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-extrabold text-cyan-300 uppercase tracking-wider">🕹️ GAME MODES</span>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button id="btn-mode-sandbox" class="btn-mode-select w-full h-7 px-2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/50 text-[9px] font-extrabold cursor-pointer transition active:scale-95">SANDBOX</button>
+        <button id="btn-mode-arcade" class="btn-mode-select w-full h-7 px-2 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-extrabold cursor-pointer transition active:scale-95">ARCADE</button>
+        <button id="btn-mode-gauntlet" class="btn-mode-select w-full h-7 px-2 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-extrabold cursor-pointer transition active:scale-95">GAUNTLET</button>
+        <button id="btn-mode-domination" class="btn-mode-select w-full h-7 px-2 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-extrabold cursor-pointer transition active:scale-95">DOMINATION</button>
+      </div>
+    </div>
+    
     <div class="bg-slate-900/95 border border-amber-500/35 rounded-lg p-2.5 mb-2.5 space-y-2">
       <div class="flex items-center justify-between">
         <span class="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">🎮 MATCH RULES</span>
@@ -2535,29 +2548,56 @@
 
       document.getElementById('btn-open-char-select').addEventListener('click', () => openCharSelectModal(1));
       
-      document.getElementById('btn-hud-mode').addEventListener('click', (e) => {
+     // Centralized Mode Switcher
+      function setGameMode(newMode) {
         if (battleState === 'FIGHTING' || battleState === 'PAUSED') {
           appendLog("🔒 Cannot switch game mode mid-battle! Click ⏹️ END BATTLE first.", "text-amber-300");
           return;
         }
-        if (currentMatchMode === 'sandbox') {
-          currentMatchMode = 'arcade';
+        
+        // FIX: Sync both variables
+        currentMatchMode = newMode;
+        gameMode = newMode;
+        
+        document.getElementById('btn-hud-mode').textContent = `MODE: ${currentMatchMode.toUpperCase()}`;
+        
+        // Update Sandbox Panel Buttons
+        document.querySelectorAll('.btn-mode-select').forEach(btn => {
+          if (btn.id === `btn-mode-${newMode}`) {
+            btn.className = "btn-mode-select w-full h-7 px-2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/50 text-[9px] font-extrabold cursor-pointer transition active:scale-95";
+          } else {
+            btn.className = "btn-mode-select w-full h-7 px-2 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 text-[9px] font-extrabold cursor-pointer transition active:scale-95";
+          }
+        });
+
+        // Mode Specific Initializations
+        if (newMode === 'arcade') {
           openCharSelectModal(1);
-        } else if (currentMatchMode === 'arcade') {
-          currentMatchMode = 'gauntlet';
+        } else if (newMode === 'gauntlet') {
           gauntletWave = 1;
           appendLog("🌊 MODE: HIVE GAUNTLET selected!", "text-fuchsia-300 font-bold");
-        } else if (currentMatchMode === 'gauntlet') {
-          currentMatchMode = 'domination';
+        } else if (newMode === 'domination') {
           appendLog("⭐ MODE: BIO-NEXUS DOMINATION selected!", "text-amber-300 font-bold");
         } else {
-          currentMatchMode = 'sandbox';
           appendLog("🛠️ MODE: SANDBOX selected!", "text-cyan-300 font-bold");
         }
-        e.target.textContent = `MODE: ${currentMatchMode.toUpperCase()}`;
+        
         rebuildWorldTopology();
         startBattle();
+      }
+
+      // Attach to HUD top button (cycle through modes)
+      document.getElementById('btn-hud-mode').addEventListener('click', () => {
+        const modes = ['sandbox', 'arcade', 'gauntlet', 'domination'];
+        const nextIndex = (modes.indexOf(currentMatchMode) + 1) % modes.length;
+        setGameMode(modes[nextIndex]);
       });
+
+      // Attach to new Sandbox Panel buttons
+      document.getElementById('btn-mode-sandbox').addEventListener('click', () => setGameMode('sandbox'));
+      document.getElementById('btn-mode-arcade').addEventListener('click', () => setGameMode('arcade'));
+      document.getElementById('btn-mode-gauntlet').addEventListener('click', () => setGameMode('gauntlet'));
+      document.getElementById('btn-mode-domination').addEventListener('click', () => setGameMode('domination'));
 
       document.getElementById('btn-auto').addEventListener('click', (e) => {
         autoLoop = !autoLoop;
