@@ -850,47 +850,41 @@
           }
         }
       } else if (key === 'jumping_spider') {
-        // Jumping Spider (Salticidae): Boxy high-fronted cephalothorax, 4 front ocular lenses, fuzzy pedipalps, compact abdomen, 8 hydraulic legs
-        const cephalo = makeCelWirePart('BoxGeometry', [0.95, 0.62, 0.88], mat, celMat, [0.42, 0.68, 0]);
-        const abdomen = makeCelWirePart('SphereGeometry', [0.58, 6, 5], secMat, celMat, [-0.58, 0.66, 0], [0, 0, 0.12], [1.22, 0.82, 0.92]);
+        // Jumping Spider: Upgraded to lifelike smooth geometry
+        const cephalo = makeCelWirePart('IcosahedronGeometry', [0.75, 2], mat, celMat, [0.42, 0.68, 0], [0, 0, 0], [1.1, 0.8, 0.9]);
+        const abdomen = makeCelWirePart('SphereGeometry', [0.58, 12, 10], secMat, celMat, [-0.58, 0.66, 0], [0, 0, 0.12], [1.22, 0.82, 0.92]);
         bodyGroup.add(cephalo, abdomen);
         extras.push(cephalo, abdomen);
-        // 4 anterior binocular eyes (2 large central AME + 2 lateral ALE)
         for (let s of [-1, 1]) {
-          const mainEye = makeWirePart('CylinderGeometry', [0.16, 0.16, 0.14, 6], accMat, [0.92, 0.76, s * 0.19], [0, 0, Math.PI / 2]);
-          const sideEye = makeWirePart('CylinderGeometry', [0.09, 0.09, 0.12, 5], subMat, [0.89, 0.82, s * 0.38], [0, 0, Math.PI / 2]);
+          const mainEye = makeWirePart('SphereGeometry', [0.16, 12, 12], accMat, [0.92, 0.76, s * 0.19], [0, 0, Math.PI / 2]);
+          const sideEye = makeWirePart('SphereGeometry', [0.09, 10, 10], subMat, [0.89, 0.82, s * 0.38], [0, 0, Math.PI / 2]);
           bodyGroup.add(mainEye, sideEye);
           extras.push(mainEye, sideEye);
-          // Iridescent chelicerae + fuzzy signaling pedipalps
-          const palp = makeCelWirePart('ConeGeometry', [0.15, 0.55, 5], accMat, celMat, [1.05, 0.52, s * 0.26], [0, 0, -Math.PI / 2.8]);
+          const palp = makeCelWirePart('ConeGeometry', [0.12, 0.55, 8], accMat, celMat, [1.05, 0.52, s * 0.26], [0, 0, -Math.PI / 2.8]);
           bodyGroup.add(palp); claws.push(palp);
-          // 4 arched hydraulic jumping legs per side
           for (let i = 0; i < 4; i++) {
             const zOff = (i - 1.4) * 0.34;
             const legLen = (i === 0 || i === 3) ? 1.15 : 0.95;
-            const leg = makeWirePart('CylinderGeometry', [0.045, 0.02, legLen, 4], secMat, [0.22 + (1.5 - i) * 0.25, 0.42, s * (0.62 + Math.abs(zOff) * 0.2)], [s * 0.62, 0, (1.5 - i) * 0.18]);
+            const leg = makeWirePart('CylinderGeometry', [0.035, 0.015, legLen, 8], secMat, [0.22 + (1.5 - i) * 0.25, 0.42, s * (0.62 + Math.abs(zOff) * 0.2)], [s * 0.62, 0, (1.5 - i) * 0.18]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.62, phase: i + s, side: s, idx: i });
           }
         }
       } else if (key === 'goliath_tarantula') {
-        // Goliath Birdeater Tarantula: Massive wide low cephalothorax, bulbous urticating abdomen with spinnerets, heavy raptorial pedipalps + 8 thick legs
-        const cephalo = makeCelWirePart('CylinderGeometry', [0.78, 0.92, 0.48, 8], secMat, celMat, [0.42, 0.56, 0], [0, 0, 0], [1.18, 1.0, 1.05]);
-        const abdomen = makeCelWirePart('IcosahedronGeometry', [0.92, 1], mat, celMat, [-0.88, 0.72, 0], [0, 0, 0], [1.28, 0.88, 1.08]);
+        // Goliath Tarantula: Upgraded with tapered joints and higher poly counts
+        const cephalo = makeCelWirePart('SphereGeometry', [0.75, 14, 12], secMat, celMat, [0.42, 0.56, 0], [0, 0, 0], [1.2, 0.7, 1.1]);
+        const abdomen = makeCelWirePart('SphereGeometry', [0.92, 16, 14], mat, celMat, [-0.88, 0.72, 0], [0, 0, 0], [1.28, 0.88, 1.08]);
         bodyGroup.add(cephalo, abdomen);
         extras.push(cephalo, abdomen);
         for (let s of [-1, 1]) {
-          // Downward-curved venomous fangs + thick pedipalps
-          const fang = makeCelWirePart('ConeGeometry', [0.18, 0.75, 5], accMat, celMat, [1.18, 0.45, s * 0.28], [0, 0, -Math.PI * 0.62]);
-          const palp = makeCelWirePart('CylinderGeometry', [0.09, 0.06, 0.95, 5], mat, celMat, [1.05, 0.52, s * 0.56], [s * 0.35, 0, -0.55]);
+          const fang = makeCelWirePart('ConeGeometry', [0.15, 0.75, 8], accMat, celMat, [1.18, 0.45, s * 0.28], [0, 0, -Math.PI * 0.62]);
+          const palp = makeCelWirePart('CylinderGeometry', [0.07, 0.04, 0.95, 8], mat, celMat, [1.05, 0.52, s * 0.56], [s * 0.35, 0, -0.55]);
           bodyGroup.add(fang, palp);
           claws.push(fang, palp);
-          // Spinnerets on rear abdomen
-          const spinneret = makeWirePart('ConeGeometry', [0.07, 0.42, 4], subMat, [-1.95, 0.58, s * 0.22], [0, 0, Math.PI / 2.2]);
+          const spinneret = makeWirePart('ConeGeometry', [0.07, 0.42, 6], subMat, [-1.95, 0.58, s * 0.22], [0, 0, Math.PI / 2.2]);
           bodyGroup.add(spinneret); extras.push(spinneret);
-          // 4 heavy tarantula legs per side
           for (let i = 0; i < 4; i++) {
             const xPos = 0.72 - i * 0.42;
-            const leg = makeCelWirePart('CylinderGeometry', [0.09, 0.05, 1.55, 5], i % 2 === 0 ? mat : secMat, celMat, [xPos, 0.45, s * 0.98], [s * 0.68, 0, (1.5 - i) * 0.22]);
+            const leg = makeCelWirePart('CylinderGeometry', [0.07, 0.03, 1.55, 8], i % 2 === 0 ? mat : secMat, celMat, [xPos, 0.45, s * 0.98], [s * 0.68, 0, (1.5 - i) * 0.22]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.68, phase: i * 1.1 + s, side: s, idx: i });
           }
         }
@@ -942,11 +936,9 @@
           microAnts.push(antGroup);
         }
       } else if (key === 'emperor_scorpion') {
-        // Emperor Scorpion: Segmented armored mesosoma, 5-segment curving metasoma tail + venomous telson stinger, 2 huge pedipalp chelae, 8 legs
-        const prosoma = makeCelWirePart('BoxGeometry', [1.25, 0.36, 0.95], mat, celMat, [0.25, 0.48, 0]);
+        // Emperor Scorpion: Converted blocky boxes to smooth armored plating
+        const prosoma = makeCelWirePart('SphereGeometry', [0.65, 14, 12], mat, celMat, [0.25, 0.48, 0], [0, 0, 0], [1.8, 0.6, 1.3]);
         bodyGroup.add(prosoma); extras.push(prosoma);
-
-        // Curving 5-segment scorpion tail arching high over the carapace
         const tailCoords = [
           [-0.55, 0.55,  0.35],
           [-0.95, 0.82,  0.85],
@@ -955,22 +947,18 @@
           [-0.38, 1.82,  2.85]
         ];
         tailCoords.forEach((tc, idx) => {
-          const seg = makeCelWirePart('OctahedronGeometry', [0.22 - idx * 0.015, 0], idx % 2 === 0 ? secMat : mat, celMat, [tc[0], tc[1], 0], [0, 0, tc[2]]);
+          const seg = makeCelWirePart('SphereGeometry', [0.22 - idx * 0.015, 10, 10], idx % 2 === 0 ? secMat : mat, celMat, [tc[0], tc[1], 0], [0, 0, tc[2]]);
           bodyGroup.add(seg); extras.push(seg);
         });
-        // Venomous Telson Stinger suspended forward over head
-        const telson = makeCelWirePart('ConeGeometry', [0.16, 0.68, 5], accMat, celMat, [0.12, 1.78, 0], [0, 0, -Math.PI * 0.58]);
+        const telson = makeCelWirePart('ConeGeometry', [0.14, 0.68, 8], accMat, celMat, [0.12, 1.78, 0], [0, 0, -Math.PI * 0.58]);
         bodyGroup.add(telson); claws.push(telson);
-
         for (let s of [-1, 1]) {
-          // Massive crushing pedipalp pincers
-          const arm = makeWirePart('CylinderGeometry', [0.08, 0.06, 0.75, 4], secMat, [0.85, 0.52, s * 0.65], [0, -s * 0.4, Math.PI / 2]);
-          const pincer = makeCelWirePart('OctahedronGeometry', [0.38, 1], accMat, celMat, [1.35, 0.52, s * 0.72], [0, -s * 0.25, 0], [1.45, 0.48, 0.82]);
+          const arm = makeWirePart('CylinderGeometry', [0.06, 0.04, 0.75, 6], secMat, [0.85, 0.52, s * 0.65], [0, -s * 0.4, Math.PI / 2]);
+          const pincer = makeCelWirePart('SphereGeometry', [0.35, 12, 10], accMat, celMat, [1.35, 0.52, s * 0.72], [0, -s * 0.25, 0], [1.45, 0.55, 0.82]);
           bodyGroup.add(arm, pincer);
           claws.push(pincer);
-          // 4 walking legs per side
           for (let i = 0; i < 4; i++) {
-            const leg = makeWirePart('CylinderGeometry', [0.04, 0.02, 1.05, 4], secMat, [0.45 - i * 0.34, 0.34, s * 0.72], [s * 0.62, 0, (1.5 - i) * 0.18]);
+            const leg = makeWirePart('CylinderGeometry', [0.035, 0.015, 1.05, 6], secMat, [0.45 - i * 0.34, 0.34, s * 0.72], [s * 0.62, 0, (1.5 - i) * 0.18]);
             bodyGroup.add(leg); legs.push({ mesh: leg, baseRotX: s * 0.62, phase: i + s, side: s, idx: i });
           }
         }
@@ -2512,43 +2500,37 @@
           }
         }
       } else if (f.key === 'jumping_spider') {
-        // Jumping Spider: Snappy stop-and-go salticid leg gait + pedipalp semaphore + ocular head tilt
+        // Nimble adjustment: Accelerated leg cadence and amplified habit responses
         ud.legs.forEach(l => {
-          l.mesh.rotation.z = s(elapsed * 14.0 + l.phase) * (0.08 + Math.min(0.28, speedMag * 0.08));
+          l.mesh.rotation.z = s(elapsed * 18.0 + l.phase) * (0.12 + Math.min(0.35, speedMag * 0.12));
         });
         if (pulse > 0.01) {
           if (f.habitIndex === 0) {
-            // Pedipalp Semaphore: Rapidly waves front pedipalps up and down like a real Salticid
             ud.claws.forEach((palp, i) => {
-              palp.position.y += Math.abs(s(hp * Math.PI * 6 + i)) * 0.36;
+              palp.position.y += Math.abs(s(hp * Math.PI * 8 + i)) * 0.36;
             });
           } else if (f.habitIndex === 1) {
-            // Curious Ocular Head Tilt: Tilts cephalothorax side-to-side to triangulate prey
-            bodyRollOffset += s(hp * Math.PI * 2) * 0.26 * pulse;
-            bodyPitchOffset += pulse * 0.18;
+            bodyRollOffset += s(hp * Math.PI * 3) * 0.30 * pulse;
+            bodyPitchOffset += pulse * 0.22;
           } else {
-            // Hydraulic Ambush Crouch: Compresses low before a micro-hop
-            bodyYOffset -= pulse * 0.06;
+            bodyYOffset -= pulse * 0.08;
           }
         }
       } else if (f.key === 'goliath_tarantula') {
-        // Goliath Tarantula: Heavy hydraulic 8-leg prowl + urticating hair kick + fang threat display
+        // Nimble adjustment: Increased prowl speed multiplier
         ud.legs.forEach(l => {
-          l.mesh.rotation.z = s(elapsed * 7.5 + l.phase) * (0.07 + Math.min(0.22, speedMag * 0.08));
-          l.mesh.rotation.x = l.baseRotX + c(elapsed * 7.5 + l.idx) * 0.06;
+          l.mesh.rotation.z = s(elapsed * 12.0 + l.phase) * (0.10 + Math.min(0.30, speedMag * 0.10));
+          l.mesh.rotation.x = l.baseRotX + c(elapsed * 12.0 + l.idx) * 0.08;
         });
         if (pulse > 0.01) {
           if (f.habitIndex === 0 && ud.extras[1]) {
-            // Urticating Hair Flick: Abdomen vibrates & rear legs brush over opisthosoma
-            ud.extras[1].position.y += s(hp * Math.PI * 8) * 0.14 * pulse;
+            ud.extras[1].position.y += s(hp * Math.PI * 10) * 0.16 * pulse;
           } else if (f.habitIndex === 1) {
-            // Fang Threat Rear-Up: Rears cephalothorax & pedipalps high to expose venomous fangs
-            bodyPitchOffset += pulse * 0.36;
-            ud.claws.forEach(cl => { cl.position.y += pulse * 0.32; });
+            bodyPitchOffset += pulse * 0.40;
+            ud.claws.forEach(cl => { cl.position.y += pulse * 0.36; });
           } else {
-            // Seismic Palp Drum: Taps pedipalps rhythmically on the substrate
             ud.claws.forEach((cl, idx) => {
-              cl.position.y += s(hp * Math.PI * 8 + idx) * 0.18 * pulse;
+              cl.position.y += s(hp * Math.PI * 10 + idx) * 0.22 * pulse;
             });
           }
         }
@@ -2575,23 +2557,20 @@
           });
         }
       } else if (f.key === 'emperor_scorpion') {
-        // Emperor Scorpion: Armored 8-leg prowl + telson stinger arch + pedipalp pincer vise
+        // Nimble adjustment: Faster leg tracking and sharper claw snaps
         ud.legs.forEach(l => {
-          l.mesh.rotation.z = s(elapsed * 8.5 + l.phase) * (0.06 + Math.min(0.22, speedMag * 0.07));
+          l.mesh.rotation.z = s(elapsed * 14.0 + l.phase) * (0.10 + Math.min(0.28, speedMag * 0.10));
         });
         if (pulse > 0.01) {
           if (f.habitIndex === 0 && ud.claws[0]) {
-            // Telson Stinger Prime: Poises overhead stinger forward and pulses
-            ud.claws[0].position.x += pulse * 0.42;
-            ud.claws[0].position.y -= pulse * 0.18;
+            ud.claws[0].position.x += pulse * 0.48;
+            ud.claws[0].position.y -= pulse * 0.22;
           } else if (f.habitIndex === 1) {
-            // Pedipalp Vise Snap: Claws clamp inward menacingly
             ud.claws.forEach((cl, idx) => {
-              if (idx > 0) cl.rotation.y += (idx === 1 ? 1 : -1) * pulse * 0.45;
+              if (idx > 0) cl.rotation.y += (idx === 1 ? 1 : -1) * pulse * 0.55;
             });
           } else {
-            // Pectine Ground Sweep: Subtle lateral sensory sway
-            bodyRollOffset += s(hp * Math.PI * 4) * 0.14 * pulse;
+            bodyRollOffset += s(hp * Math.PI * 6) * 0.18 * pulse;
           }
         }
       } else if (f.key === 'praying_mantis') {
@@ -4086,12 +4065,12 @@
             // Jumping Spider Signature: DEATH FROM ABOVE leaps off-screen high into the air and crashes down on the target!
             if (act.move.anim === 'death_from_above') {
               if (p < 0.38) {
-                f.leapOffsetY = Math.sin((p / 0.38) * Math.PI) * 9.5;
+                f.leapOffsetY = Math.sin((p / 0.38) * Math.PI) * 6.65;
               } else {
-                f.leapOffsetY = Math.max(0, (1 - (p - 0.38) / 0.15) * 2.2);
+                f.leapOffsetY = Math.max(0, (1 - (p - 0.38) / 0.15) * 1.54);
               }
             } else if (act.move.anim === 'hydraulic_pounce') {
-              f.leapOffsetY = Math.sin(p * Math.PI) * 1.35;
+              f.leapOffsetY = Math.sin(p * Math.PI) * 0.945;
             }
 
             const defTarget = entities.find(e => e.id === act.defenderId);
